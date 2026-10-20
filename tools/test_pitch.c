@@ -162,8 +162,12 @@ static struct hint_event *load_hints(const char *path, int *count)
 	}
 	fclose(f);
 	if (n == 0) {
-		fprintf(stderr, "%s: no pitch-hint events found\n", path);
+		/* recordings before v18.3 often have none: the hints from
+		 * the command line then hold throughout */
+		fprintf(stderr, "%s: no pitch-hint events found, using the "
+			"command line's\n", path);
 		free(hints);
+		*count = 0;
 		return NULL;
 	}
 	*count = n;
@@ -261,8 +265,9 @@ static int replay(const char *path, double focus, double expect,
 	fclose(f);
 
 	if (hint_path) {
+		nhints = -1;
 		hints = load_hints(hint_path, &nhints);
-		if (!hints) {
+		if (!hints && (nhints != 0)) {
 			free(buf);
 			return 1;
 		}
