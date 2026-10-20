@@ -569,8 +569,17 @@ public class TunerTime extends Activity
 			return;
 		}
 		int semi = 100*U;
-		int cur = (parms.note_cents + semi/2) / semi;
-		int off = parms.note_cents - cur*semi;
+		int cur, off;
+		if (parms.mixture_mode) {
+			/* the mixture's key, and its measured offset from the
+			 * tempered note: the organ's own pitch, which the keys
+			 * heard next share */
+			cur = nearest_step(parms.mixture_cents);
+			off = parms.mixture_cents - step_cents(cur);
+		} else {
+			cur = (parms.note_cents + semi/2) / semi;
+			off = parms.note_cents - cur*semi;
+		}
 		int heard_cents = freq_to_cents(hz);
 		int k = (int)Math.round((heard_cents - off) /
 							(double)semi);
@@ -625,7 +634,7 @@ public class TunerTime extends Activity
 					"follow (heard %.2f Hz%s)", hz,
 					near ? ", near" : "");
 				mixture_move(t - cur);
-				mixture_measure(null);
+				mixture_measure(mixture.ONSET_SKIP);
 			} else {
 				parms.note_cents = t*semi + off;
 			}
@@ -873,6 +882,10 @@ public class TunerTime extends Activity
 	}
 
 	public void mixture_measure(View v) {
+		mixture_measure(0.0d);
+	}
+
+	private void mixture_measure(double settle) {
 		if (cause == null) {
 			cause = "measure";
 		}
@@ -893,7 +906,7 @@ public class TunerTime extends Activity
 			parms.focus_ratio = parms.row_ratio(
 					(i < parms.num_strobes) ? i : 0);
 		}
-		mix.start();
+		mix.start(settle);
 		update_status();
 	}
 
