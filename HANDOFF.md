@@ -51,7 +51,7 @@ and ask him, but don't revert it.
   with the detector hints rebuilt from each file's UI timeline, as recordings
   before v18.3 have none; without them 45 and 19); tolerating
   gaps on top changes nothing. Most of the rest are silence after a hand
-  step. Trompete locks on a fifth or a twelfth below (f0/2, f0/3 rule).
+  step.
 
 Field recordings of 19 Oct (two organs, 79 WAV+TXT, Onno's notes on which
 stop was played when) are attached to issue #1.
@@ -129,13 +129,24 @@ wanted.
    follow with the setting off and on. His `.local` app updates with
    `assembleLocal` signed with his key. The UI tests ran on tt_fairphone4
    only; tt_galaxy_s25 is still to do.
-2. **The 19 Oct recordings as a regression set** (issue #1): label each one
-   with the note it was corrected to, score `test_pitch` on them, and tune on
-   that:
-   - Trompete reads a fifth or a twelfth low (the f0/2, f0/3 rule).
-   - Rohrflöte and Gedackt are slow (weak fundamental).
-   - Many "octave errors" are 4' and 16' stops sounding an octave from the
-     key. That speaks for stop profiles (proposal 5).
+2. **Detector on real organs.** The 19 Oct recordings are a regression
+   test now (`tools/field`, `sh tools/field/run.sh`). `WEAK_CONF` 0.55
+   came from it. What it shows beyond thresholds:
+   - **Octave lock with a focused row:** the detector looks for the
+     partial near the note shown, so once the shown octave is wrong it
+     stays wrong until corrected by hand. All 12 octave corrections had
+     the octave wrong throughout the 2 s before (Prinzipal 4', Subbass
+     16', Trompete). Options: search both neighbouring octaves and take
+     the one that explains the spectrum better, or stop profiles
+     (proposal 5) that fix the octave per stop. Ask Onno.
+   - **Trompete:** wrong jumps in big leaps (5 of 13). In the bass it
+     reads high (2nd/3rd harmonic), as the phone mic cuts the low
+     partials. Its runs are followed correctly.
+   - **Too little truth:** a recording only says which note Onno corrected
+     to, and only around the correction. For real tuning on real pipes:
+     a recording mode that records a whole chromatic run while he steps
+     the key by hand (Ton+), so every key has its note. That would be
+     Onno's job in the church; ask him.
 3. **Onno's list of 19 Oct, still open:**
    - meantone with more than 12 notes (subsemitones D#/Eb, G#/Ab), with one
      menu to place the wolf or pick the notes, and German names with "is"
