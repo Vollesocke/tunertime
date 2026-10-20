@@ -9,7 +9,6 @@
 	<string name="wolf_select_title">Lage der Wolfsquinte</string>
 	<string name="wolf_interval">%1$s&#8211;%2$s</string>
 	<string name="wolf_label">Wolfsquinte: %1$s</string>
-	<string name="wolf_temporary_note">Diese Auswahl gilt nur, bis eine andere Temperierung ausgew&#228;hlt wird.</string>
 	<string name="title_preset_edit">Preset bearbeiten</string>
 	<string name="title_preset_note">Preset-Ton bearbeiten</string>
 	<string name="title_strobe">TunerTime Organ: Strobe</string>
@@ -67,7 +66,6 @@
 	<string name="preset_deviation_column">Abweichung</string>
 	<string name="preset_workbench_count_one">%1$d Ton pro Oktave</string>
 	<string name="preset_workbench_count_many">%1$d T&#246;ne pro Oktave</string>
-	<string name="preset_workbench_hint">Ton antippen, um ihn als aktuellen Bezugston zu w&#228;hlen</string>
 	<string name="temperament_select">Auswahl</string>
 	<string name="temperament_edit">Bearbeiten</string>
 	<string name="fft_n">N</string>
@@ -86,14 +84,7 @@
 	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
 	<string name="pipe_open">offen</string>
 	<string name="pipe_stopped">gedackt</string>
-	<string name="temp_minus">T-</string>
-	<string name="temp_plus">T+</string>
-	<string name="temp_colder">Lufttemperatur senken</string>
-	<string name="temp_warmer">Lufttemperatur erh&#246;hen</string>
 	<string name="length_listening">warte auf Ton&#8230;</string>
-	<string name="length_in_tune">0.0 mm\nstimmt</string>
-	<string name="length_too_long">%1$s mm\nzu lang: abschneiden</string>
-	<string name="length_too_short">%1$s mm\nzu kurz: anl&#228;ngen</string>
 	<string name="length_held">%1$s (gehalten)</string>
 	<string name="length_unclear">unklar</string>
 
@@ -278,6 +269,12 @@
 	<!-- Mixturmodus: Schwebung im gemessenen Teilton -->
 	<string name="mixture_beating">Schwebung: zweite Pfeife auf diesem Teilton?</string>
 	<!-- L&#228;ngenmodus, innerhalb 0,2 Cent -->
-	<string name="length_in_tune_mm">%1$s mm\nstimmt</string>
 	<string name="length_mm_compact">%1$s%2$s mm (%3$s)</string>
+	<!-- length mode: the sign of the mm (+ too long, cut off;
+	     - too short, lengthen) and the pipe's reference length -->
+	<string name="length_sign_in_tune">&#177;</string>
+	<string name="length_sign_long">+</string>
+	<string name="length_sign_short">&#8722;</string>
+	<string name="length_ref_stopped">&#955;/4</string>
+	<string name="length_ref_open">&#955;/2</string>
 </resources>

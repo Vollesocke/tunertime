@@ -325,9 +325,13 @@ public class pipelength {
 			amm = fmt("%." + dec + "f", Math.abs(mm));
 		}
 		String s;
-		String sign = in_tune ? "±" : (mm > 0.0d ? "+" : "−");
+		String sign = ui.getString(in_tune ? R.string.length_sign_in_tune
+				: (mm > 0.0d) ? R.string.length_sign_long
+					      : R.string.length_sign_short);
 		s = ui.getString(R.string.length_mm_compact, sign, amm,
-				parms.pipe_stopped ? "λ/4" : "λ/2");
+				ui.getString(parms.pipe_stopped
+					? R.string.length_ref_stopped
+					: R.string.length_ref_open));
 		if (!recent) {
 			s = ui.getString(R.string.length_held, s);
 		}

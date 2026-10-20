@@ -34,11 +34,20 @@ public class preset {
 		}
 	}
 
-	/* Index in temperaments, or -1 if this preset is not an unchanged
-	 * built-in Pythagorean or meantone temperament. */
+	/* Index in temperaments, or -1 if this preset is not the built-in
+	 * Pythagorean or a meantone temperament.  Within a cent per note,
+	 * so that presets saved in whole cents (before tenths) and their
+	 * exports count as well */
 	public int wolf_template() {
 		for (int i = 1; i <= 3; i++) {
-			if (notes.equals(temperaments.make_notes(i))) return i;
+			List<Integer> t = temperaments.make_notes(i);
+			if (notes.size() != t.size()) continue;
+			boolean same = true;
+			for (int j = 0; same && (j < t.size()); j++) {
+				same = Math.abs(notes.get(j) - t.get(j)) <=
+						UNITS_PER_CENT;
+			}
+			if (same) return i;
 		}
 		return -1;
 	}

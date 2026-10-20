@@ -118,16 +118,17 @@ public class temperaments {
 	 * fifths and keeps A at its original reference pitch. */
 	public static List<Integer> with_wolf(int idx, int root) {
 		List<Integer> base = make_notes(idx);
+		int c4 = 3900*preset.UNITS_PER_CENT, semi = 100*preset.UNITS_PER_CENT;
 		int[] offsets = new int[12];
 		for (int i = 0; i < 12; i++) {
-			offsets[i] = base.get(i) - (39000 + 1000*i);
+			offsets[i] = base.get(i) - (c4 + semi*i);
 		}
 		int shift = (8 - root + 12) % 12; /* templates put wolf at G# */
 		int anchor = (9 + shift) % 12;
 		List<Integer> ret = new ArrayList<Integer>();
 		for (int i = 0; i < 12; i++) {
 			int off = offsets[(i + shift) % 12] - offsets[anchor];
-			ret.add(39000 + 1000*i + off);
+			ret.add(c4 + semi*i + off);
 		}
 		return ret;
 	}

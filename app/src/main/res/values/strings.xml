@@ -10,7 +10,6 @@
 	<string name="wolf_select_title">Wolf fifth location</string>
 	<string name="wolf_interval">%1$s&#8211;%2$s</string>
 	<string name="wolf_label">Wolf fifth: %1$s</string>
-	<string name="wolf_temporary_note">This choice lasts until another temperament is selected.</string>
 	<string name="title_preset_edit">Edit preset</string>
 	<string name="title_preset_note">Edit preset note</string>
 	<string name="title_strobe">TunerTime Organ: strobe</string>
@@ -71,7 +70,6 @@
 	<string name="preset_deviation_column">Deviation</string>
 	<string name="preset_workbench_count_one">%1$d note per octave</string>
 	<string name="preset_workbench_count_many">%1$d notes per octave</string>
-	<string name="preset_workbench_hint">Tap a note to set it as the current reference pitch</string>
 	<string name="temperament_select">Select</string>
 	<string name="temperament_edit">Edit</string>
 	<string name="fft_n">N</string>
@@ -90,14 +88,7 @@
 	<!-- organ mode: length panel (pipe too long / too short) -->
 	<string name="pipe_open">open pipe</string>
 	<string name="pipe_stopped">stopped pipe</string>
-	<string name="temp_minus">T-</string>
-	<string name="temp_plus">T+</string>
-	<string name="temp_colder">air temperature down</string>
-	<string name="temp_warmer">air temperature up</string>
 	<string name="length_listening">listening&#8230;</string>
-	<string name="length_in_tune">0.0 mm\nin tune</string>
-	<string name="length_too_long">%1$s mm\ntoo long: cut off</string>
-	<string name="length_too_short">%1$s mm\ntoo short: lengthen</string>
 	<string name="length_held">%1$s (held)</string>
 	<string name="length_unclear">unclear</string>
 
@@ -292,6 +283,12 @@
 	<string name="mixture_beating">beating: another pipe on this partial?</string>
 	<!-- length mode, within 0.2 cent; %1$s is 0, 0.0 or 0.00 by the
 	     pipe's size -->
-	<string name="length_in_tune_mm">%1$s mm\nin tune</string>
 	<string name="length_mm_compact">%1$s%2$s mm (%3$s)</string>
+	<!-- length mode: the sign of the mm (+ too long, cut off;
+	     - too short, lengthen) and the pipe's reference length -->
+	<string name="length_sign_in_tune">&#177;</string>
+	<string name="length_sign_long">+</string>
+	<string name="length_sign_short">&#8722;</string>
+	<string name="length_ref_stopped">&#955;/4</string>
+	<string name="length_ref_open">&#955;/2</string>
 </resources>
