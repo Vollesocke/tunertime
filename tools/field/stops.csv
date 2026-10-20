@@ -1,0 +1,15 @@
+date,from,to,organ,stop,kind
+# What was played when, from Onno's notes to the recordings of 19 Oct 2026
+# (issue #1). Times are local (the recordings' "time" line), inclusive
+# from, exclusive to, approximate. kind: open, stopped, half (Rohrfloete,
+# half-stopped), reed, combo.
+2026-10-16,00:00,23:59,-,test recordings (A0..A4 by hand),-
+2026-10-19,09:00,09:33,1,Rohrfloete 8',half
+2026-10-19,09:33,09:37,1,Prinzipal 4',open
+2026-10-19,09:37,09:40,1,Gedackt 4',stopped
+2026-10-19,09:40,09:48,1,Rohrfloete 8' + Prinzipal 4' + Waldfloete,combo
+2026-10-19,09:48,09:53,1,Subbass 16',stopped
+2026-10-19,09:53,09:58,1,Trompete 8',reed
+2026-10-19,11:50,12:00,2,Prinzipal 8',open
+2026-10-19,12:00,12:11,2,Rohrfloete 8',half
+2026-10-19,12:11,12:30,2,Gedackt 8',stopped
