@@ -6,6 +6,34 @@ is on `main` (GitHub Vollesocke/tunertime). It holds Onno's commits from his
 fork (PR #2) and the fixes after reviewing them (below). The APK is installed
 on the S25. `organ` is the older integration branch that became v18.0.
 
+**Since then (end of 20 Oct):**
+- `main` also has the field regression test and `WEAK_CONF` 0.55 (PR #3).
+- Branch `onno-list` (pushed, not merged) adds:
+  - the strobe readout only in mixture mode;
+  - version 18.4-organ-pre1 (code 22).
+
+  Its APK is the pre-release
+  [v18.4-organ-pre1](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ-pre1),
+  not installed on the S25 yet.
+- **Next, not started:** meantone with more than 12 notes (Next steps 3).
+  The design worked out so far:
+  - A tuning from the picker is a set of positions on the chain of fifths
+    (Fes Ces Ges Des As Es B F C G D A E H Fis Cis Gis Dis Ais Eis His),
+    pitch n x fifth (1/4 comma 696.58 c, 1/6 comma 698.37 c,
+    Pythagorean 701.96 c), normalized so A = 0. Picking a wolf is a
+    contiguous 12; picking notes is any set, each natural note plus ♭/♯.
+  - `preset.temper_offsets()` (now null on duplicate pitch classes) becomes
+    a table with 1 or 2 offsets per pitch class. A new
+    `parms.note_alt` picks which one, and semi± step through both
+    (D -> Dis -> Es -> E; in meantone Dis is below Es).
+  - Names: spelled from the chain position; German with "is"/"es" when
+    more than 12 notes (Onno). Organ Cs/Ds otherwise.
+  - Follow mode takes the nearest of all notes. Mixture rounding can stay
+    on the first one.
+  - The temporary wolf (`preset.temporary_wolf_root`) and the new
+    note set would share that state: "until another temperament is
+    selected".
+
 ## Review fixes in v18.3 (20 Oct 2026)
 
 Onno is *the* user of this app; Volker only helps. Where Onno changed
