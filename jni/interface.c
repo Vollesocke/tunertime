@@ -513,15 +513,17 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
-			double focus_ratio = (*env)->GetStaticDoubleField(env,
+			/* the partial the user focused on (organ mode),
+			 * looked for near where the shown note puts it; in
+			 * mixture mode too, where it is the reference rank
+			 * measured (without it a mixture whose loudest rank
+			 * is a fifth reads a fifth off, tools/sim_organ.c),
+			 * and TunerTime.on_pitch() keeps the key from
+			 * jumping when another rank sounds alone */
+			double detector_focus = (*env)->GetStaticDoubleField(env,
 					cl_parms, fid_p_focus_ratio);
-			jboolean mixture_mode = (*env)->GetStaticBooleanField(env,
-					cl_parms, fid_p_mixture_mode);
-			double detector_focus = mixture_mode ? 0.0 : focus_ratio;
-			double detector_expect = mixture_mode ? 0.0 : pitch_expect;
+			double detector_expect = pitch_expect;
 			long long at = record_total() - snd_buflen;
-			/* Only offset measurement follows the selected strobe row.
-			 * Mixture mode uses the normal, focus-independent key detector. */
 			pitch_hint(detector_focus, detector_expect);
 			if ((detector_focus != logged_focus) ||
 			    (detector_expect != logged_expect)) {

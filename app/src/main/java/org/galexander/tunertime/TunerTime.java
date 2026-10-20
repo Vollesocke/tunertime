@@ -490,6 +490,13 @@ public class TunerTime extends Activity
 	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it. */
 	private boolean near = false;		/* continuity on */
 	private static final int NEAR_SEMIS = 5;
+	/* Mixture mode always keeps to the key: a mixture is tuned key by
+	 * key, and the detector, looking for the focused (reference) rank,
+	 * reads another rank sounding alone as a key an octave, a fourth
+	 * or a third away (2 2/3', 1 3/5' with the 2' focused).  Octaves
+	 * fold, and the key moves by at most a whole tone; a bigger jump
+	 * is made by hand (key and octave buttons) */
+	private static final int MIX_SEMIS = 2;
 	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
 	private double det_stable_hz = 0.0;
 	private long det_stable_time = 0, last_heard = 0;
@@ -619,10 +626,11 @@ public class TunerTime extends Activity
 		det_stable_hz = hz;
 		det_stable_time = now;
 		int t = k;
-		if (near) {
+		if (near || parms.mixture_mode) {
 			/* the octave nearest the current note */
 			t = k + 12*(int)Math.floor((cur - k)/12.0d + 0.5d);
-			if (Math.abs(t - cur) > NEAR_SEMIS) {
+			if (Math.abs(t - cur) >
+			    (parms.mixture_mode ? MIX_SEMIS : NEAR_SEMIS)) {
 				return;
 			}
 		}

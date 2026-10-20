@@ -112,6 +112,7 @@ static int follow_mode = FOLLOW_NONE;
 #define CORR_RECENT	4.0	/* TunerTime.CORR_RECENT */
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
+#define MIX_SEMIS	2	/* TunerTime.MIX_SEMIS */
 #define CORR_AFTER	1.5	/* the user corrects a wrong note this long
 				 * into the key */
 /* organ rows, in multiples of the 32' pitch: 32' 16' 8' 4' 2 2/3' 2' 1 1/3' 1' */
@@ -207,6 +208,9 @@ struct scen {
 	double steps, steps_on, steps_off;
 	int hint;		/* pitch_hint(focus, key) like the app with
 				 * a row focused */
+	int mixmode;		/* mixture mode: the shown key folds octaves
+				 * and moves by MIX_SEMIS at most; bigger
+				 * steps between keys are made by hand */
 	double mstart;
 	int nk, np;
 	struct key k[MAXK];
@@ -803,6 +807,11 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			base_cents = 48000 + 1000*k->semi;
 			strobe_recalculate(0);
 			strobe_focus(row_for(r) >= 0 ? r : 0.0);
+			/* mixture mode: the tuner sets the key by hand
+			 * where it jumps (Ton+/-, octave buttons) */
+			if (S->mixmode && ((shown == -999) ||
+			    (abs(k->semi - shown) > MIX_SEMIS)))
+				shown = k->semi;
 			/* the app hints the note shown; without -f that is
 			 * taken to be the key's */
 			if (S->hint) pitch_hint(r, key_hz((follow_mode &&
@@ -833,7 +842,12 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				int to = g;
 				det_stable = g;
 				det_stable_t = t;
-				if (follow_mode == FOLLOW_OLD) {
+				if (S->mixmode && (shown != -999)) {
+					to = g + 12*(int)floor((shown - g)/12.0
+								+ 0.5);
+					if (abs(to - shown) > MIX_SEMIS)
+						to = shown;
+				} else if (follow_mode == FOLLOW_OLD) {
 					to = g + shift;
 				} else if (cont && (shown != -999)) {
 					to = g + 12*(int)floor((shown - g)/12.0
@@ -1373,6 +1387,7 @@ static void mixture(const char *nm, double other, int nr) {
 	double t = 0.5;
 	church(nm);
 	S->hint = 1;
+	S->mixmode = 1;
 	for (i = 0; i < 4; i++) {
 		for (r = 0; r < nr; r++) {
 			int k = key(n[i], t, 3.5);
@@ -1390,6 +1405,28 @@ static void mixture(const char *nm, double other, int nr) {
 	}
 }
 static void sc_mix_all(void) { mixture("Mixture III open", 1.0, 2); }
+/* mixture mode played chromatically, the 2' rank focused as the
+ * reference, the ranks sounding one at a time as when they are tuned
+ * against it (the others muted): 2', then 2 2/3', 1 3/5' and 1' alone.
+ * The key shown has to stay on each key while the other ranks sound */
+static void sc_mix_chrom(void) {
+	static const double f[4] = { 4.0, 3.0, 5.0, 8.0 };
+	int i, r;
+	double t = 0.5;
+	church("Mixture chromatic, ranks alone");
+	S->hint = 1;
+	S->mixmode = 1;
+	for (i = 0; i < 4; i++) {	/* MAXK keys */
+		for (r = 0; r < 4; r++) {
+			int k = key(C3 + i, t, 2.5);
+			int a = pipe(k, f[r], 2.0, OPEN, 2000, 0.4);
+			S->k[k].focus = 4.0;
+			S->k[k].truth = a;
+			S->k[k].pc_only = 1;
+			t += 3.0;
+		}
+	}
+}
 static void sc_mix_muted(void) { mixture("Mixture III muted -20dB", 0.1, 3); }
 /* Sesquialtera 2 2/3' + 1 3/5', the 2 2/3' focused, with a Gedackt 8' */
 static void sc_sesq(void) {
@@ -1502,7 +1539,7 @@ static const builder builders[] = {
 	sc_subhum,
 	sc_prin16, sc_32, sc_prin32, sc_posaune, sc_high2, sc_high1,
 	sc_trem_flute, sc_trem_prin, sc_wobble, sc_celeste, sc_unda,
-	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_sesq, sc_octaves,
+	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_mix_chrom, sc_sesq, sc_octaves,
 	sc_fifths, sc_longtail, sc_speech_over, sc_steps_over,
 	sc_chr_prin, sc_chr_ged, sc_chr_flute4, sc_chr_quint,
 	sc_chr_quint_row, sc_chr_sub,
