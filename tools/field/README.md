@@ -49,3 +49,43 @@ Counted per stop:
 
 "now": `WEAK_CONF` 0.55 instead of 0.60 (jni/pitch.c). 0.50 reaches 44 but
 with 15 wrong jumps and lets speech through in `sim_organ`.
+
+## Chromatic runs
+
+The app's chromatic run mode records a whole stop: every key in turn,
+the shown note stepped with Ton+, so each key's note is known. Its .txt
+lists the keys (`key i start end name semi target_hz [redo]`, 48 = A4;
+a segment runs from one tap to the next, the last one of a note counts)
+before the usual timeline. After a crash there is only the .wav and a
+.timeline; the keys then come from its `ui run key` lines.
+
+```sh
+python tools/field/run_score.py [-v] runs/              # the app's estimates
+python tools/field/run_score.py --hints none,keys,log \
+    --test-pitch build1/test_pitch build2/test_pitch runs/
+sh tools/field/run.sh synth            # fake runs (make_run.py), scored
+```
+
+Per key, from its onset (RMS envelope of the WAV) to the next tap:
+
+- **ok**: the key's note agreed (4 in a row, as `on_pitch()`), and
+  **first ok** the median time from the onset to it
+- **wrong**: agreements on another note; **oct** the octaves and
+  twelfths among them
+- **follow**: follow mode emulated over the run: the first key taken as
+  heard, then continuity (the octave nearest the note shown, at most a
+  fourth away), a wrong note corrected by hand at the next tap. The
+  keys right at their release without a hand correction.
+- **empty**: share of empty estimates while the key sounds
+- **off>5c**: keys whose pipe is more than 5 cents off: the median
+  strobe drift of the focused row (timeline), else of the estimates on
+  the right note against the key's target Hz. `-v` shows both per key.
+
+Hints for the replay: `none`, `keys` (each key's Hz with the run's
+focus ratio, what the app hints during a run), `log` (the timeline's
+hint lines; the default). `make_run.py` writes three stops (open,
+stopped, reed, C2-C3) with keys 3, 6, 10 mistuned by +12, -20, +35
+cents and key 7 played twice; with `--test-pitch` its timeline gets
+the estimates of a replay. All 39 keys come out right: it tests the
+tools, not the detector. With hints the estimates read up to 1.2 cents
+off on the synthetic tones (0.1 without): judge pipes by the drift.

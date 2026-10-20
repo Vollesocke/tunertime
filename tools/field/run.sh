@@ -4,6 +4,9 @@
 #
 #   sh tools/field/run.sh                fetch (once), build, score
 #   sh tools/field/run.sh score [-v] EXE...   score other test_pitch builds
+#   sh tools/field/run.sh runs [-v] [--test-pitch EXE...] DIR
+#                                        score chromatic runs (run_score.py)
+#   sh tools/field/run.sh synth          build, fake runs, score them
 #
 # Needs curl, unzip, a C compiler (CC, default gcc) and Python 3 (PY,
 # default python).  The recordings are attachments of issue #1 on
@@ -38,5 +41,10 @@ build() {
 
 case "$1" in
 score)	shift; $PY $D/score.py $D/data "$@" ;;
+runs)	shift; $PY $D/run_score.py "$@" ;;
+synth)	build
+	$PY $D/make_run.py -o $D/runs/synth --test-pitch $D/build/test_pitch$X
+	$PY $D/run_score.py --hints none,keys --test-pitch \
+		$D/build/test_pitch$X $D/runs/synth ;;
 *)	fetch; build; $PY $D/score.py $D/data $D/build/test_pitch$X ;;
 esac
