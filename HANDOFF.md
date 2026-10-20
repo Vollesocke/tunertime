@@ -47,7 +47,9 @@ and ask him, but don't revert it.
   v18.2 reset the agreement count on every empty estimate, and on real organs
   about half the estimates are empty. Replaying the 19 Oct recordings, Onno's
   weak-confidence path in `pitch.c` already fixes most of it. The corrected
-  note is reached in 43 of 75 recordings, against 17 with v18.2; tolerating
+  note is reached in 47 of 81 recordings, against 22 with v18.2 (replayed
+  with the detector hints rebuilt from each file's UI timeline, as recordings
+  before v18.3 have none; without them 45 and 19); tolerating
   gaps on top changes nothing. Most of the rest are silence after a hand
   step. Trompete locks on a fifth or a twelfth below (f0/2, f0/3 rule).
 
