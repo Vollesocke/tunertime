@@ -91,10 +91,12 @@ this fork.
   A-frequency setting still means the A you hear.
 - **Mixture mode follows detected notes** like tone mode, displays the detected
   pitch and has key and octave buttons. A key the follow moves to is measured
-  again, from 0.5 s after the onset. The detector looks for the focused
-  (reference) rank; the key moves by a whole tone at most and octaves fold, so
-  that another rank sounding alone does not move it, and detections more than
-  20 cents from the mixture's measured pitch are rejected.
+  again from 0.5 s after the onset, as a trailing average (0.65 s from 500 Hz
+  up, 1 s from 250 Hz, else 2 s / 3 s) that ends once it is steady.
+  Detections more than 20 cents from the mixture's measured pitch are
+  rejected. Key detection ignores the focused rank. Settings → "Mixture:
+  follow the reference rank" instead looks for that rank and moves the key by
+  a whole tone at most, so another rank sounding alone does not move it.
 - **Organ display refinements**: German organ note labels use Cs/Ds/Fs/Gs;
   length mode presents the cut/add distance in millimetres with the
   stopped/open reference.

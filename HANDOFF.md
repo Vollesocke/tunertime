@@ -8,15 +8,29 @@ v18.0.
 
 ## Review fixes for v18.3 (20 Oct 2026, branch onno-workbench)
 
-- **Mixture timing** back to 2 s (3 s below 8'). Onno's trailing window
-  stopped after about 0.7 s on high rows and overflowed its buffer on low
-  ones. A measurement that follow starts skips the first 0.5 s of the onset.
-- **Mixture follow:** the detector gets the focus again. Without it, a
-  mixture whose loudest rank is a fifth read a fifth off (sim_organ).
-  Instead, the key moves by a whole tone at most and octaves fold
-  (`MIX_SEMIS`), so another rank sounding alone does not move it. The 20 c
-  window now sits around the mixture's measured pitch, not the note-mode
-  offset. New scenario `sim_organ "Mixture chromatic"`.
+Onno is *the* user of this app; Volker only helps. Where Onno changed
+behaviour on purpose, that is the requirement. Fix bugs in it, measure it,
+and ask him, but don't revert it.
+
+- **Mixture timing:** Onno's trailing window stays (done about 1.6 s after
+  the key instead of 2.5 s). Its buffer was too short for the low rows and
+  did not subtract what it overwrote; fixed. A measurement that follow starts
+  skips the first 0.5 s of the onset (29 keys off by > 0.5 c without, 9
+  with). `sim_organ` models it (`-m fixed` for the old 2 s / 3 s).
+- **Mixture follow:** a setting, "Mixture: follow the reference rank", off
+  by default.
+  - Off (Onno's design): the detector ignores the focus.
+  - On: the detector looks for the focused rank, and the key moves by a whole
+    tone at most (`MIX_SEMIS`).
+  - `sim_organ -x focus` against the default, wrong keys: 0 instead of 4
+    ("Mixture III muted"), 0 instead of 8 ("Mixture chromatic, ranks
+    alone").
+  - Onno compares in practice.
+- **20 c window** around the mixture's measured pitch, not the note-mode
+  offset.
+- **Landscape crash:** the containers 06f3337 added were missing from
+  `layout-land/main.xml`. Found by UiLayoutTest.
+- **Workbench:** the temperament name wraps instead of being cut.
 - **Debug recordings:** the timeline starts with the hints in effect, and
   `--hints` only appears in the replay line when there are any.
   `test_pitch` no longer fails on files without hints.
@@ -126,6 +140,9 @@ wanted.
    - the strobe's cent readout only in mixture mode;
    - the Preset tab has no note stepping since it became the workbench.
      Ask Onno whether that is right.
+   - 06f3337 had an unused string "Tap a note to set it as the current
+     reference pitch" for the workbench: a feature he may have planned
+     (removed as unused in 8fb013b).
 4. **Tidy up the menus** after his tests. There is much more going on than in
    the original app. Onno sees the features as deliberate, long-considered
    ideas, not feature creep, so this is about arrangement, not removal.
