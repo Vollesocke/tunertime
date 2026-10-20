@@ -7,7 +7,7 @@
 	<string name="title_preset_select">Preset w&#228;hlen</string>
 	<string name="title_preset_workbench">Temperierung</string>
 	<string name="wolf_select_title">Lage der Wolfsquinte</string>
-	<string name="wolf_interval">%1$s–%2$s</string>
+	<string name="wolf_interval">%1$s&#8211;%2$s</string>
 	<string name="wolf_label">Wolfsquinte: %1$s</string>
 	<string name="wolf_temporary_note">Diese Auswahl gilt nur, bis eine andere Temperierung ausgew&#228;hlt wird.</string>
 	<string name="title_preset_edit">Preset bearbeiten</string>
@@ -187,9 +187,10 @@
 		<item>Neidhardt f&#252;r das Dorf (1732)</item>
 		<item>Neidhardt f&#252;r die kleine Stadt (1732)</item>
 		<item>Neidhardt f&#252;r die gro&#223;e Stadt (1724)</item>
-		<item>Werckmeister 1691 modifiziert</item>
-		<item>Werckmeister IV</item>
-		<item>Werckmeister V</item>
+		<item>Werckmeister 1691 modifiziert (Niederrodenbach)</item>
+		<item>Werckmeister IV (Rohlf)</item>
+		<item>Werckmeister V (Rohlf)</item>
+		<item>Werckmeister III (Rohlf)</item>
 	</string-array>
 	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
 	     sie als Gis, Es angezeigt -->
@@ -198,7 +199,7 @@
 		<item>reine Quinten, Wolf G#-Eb</item>
 		<item>reine gro&#223;e Terzen, Wolf G#-Eb; Renaissance/Fr&#252;hbarock</item>
 		<item>Barockorgeln, milder Wolf G#-Eb</item>
-		<item>1691, wohltemperiert, alle Tonarten spielbar</item>
+		<item>1691, wohltemperiert, alle Tonarten spielbar; bei Rohlf: Werckmeister 1691</item>
 		<item>1779, reine Terz C-E</item>
 		<item>um 1750, sechs Quinten um 1/6 pyth. Komma verkleinert</item>
 		<item>1800, wie Vallotti, auf C zentriert</item>
@@ -215,9 +216,10 @@
 		<item>Neidhardts Dorf-Stimmung von 1732</item>
 		<item>Neidhardts Stimmung f&#252;r die kleine Stadt von 1732</item>
 		<item>Neidhardts Stimmung f&#252;r die gro&#223;e Stadt von 1724</item>
-		<item>Modifizierte Werckmeister-Stimmung von 1691</item>
-		<item>Werckmeister IV</item>
-		<item>Werckmeister V</item>
+		<item>Werckmeister 1691 mit 1,9 c h&#246;herem A; Rohlfs Tabelle Niederrodenbach</item>
+		<item>Z&#228;hlung nach Rohlf; meist Werckmeister V genannt</item>
+		<item>Z&#228;hlung nach Rohlf</item>
+		<item>Z&#228;hlung nach Rohlf; 1/3 Komma, meist Werckmeister IV genannt</item>
 	</string-array>
 
 	<!-- Mikrofone -->

@@ -8,7 +8,7 @@
 	<string name="title_preset_select">Select preset</string>
 	<string name="title_preset_workbench">Temperament</string>
 	<string name="wolf_select_title">Wolf fifth location</string>
-	<string name="wolf_interval">%1$s–%2$s</string>
+	<string name="wolf_interval">%1$s&#8211;%2$s</string>
 	<string name="wolf_label">Wolf fifth: %1$s</string>
 	<string name="wolf_temporary_note">This choice lasts until another temperament is selected.</string>
 	<string name="title_preset_edit">Edit preset</string>
@@ -185,7 +185,7 @@
 		<item>Kellner (Bach)</item>
 		<item>Young-Sorge</item>
 		<item>Near equal temperament</item>
-		<item>Gräf-Sorge</item>
+		<item>Gr&#228;f-Sorge</item>
 		<item>Modified Vallotti</item>
 		<item>Wegscheider / Reinfeld</item>
 		<item>Johannes Lang (Freiburg)</item>
@@ -195,9 +195,10 @@
 		<item>Neidhardt for a village (1732)</item>
 		<item>Neidhardt for a small town (1732)</item>
 		<item>Neidhardt for a large town (1724)</item>
-		<item>Modified Werckmeister 1691</item>
-		<item>Werckmeister IV</item>
-		<item>Werckmeister V</item>
+		<item>Modified Werckmeister 1691 (Niederrodenbach)</item>
+		<item>Werckmeister IV (Rohlf)</item>
+		<item>Werckmeister V (Rohlf)</item>
+		<item>Werckmeister III (Rohlf)</item>
 	</string-array>
 	<!-- note names in these are English (G#, Eb); they are shown in
 	     German if German note names are on -->
@@ -206,14 +207,14 @@
 		<item>pure fifths, wolf G#-Eb</item>
 		<item>pure major thirds, wolf G#-Eb; Renaissance/early Baroque</item>
 		<item>Baroque organs, mild wolf G#-Eb</item>
-		<item>1691, well-tempered, all keys usable</item>
+		<item>1691, well-tempered, all keys usable; Rohlf: Werckmeister 1691</item>
 		<item>1779, pure C-E third</item>
 		<item>c. 1750, six 1/6 Pythagorean comma fifths</item>
 		<item>1800, like Vallotti centred on C</item>
 		<item>1977 reconstruction of Bach\'s tuning</item>
 		<item>Temperament by Young and Sorge</item>
 		<item>Historical near-equal temperament</item>
-		<item>Temperament by Gräf and Sorge</item>
+		<item>Temperament by Gr&#228;f and Sorge</item>
 		<item>Modified Vallotti temperament</item>
 		<item>Wegscheider tuning for the Reinfeld organ</item>
 		<item>Tuning by Johannes Lang, Freiburg</item>
@@ -223,9 +224,10 @@
 		<item>Neidhardt for a village (1732)</item>
 		<item>Neidhardt for a small town (1732)</item>
 		<item>Neidhardt for a large town (1724)</item>
-		<item>Modified Werckmeister 1691</item>
-		<item>Werckmeister IV</item>
-		<item>Werckmeister V</item>
+		<item>Werckmeister 1691 with A 1.9 c higher; Rohlf\'s Niederrodenbach chart</item>
+		<item>Rohlf\'s numbering; usually called Werckmeister V</item>
+		<item>Rohlf\'s numbering</item>
+		<item>Rohlf\'s numbering; 1/3 comma, usually called Werckmeister IV</item>
 	</string-array>
 
 	<!-- microphones (Settings, toasts) -->
