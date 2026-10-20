@@ -60,7 +60,10 @@ public class note {
 		 *   C4 = c^1 (middle C)       C5 = c^2, ... C8 = c^5
 		 *   A4 = a^1, A#4 = b^1, B3 = h, F#2 = Fis, C#1 = Cis_1 */
 	public static String german(int idx, int oct) {
-		String s = GERMAN_NAMES[idx];
+		return german(GERMAN_NAMES[idx], oct);
+	}
+		/* the same for the pitch class name s, e.g. "Es" */
+	private static String german(String s, int oct) {
 		if (oct <= 2) {
 			return (oct == 2) ? s : (s + digits(2-oct, SUB));
 		}
@@ -99,11 +102,41 @@ public class note {
 		if (!german()) return name_oct;
 		String[] organ = { "C", "Cs", "D", "Ds", "E", "F",
 			"Fs", "G", "Gs", "A", "B", "H" };
-		String s = organ[note_idx];
-		if (octave <= 2) return (octave == 2) ? s :
-			(s + digits(2-octave, SUB));
-		s = s.toLowerCase();
-		return (octave == 3) ? s : (s + digits(octave-3, SUPER));
+		return german(organ[note_idx], octave);
+	}
+
+		/* chain of fifths (temperaments.CHAIN_LOW..CHAIN_HIGH), A = 0 */
+	private static final String CHAIN_GERMAN[] = new String[] {
+		"Fes", "Ces", "Ges", "Des", "As", "Es", "B",
+		"F", "C", "G", "D", "A", "E", "H",
+		"Fis", "Cis", "Gis", "Dis", "Ais", "Eis", "His" };
+	private static final String CHAIN_ENGLISH[] = new String[] {
+		"Fb", "Cb", "Gb", "Db", "Ab", "Eb", "Bb",
+		"F", "C", "G", "D", "A", "E", "B",
+		"F#", "C#", "G#", "D#", "A#", "E#", "B#" };
+
+		/* name of chain position n (A = 0, Es = -6, Dis = +6), without
+		 * octave: German "Es", English "Eb" */
+	public static String chain_name(int n) {
+		return (german() ? CHAIN_GERMAN : CHAIN_ENGLISH)
+					[n - temperaments.CHAIN_LOW];
+	}
+		/* -1 for the flats (Fes..B), 0 for the naturals, 1 for the
+		 * sharps (Fis..His) of chain position n */
+	public static int chain_accidental(int n) {
+		return ((n + 4 + 14) / 7) - 2;
+	}
+
+		/* this note spelled as chain position n of its pitch class,
+		 * with the octave: German (as organ builders write it) "dis^1"
+		 * or "es^1", English "Eb4".  for more than 12 notes, where the
+		 * organ names "Ds" would not tell Dis from Es (Onno).  the
+		 * octave goes with the letter: His3 sounds as C4, Ces4 as B3 */
+	public String spelled(int n) {
+		int letter = octave*12 + note_idx - chain_accidental(n);
+		int oct = ((letter + 1200) / 12) - 100;	/* floor */
+		return german() ? german(chain_name(n), oct)
+				: (chain_name(n) + oct);
 	}
 
 		/* translates note names in English text (C D E F G A B with an

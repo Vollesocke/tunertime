@@ -93,6 +93,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.uiautomator)
     androidTestImplementation(libs.accessibility.test.framework)
     androidTestImplementation(libs.guava)
+    // plain JVM tests (app/src/test): ./gradlew testDevUnitTest
+    testImplementation(libs.junit)
 /*
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

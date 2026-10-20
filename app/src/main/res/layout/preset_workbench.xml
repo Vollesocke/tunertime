@@ -45,7 +45,7 @@
                     android:gravity="left|center_vertical"
                     android:paddingLeft="8dp"
                     android:textAllCaps="false"
-                    android:maxLines="2"
+                    android:maxLines="3"
                     android:onClick="do_choose_wolf"
                     android:visibility="gone" />
             </FrameLayout>
