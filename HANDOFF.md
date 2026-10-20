@@ -1,8 +1,10 @@
 # Handoff: TunerTime Organ
 
-Status as of 20 Oct 2026, late: release
-[**v18.4-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ)
-is on `main`. It adds to v18.3: chromatic run recordings, meantone with more
+Status as of 20 Oct 2026, late: pre-release
+[**v18.4-organ-pre2**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ-pre2)
+on branch `onno-list` (not merged to `main`; the full UI test suite was
+stopped early for it: 6 of 7 ran, the only failure, a German menu item cut
+at font scale 1.3, is fixed but not re-run). It adds to v18.3: chromatic run recordings, meantone with more
 than 12 notes, the mixture measurement ending on key release, a warning when
 the mixture is heard more than a semitone off, and tapping a workbench note.
 
@@ -38,6 +40,11 @@ aufnehmen" (`RunRecorder.java`, README "Chromatic run recordings").
   agreement, wrong notes (octave/twelfth flagged), empty share, cents,
   strobe drift, and follow emulated over the run. `make_run.py` makes
   synthetic runs to test the tool (`sh tools/field/run.sh synth`).
+- **Also in pre2 (Onno, 20 Oct):** the microphone choice is gone from
+  Settings and the mic-switch toast too (always auto; logged only, and the
+  run header names the mic in use); tapping the A readout opens a keypad
+  (220-880 Hz); the strobe long press opens the partial settings as soon
+  as it is recognised.
 - **Then:** tune `MIN_CONF`/`WEAK_CONF`, the octave lock with a focused
   row and the Trompete bass on these runs (Next steps 2).
 
