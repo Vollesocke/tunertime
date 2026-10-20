@@ -279,4 +279,34 @@
 	<string name="length_sign_short">&#8722;</string>
 	<string name="length_ref_stopped">&#955;/4</string>
 	<string name="length_ref_open">&#955;/2</string>
+	<!-- chromatic run recording (RunRecorder) -->
+	<string name="menu_run">Chromatischen Lauf aufnehmen</string>
+	<string name="run_title">Chromatischen Lauf aufnehmen</string>
+	<string name="run_help">Zum Verbessern der Tonerkennung an echten Pfeifen. Erste Taste als angezeigte Note einstellen, dann jede Taste der Reihe nach: etwa 3 s halten, loslassen, dann Ton+ f&#252;r die n&#228;chste (auch im Mixturmodus). Ton&#8722; nimmt eine Taste noch einmal auf. Folgen ist w&#228;hrend des Laufs aus; die angezeigte Note ist die gespielte Taste. Die Reihe der Fu&#223;lage antippen, dann wird auch aufgezeichnet, wie weit jede Pfeife verstimmt ist. Beenden oben in der Leiste.</string>
+	<string name="run_organ">Orgel, Kirche</string>
+	<string name="run_stop_name">Register, z.&#160;B. Rohrfl&#246;te 8&#8242;</string>
+	<string name="run_footage">Fu&#223;lage</string>
+	<string name="run_note">Notizen: Handyposition, Mikrofon, Temperatur&#8230;</string>
+	<string name="run_start">Start</string>
+	<string name="run_ok">OK</string>
+	<string name="run_stop_status">&#9632; %1$d:%2$02d &#183; %3$d</string>
+	<string name="run_mark">Markieren</string>
+	<string name="run_started">Aufnahme l&#228;uft. Angezeigte Taste spielen, dann Ton+.</string>
+	<string name="run_saved">Lauf gespeichert: %1$s (files/runs)</string>
+	<string name="run_failed">Lauf konnte nicht aufgenommen werden</string>
+	<string name="run_need_strobe">L&#228;ufe werden im Ton- oder Mixturmodus aufgenommen</string>
+	<string-array name="run_kinds">
+		<item>Offen (Labial)</item>
+		<item>Gedackt</item>
+		<item>Zungenregister</item>
+		<item>Mixtur</item>
+		<item>Aliquot</item>
+		<item>Anderes</item>
+	</string-array>
+	<string-array name="run_marks">
+		<item>St&#246;rger&#228;usch</item>
+		<item>Pfeife defekt</item>
+		<item>Falsche Taste gespielt</item>
+		<item>Text&#8230;</item>
+	</string-array>
 </resources>

@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/action_run_stop"
+		android:title="@string/run_stop_status"
+		android:showAsAction="always|withText"
+		android:visible="false" />
+	<item android:id="@+id/action_run_mark"
+		android:title="@string/run_mark"
+		android:showAsAction="ifRoom|withText"
+		android:visible="false" />
+	<item android:id="@+id/action_run"
+		android:title="@string/menu_run" />
 	<item android:id="@+id/action_settings"
 		android:icon="@android:drawable/ic_menu_manage"
 		android:title="@string/menu_settings" />

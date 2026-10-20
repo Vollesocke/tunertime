@@ -58,6 +58,9 @@ public class parms {
 		 * is too long or short.  keeps the detector running natively */
 	static public volatile boolean length_mode = false;
 	static public boolean pipe_stopped = false;	/* gedackt */
+		/* a chromatic run is being recorded (RunRecorder): keeps the
+		 * detector running natively with auto off */
+	static public volatile boolean run_active = false;
 		/* Settings "Audio", see MicSelect: auto, unprocessed,
 		 * voice_recognition, mic, camcorder */
 	static public volatile String audio_source = "auto";

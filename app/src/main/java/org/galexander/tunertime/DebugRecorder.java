@@ -215,7 +215,7 @@ public class DebugRecorder {
 
 	/* tenths of a cent, 48000 = A4 -> "Cs4", like note.java but
 	 * without '#' for file names */
-	private static String name(int cents) {
+	static String name(int cents) {
 		/* semitones from C-10, so that a 32' pipe below A0 still
 		 * divides the right way */
 		int semi = (cents + 950*U + 120*100*U) / (100*U);

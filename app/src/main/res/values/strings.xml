@@ -293,4 +293,34 @@
 	<string name="length_sign_short">&#8722;</string>
 	<string name="length_ref_stopped">&#955;/4</string>
 	<string name="length_ref_open">&#955;/2</string>
+	<!-- chromatic run recording (RunRecorder) -->
+	<string name="menu_run">Record chromatic run</string>
+	<string name="run_title">Record a chromatic run</string>
+	<string name="run_help">For improving the note detection on real pipes. Set the first key as the note shown, then play every key in turn: hold it about 3 s, release it, and tap semi+ for the next one (also in mixture mode). semi&#8722; plays a key again. Follow is off during the run; the note shown is the key played. Tap the row of the stop&#8217;s footage to record how far each pipe is off. Stop it in the bar at the top.</string>
+	<string name="run_organ">Organ, church</string>
+	<string name="run_stop_name">Stop, e.g. Rohrfl&#246;te 8&#8242;</string>
+	<string name="run_footage">Footage</string>
+	<string name="run_note">Notes: phone position, mic, temperature&#8230;</string>
+	<string name="run_start">Start</string>
+	<string name="run_ok">OK</string>
+	<string name="run_stop_status">&#9632; %1$d:%2$02d &#183; %3$d</string>
+	<string name="run_mark">Mark</string>
+	<string name="run_started">Recording. Play the key shown, then semi+.</string>
+	<string name="run_saved">Run saved: %1$s (files/runs)</string>
+	<string name="run_failed">Could not record the run</string>
+	<string name="run_need_strobe">Runs record in note or mixture mode</string>
+	<string-array name="run_kinds">
+		<item>Open flue</item>
+		<item>Stopped (Gedackt)</item>
+		<item>Reed</item>
+		<item>Mixture</item>
+		<item>Mutation</item>
+		<item>Other</item>
+	</string-array>
+	<string-array name="run_marks">
+		<item>Noise</item>
+		<item>Pipe faulty</item>
+		<item>Wrong key played</item>
+		<item>Text&#8230;</item>
+	</string-array>
 </resources>

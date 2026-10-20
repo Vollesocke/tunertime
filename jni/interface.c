@@ -47,6 +47,7 @@ static jfieldID fid_p_auto_note;
 static jfieldID fid_p_mixture_mode;
 static jfieldID fid_p_mixture_focus_follow;
 static jfieldID fid_p_length_mode;
+static jfieldID fid_p_run_active;
 static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_organ_mode;
 static jfieldID fid_p_focus_ratio;
@@ -312,6 +313,7 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_mixture_mode, parms, "mixture_mode", "Z")
 	STFIELD(p_mixture_focus_follow, parms, "mixture_focus_follow", "Z")
 	STFIELD(p_length_mode, parms, "length_mode", "Z")
+	STFIELD(p_run_active, parms, "run_active", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
 	STFIELD(p_organ_mode, parms, "organ_mode", "Z")
@@ -512,7 +514,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		if ((snd_buflen > 0) && !fft_mode &&
 		    ((*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) ||
 		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_mixture_mode) ||
-		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode)) &&
+		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode) ||
+		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_run_active)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
 			/* the partial the user focused on (organ mode),

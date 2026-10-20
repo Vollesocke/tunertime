@@ -114,3 +114,40 @@ Java_org_galexander_tunertime_DebugRecorder_grab(JNIEnv *env, jclass cl,
 	(*env)->SetLongArrayRegion(env, end, 0, 1, &e);
 	return n;
 }
+
+/* RunRecorder.grab_from(): the samples from input position from on, as
+ * many as fit into dst, for streaming a chromatic run to a file.  from < 0:
+ * none, just where the input is now.  pos[0]: the position of the first
+ * sample copied (later than from if those were overwritten already, a gap
+ * the caller fills), pos[1]: just after the last.  returns how many */
+JNIEXPORT jint JNICALL
+Java_org_galexander_tunertime_RunRecorder_grab_1from(JNIEnv *env, jclass cl,
+		jlong from, jshortArray dst, jlongArray pos)
+{
+	jint max = (*env)->GetArrayLength(env, dst);
+	jlong p[2];
+	jint n;
+	pthread_mutex_lock(&rec_lock);
+	long long oldest = rec_total - rec_filled;
+	if ((from < 0) || (from > rec_total)) from = rec_total;
+	if (from < oldest) from = oldest;
+	n = (jint)(rec_total - from);
+	if (n > max) n = max;
+	if ((n > 0) && (rec_len > 0)) {
+		/* rec_pos is where rec_total goes */
+		int start = (int)((rec_pos - (rec_total - from)) % rec_len);
+		if (start < 0) start += rec_len;
+		int first = rec_len - start;
+		if (first > n) first = n;
+		(*env)->SetShortArrayRegion(env, dst, 0, first, rec+start);
+		if (n > first) {
+			(*env)->SetShortArrayRegion(env, dst, first, n-first,
+						rec);
+		}
+	}
+	p[0] = from;
+	p[1] = from + n;
+	pthread_mutex_unlock(&rec_lock);
+	(*env)->SetLongArrayRegion(env, pos, 0, 2, p);
+	return n;
+}

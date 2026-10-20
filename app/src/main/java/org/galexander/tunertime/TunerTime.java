@@ -8,6 +8,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.InputType;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.Spinner;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import java.io.File;
+import java.util.Arrays;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -265,6 +275,7 @@ public class TunerTime extends Activity
 	}
 
 	public void onPause() {
+		run_stop("app paused");
 		if (wakelock.isHeld()) {
 			wakelock.release();
 		}
@@ -542,7 +553,8 @@ public class TunerTime extends Activity
 	/* Preset and FFT modes have their own navigation.  Tone and mixture
 	 * modes both follow the detector. */
 	private boolean auto_applies() {
-		return !parms.preset_mode && !parms.fft_mode;
+		return !parms.preset_mode && !parms.fft_mode &&
+			!parms.run_active;	/* the note shown is the truth */
 	}
 
 	/* from the strobe thread */
@@ -1292,6 +1304,7 @@ public class TunerTime extends Activity
 		if (parms.length_mode) {
 			length.update();
 		}
+		run_key();
 		log_changes();
 	}
 
@@ -1742,9 +1755,32 @@ public class TunerTime extends Activity
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		boolean on = RunRecorder.active();
+		menu.findItem(R.id.action_run).setVisible(!on);
+		menu.findItem(R.id.action_run_mark).setVisible(on);
+		MenuItem stop = menu.findItem(R.id.action_run_stop);
+		stop.setVisible(on);
+		if (on) {
+			int t = RunRecorder.secs();
+			stop.setTitle(getString(R.string.run_stop_status,
+				t/60, t%60, RunRecorder.num_keys()));
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_run) {
+			run_dialog();
+			return true;
+		} else if (id == R.id.action_run_stop) {
+			run_stop("stop button");
+			return true;
+		} else if (id == R.id.action_run_mark) {
+			run_mark_dialog();
+			return true;
+		} else if (id == R.id.action_settings) {
 			startActivity(new Intent(this, Settings.class));
 			return true;
 		} else if (id == R.id.action_help) {
@@ -1755,5 +1791,219 @@ public class TunerTime extends Activity
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	/* Chromatic run recording (RunRecorder): the menu starts it with a
+	 * dialog for what is recorded; while it runs, the action bar shows
+	 * the time and keys with a stop button, and a mark item.  The note
+	 * shown is the key played, stepped by hand (semi+ / mixture key+) */
+	private static final String[] RUN_KINDS = { "open", "stopped", "reed",
+		"mixture", "mutation", "other" };
+	private final Handler run_handler = new Handler();
+	private final Runnable run_tick = new Runnable() {
+		public void run() {
+			if (!RunRecorder.active()) {
+				return;
+			}
+			if (RunRecorder.limit()) {
+				run_stop("limit");
+				return;
+			}
+			if (RunRecorder.failed()) {
+				run_stop("write error");
+				Toast.makeText(TunerTime.this, R.string.run_failed,
+						Toast.LENGTH_LONG).show();
+				return;
+			}
+			invalidateOptionsMenu();
+			run_handler.postDelayed(this, 1000);
+		} };
+
+	private void run_dialog() {
+		final SharedPreferences prefs =
+			PreferenceManager.getDefaultSharedPreferences(this);
+		int pad = (int)(16*getResources().getDisplayMetrics().density);
+		LinearLayout l = new LinearLayout(this);
+		l.setOrientation(LinearLayout.VERTICAL);
+		l.setPadding(pad, pad/2, pad, 0);
+		TextView help = new TextView(this);
+		help.setText(R.string.run_help);
+		l.addView(help);
+		final EditText organ = run_field(l, R.string.run_organ,
+				prefs.getString("run_organ", ""));
+		final EditText stop = run_field(l, R.string.run_stop_name,
+				prefs.getString("run_stop", ""));
+		final Spinner kind = new Spinner(this);
+		ArrayAdapter<CharSequence> a = ArrayAdapter.createFromResource(
+			this, R.array.run_kinds,
+			android.R.layout.simple_spinner_item);
+		a.setDropDownViewResource(
+			android.R.layout.simple_spinner_dropdown_item);
+		kind.setAdapter(a);
+		kind.setSelection(Math.max(0, Arrays.asList(RUN_KINDS)
+			.indexOf(prefs.getString("run_kind", "open"))));
+		l.addView(kind);
+		final EditText footage = run_field(l, R.string.run_footage,
+			(parms.focus_ratio > 0.0d) ?
+				parms.footage_str(parms.focus_ratio).trim() : "");
+		final EditText notes = run_field(l, R.string.run_note, "");
+		ScrollView sv = new ScrollView(this);
+		sv.addView(l);
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.run_title)
+			.setView(sv)
+			.setPositiveButton(R.string.run_start,
+				new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface d, int w) {
+					RunRecorder.Meta m = new RunRecorder.Meta();
+					m.organ = organ.getText().toString();
+					m.stop = stop.getText().toString();
+					m.kind = RUN_KINDS[Math.max(0,
+						kind.getSelectedItemPosition())];
+					m.footage = footage.getText().toString();
+					m.note = notes.getText().toString();
+					prefs.edit().putString("run_organ", m.organ)
+						.putString("run_stop", m.stop)
+						.putString("run_kind", m.kind).apply();
+					run_start(m);
+				} })
+			.setNegativeButton(R.string.cancel, null)
+			.show();
+	}
+
+	private EditText run_field(LinearLayout l, int hint, String text) {
+		boolean multi = (hint == R.string.run_note);
+		EditText e = new EditText(this);
+		e.setHint(hint);
+		e.setText(text);
+		e.setInputType(InputType.TYPE_CLASS_TEXT |
+			InputType.TYPE_TEXT_FLAG_CAP_SENTENCES |
+			(multi ? InputType.TYPE_TEXT_FLAG_MULTI_LINE : 0));
+		l.addView(e);
+		return e;
+	}
+
+	private void run_start(RunRecorder.Meta m) {
+		if ((strobe == null) || parms.fft_mode || parms.preset_mode) {
+			Toast.makeText(this, R.string.run_need_strobe,
+					Toast.LENGTH_LONG).show();
+			return;
+		}
+		String before = auto_str(parms.auto_note ? 1 :
+				(parms.auto_locked ? 2 : 0), near);
+		String version = "?";
+		try {
+			android.content.pm.PackageInfo pi = getPackageManager()
+				.getPackageInfo(getPackageName(), 0);
+			version = pi.versionName + " (" + pi.versionCode + ")";
+		} catch (Exception e) {
+		}
+		StringBuilder offs = new StringBuilder();
+		if (parms.temper_offsets() == null) {
+			offs.append("none");
+		} else {
+			for (int k = 0; k < 12; k++) {
+				/* C4 is semitone 39 */
+				offs.append((k > 0) ? " " : "").append(
+					String.format(Locale.US, "%.1f",
+					parms.temper_offset((39+k)*100*U)/10.0d));
+			}
+		}
+		StringBuilder rows = new StringBuilder();
+		for (int i = 0; i < parms.num_strobes; i++) {
+			rows.append((i > 0) ? ", " : "").append(
+				parms.footage_str(parms.row_ratio(i)).trim());
+		}
+		preset p = preset.find(parms.preset_id);
+		String h = "app " + version + "\n" +
+			"audio " + parms.audio_source + " / " +
+				parms.microphone + "\n" +
+			"A_freq " + (parms.A_freq/10.0) + "\n" +
+			"stretch " + (parms.stretch()/10.0) + " c/oct\n" +
+			"temperament " + ((p != null) ? p.name : "none") + "\n" +
+			"temper_offsets " + offs + "\n" +
+			"organ_mode " + parms.organ_mode + "\n" +
+			"mixture_mode " + parms.mixture_mode + "\n" +
+			"focus_ratio " + parms.focus_ratio + "\n" +
+			"rows " + rows + "\n" +
+			"auto_before " + before + "\n";
+		auto_off();	/* the note is stepped by hand */
+		if (!RunRecorder.start(this, m, h)) {
+			Toast.makeText(this, R.string.run_failed,
+					Toast.LENGTH_LONG).show();
+			return;
+		}
+		cause = "run start";
+		update_status();
+		invalidateOptionsMenu();
+		run_handler.postDelayed(run_tick, 1000);
+		Toast.makeText(this, R.string.run_started,
+				Toast.LENGTH_LONG).show();
+	}
+
+	/* the key shown, for the run's truth (update_status()) */
+	private void run_key() {
+		if (!RunRecorder.active()) {
+			return;
+		}
+		int k;
+		double hz;
+		if (parms.mixture_mode) {
+			k = nearest_step(parms.mixture_cents);
+			hz = cents_to_freq(step_cents(k), 1);
+		} else {
+			k = (parms.note_cents + 50*U) / (100*U);
+			hz = cents_to_freq(parms.strobe_cents, 1);
+		}
+		RunRecorder.key(k, DebugRecorder.name(k*100*U), hz);
+	}
+
+	private void run_stop(String how) {
+		File f = RunRecorder.stop(how);
+		run_handler.removeCallbacks(run_tick);
+		invalidateOptionsMenu();
+		if (f != null) {
+			cause = "run end";
+			update_status();
+			Toast.makeText(this, getString(R.string.run_saved,
+				f.getName().replace(".txt", "")),
+				Toast.LENGTH_LONG).show();
+		}
+	}
+
+	private void run_mark_dialog() {
+		final String[] items = getResources().getStringArray(
+						R.array.run_marks);
+		final String[] what = { "noise", "pipe bad", "key wrong",
+					"other" };
+		/* the key the mark is for, as the moment is taken now */
+		final int at = RunRecorder.num_keys();
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.run_mark)
+			.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface d, int w) {
+					if (w < what.length - 1) {
+						RunRecorder.mark("key " + at + ": " +
+								what[w]);
+						return;
+					}
+					final EditText e = new EditText(
+							TunerTime.this);
+					new AlertDialog.Builder(TunerTime.this)
+						.setTitle(R.string.run_mark)
+						.setView(e)
+						.setPositiveButton(R.string.run_ok,
+						    new DialogInterface.OnClickListener() {
+						    public void onClick(
+							DialogInterface d2, int w2) {
+							RunRecorder.mark("key " + at +
+							  ": " + e.getText());
+						    } })
+						.setNegativeButton(R.string.cancel,
+							null)
+						.show();
+				} })
+			.setNegativeButton(R.string.cancel, null)
+			.show();
 	}
 }

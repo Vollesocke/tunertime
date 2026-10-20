@@ -30,6 +30,8 @@ public class EventLog {
 	private static final double[] vc = new double[MAX];
 	private static final String[] text = new String[MAX];
 	private static int head = 0, count = 0;	/* head: next to write */
+	/* events added since the app started, for RunRecorder.drain() */
+	private static long seq = 0;
 	/* the detector hints in effect before the oldest event kept: the
 	 * native side logs a hint only when it changes, so the one in effect
 	 * at a recording's start may be older than the log (or than 'on') */
@@ -43,6 +45,13 @@ public class EventLog {
 	/* the position in the input now (jni/record.c), for events off the
 	 * strobe thread */
 	private static native long sample_pos();
+	static long now_pos() {
+		try {
+			return sample_pos();
+		} catch (UnsatisfiedLinkError e) {
+			return 0;
+		}
+	}
 
 	/* strobe thread */
 	public static void estimate(long p, double hz, double conf) {
@@ -104,6 +113,7 @@ public class EventLog {
 		text[head] = s;
 		head = (head + 1) % MAX;
 		count = Math.min(count + 1, MAX);
+		seq++;
 	}
 
 	public static final String HEADER =
@@ -148,35 +158,63 @@ public class EventLog {
 		}
 		for (int j = 0; j < count; j++) {
 			int i = (first + j) % MAX;
-			long p = pos[i] - start;
-			if ((pos[i] < start) || (pos[i] > end)) {
-				continue;
-			}
-			sb.append(String.format(Locale.US, "%9.5f %8d  ",
-					(double)p/rate, p));
-			if (kind[i] == EST) {
-				if (va[i] > 0.0d) {
-					sb.append(String.format(Locale.US,
-						"est   %8.2f  %s  %.2f\n",
-						va[i], name(va[i]), vb[i]));
-				} else {
-					sb.append(String.format(Locale.US,
-						"est          -  -              " +
-						"%.2f\n", vb[i]));
-				}
-			} else if (kind[i] == DRIFT) {
-				sb.append(String.format(Locale.US,
-					"drift %s %+.2fc %.3fs\n",
-					parms.footage_str(va[i]).trim(), vb[i],
-					vc[i]));
-			} else if (kind[i] == HINT) {
-				sb.append(String.format(Locale.US,
-					"hint %.4f %.3f\n", va[i], vb[i]));
-			} else {
-				sb.append("ui    ").append(text[i]).append('\n');
+			if ((pos[i] >= start) && (pos[i] <= end)) {
+				line(sb, i, start, rate);
 			}
 		}
 		return sb.toString();
+	}
+
+	/* event i as one timeline line, its time from sample start */
+	private static void line(StringBuilder sb, int i, long start,
+					int rate) {
+		long p = pos[i] - start;
+		sb.append(String.format(Locale.US, "%9.5f %8d  ",
+				(double)p/rate, p));
+		if (kind[i] == EST) {
+			if (va[i] > 0.0d) {
+				sb.append(String.format(Locale.US,
+					"est   %8.2f  %s  %.2f\n",
+					va[i], name(va[i]), vb[i]));
+			} else {
+				sb.append(String.format(Locale.US,
+					"est          -  -              " +
+					"%.2f\n", vb[i]));
+			}
+		} else if (kind[i] == DRIFT) {
+			sb.append(String.format(Locale.US,
+				"drift %s %+.2fc %.3fs\n",
+				parms.footage_str(va[i]).trim(), vb[i],
+				vc[i]));
+		} else if (kind[i] == HINT) {
+			sb.append(String.format(Locale.US,
+				"hint %.4f %.3f\n", va[i], vb[i]));
+		} else {
+			sb.append("ui    ").append(text[i]).append('\n');
+		}
+	}
+
+	/* RunRecorder: the events added since sequence number from[0], one
+	 * line each, their times from sample start; from[0] is moved on.
+	 * returns how many were lost (overwritten before being drained) */
+	public static synchronized long drain(long[] from, long start,
+					int rate, StringBuilder sb) {
+		long lost = 0;
+		if (seq - from[0] > count) {
+			lost = seq - from[0] - count;
+			from[0] = seq - count;
+		}
+		for (long k = from[0]; k < seq; k++) {
+			line(sb, (int)((head - (seq - k)) % MAX + MAX) % MAX,
+				start, rate);
+		}
+		from[0] = seq;
+		return lost;
+	}
+
+	/* the sequence number of the next event */
+	public static synchronized long seq() {
+		return seq;
 	}
 
 	/* the first estimate from sample start on, in seconds from start,
