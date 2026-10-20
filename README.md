@@ -17,7 +17,7 @@ this fork.
   and the spacing of neighbouring peaks, so a missing or weak fundamental is
   found, and stopped pipes with odd partials only do not come out an octave
   high), gated on level and on the share of peak energy that lies on the
-  winner's harmonics. Down to C0 (32' C). Note mode follows after 3 agreeing
+  winner's harmonics. Down to C0 (32' C). Note mode follows after 4 agreeing
   estimates, holds on silence and keeps the cent offset set by hand. The
   "auto" button cycles off → follow → lock → follow; a long press turns it
   off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
@@ -78,19 +78,23 @@ this fork.
   always affects note mode. For Pythagorean and meantone tunings, tap the
   temperament name to choose a temporary wolf fifth; that choice resets when
   another temperament is selected.
-- **Historical temperaments** (`temperaments.java`): in addition to equal,
-  Pythagorean, ¼- and ⅙-comma meantone, Werckmeister III, Kirnberger III,
-  Vallotti, Young II and Kellner, the list includes the Rohlf charts for
-  Young-Sorge, near-equal, Gräf-Sorge, modified Vallotti, Wegscheider/Reinfeld,
-  Johannes Lang, Thomas Rothert, Frischknecht II, and modified Neidhardt,
-  Werckmeister IV/V and modified Werckmeister 1691. Neidhardt's village (1732),
-  small-town (1732) and large-town (1724) tunings are included as well.
-  Tables are normalized to A = 0 so the A-frequency setting still means the A
-  you hear. Equivalent entries already in the app are not duplicated.
+- **Historical temperaments** (`temperaments.java`): equal, Pythagorean, ¼-
+  and ⅙-comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II
+  and Kellner, and all charts of
+  [Orgelbau Rohlf](http://www.orgelbau-rohlf.de/themen/stimmungen/stimmungen.htm):
+  Young-Sorge, near-equal, Gräf-Sorge, modified Vallotti,
+  Wegscheider/Reinfeld, Johannes Lang, Thomas Rothert, Frischknecht II,
+  Neidhardt (modified, village 1732, small town 1732, large town 1724),
+  modified Werckmeister 1691 (= Rohlf's Niederrodenbach) and Werckmeister
+  III/IV/V in Rohlf's numbering, which is one off the usual names (his 1691 is
+  the usual III, his III the usual IV). Tables are normalized to A = 0 so the
+  A-frequency setting still means the A you hear.
 - **Mixture mode follows detected notes** like tone mode, displays the detected
-  pitch and has octave-step buttons. Focus sets the offset reference, while
-  note recognition is independent of the focused partial. Detections more than
-  20 cents from the nearest expected mixture note are rejected.
+  pitch and has key and octave buttons. A key the follow moves to is measured
+  again, from 0.5 s after the onset. The detector looks for the focused
+  (reference) rank; the key moves by a whole tone at most and octaves fold, so
+  that another rank sounding alone does not move it, and detections more than
+  20 cents from the mixture's measured pitch are rejected.
 - **Organ display refinements**: German organ note labels use Cs/Ds/Fs/Gs;
   length mode presents the cut/add distance in millimetres with the
   stopped/open reference.
@@ -98,10 +102,6 @@ this fork.
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
   exported file.
-- **Historical temperaments** (`temperaments.java`): Pythagorean, ¼ and ⅙
-  comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II and
-  Kellner, normalised to A = 0 so the A-frequency setting still means the A
-  you hear.
 - **Neutral dark UI** (`res/values/colors.xml`, theme `Tuner`), with the
   native drawing in `jni/fft.c` and `jni/strobe.c` using the same palette.
   Both the strobe (new default colour scheme) and the FFT spectrogram use
@@ -109,22 +109,20 @@ this fork.
   Settings.
 - **Android 15+ edge-to-edge fixes**: no screen draws under the status or
   navigation bar, and the strobe tab bar no longer covers the last row.
-- **`dev` build type**: `org.galexander.tunertime.dev`, labelled
-  "TunerTime dev", which installs next to the Play Store app with its own
-  settings and presets.
-
-The latest Onno build is published in the fork's
-[v18.2-organ-onno.1 release](https://github.com/Slaughthammer/tunertime/releases/tag/v18.2-organ-onno.1).
-Its APK uses the package `org.galexander.tunertime.local` and the local
-Android debug key; it updates local builds signed with that key and installs
-alongside the Play Store version.
+- **`dev` and `local` build types**: `org.galexander.tunertime.dev`
+  (`assembleDev`, the releases) and `org.galexander.tunertime.local`
+  (`assembleLocal`, Onno's own builds), labelled "TunerTime Organ", which
+  install next to the Play Store app with their own settings and presets.
+  Each updates only an app signed with the same key, so keep building with
+  the keystore the installed app came from.
 
 Open ideas from users, in `NOTES`: octave advance when stepping past the end
 of a preset, and CSV import/export.
 
 ## Building
 
-You need the Android SDK and NDK (tested with NDK 28.2) and JDK 17.
+You need the Android SDK (platform 36, build-tools 35), the NDK (the
+releases use r21, 21.1.6352462; r28 works too) and JDK 17.
 
 1. Create `local.properties` with `sdk.dir=/path/to/Android/Sdk`.
 2. Point `keystore.properties` at a keystore. The Android debug keystore
