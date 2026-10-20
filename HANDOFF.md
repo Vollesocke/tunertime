@@ -1,8 +1,44 @@
 # Handoff: TunerTime Organ
 
-Status as of 19 Oct 2026, release **v18.2-organ**. Everything is on `main`
-(GitHub Vollesocke/tunertime); `organ` is the older integration branch that
-became v18.0.
+Status as of 20 Oct 2026: release **v18.2-organ** is on `main` (GitHub
+Vollesocke/tunertime). **v18.3-organ** is being prepared on branch
+`onno-workbench` (PR #2): Onno's commits from his fork, and the fixes after
+reviewing them (below). `organ` is the older integration branch that became
+v18.0.
+
+## Review fixes for v18.3 (20 Oct 2026, branch onno-workbench)
+
+- **Mixture timing** back to 2 s (3 s below 8'). Onno's trailing window
+  stopped after about 0.7 s on high rows and overflowed its buffer on low
+  ones. A measurement that follow starts skips the first 0.5 s of the onset.
+- **Mixture follow:** the detector gets the focus again. Without it, a
+  mixture whose loudest rank is a fifth read a fifth off (sim_organ).
+  Instead, the key moves by a whole tone at most and octaves fold
+  (`MIX_SEMIS`), so another rank sounding alone does not move it. The 20 c
+  window now sits around the mixture's measured pitch, not the note-mode
+  offset. New scenario `sim_organ "Mixture chromatic"`.
+- **Debug recordings:** the timeline starts with the hints in effect, and
+  `--hints` only appears in the replay line when there are any.
+  `test_pitch` no longer fails on files without hints.
+- **Temperaments:** Rohlf's Werckmeister III (the usual IV) was missing.
+  Rohlf's III/IV/V are now marked "(Rohlf)"; his numbering is one off the
+  usual names. Niederrodenbach is the same table as modified Werckmeister
+  1691. All 23 Rohlf charts are in.
+- **Wolf picker** also for presets saved in whole cents.
+- **Resources:** length-mode symbols moved to strings.xml, unused strings
+  removed, non-ASCII as entities.
+- **Build:** `local` build type (`assembleLocal`, `.local`); version
+  18.3-organ (code 21).
+- **The ">90 cent without moving to the next note" report** (Onno, 19 Oct):
+  v18.2 reset the agreement count on every empty estimate, and on real organs
+  about half the estimates are empty. Replaying the 19 Oct recordings, Onno's
+  weak-confidence path in `pitch.c` already fixes most of it. The corrected
+  note is reached in 43 of 75 recordings, against 17 with v18.2; tolerating
+  gaps on top changes nothing. Most of the rest are silence after a hand
+  step. Trompete locks on a fifth or a twelfth below (f0/2, f0/3 rule).
+
+Field recordings of 19 Oct (two organs, 79 WAV+TXT, Onno's notes on which
+stop was played when) are attached to issue #1.
 
 ## Onno session update (19 Oct 2026)
 
@@ -73,13 +109,27 @@ wanted.
 
 ## Next steps
 
-1. **Onno tests in a church** with v18.2. Fetch his recordings
-   (`adb pull …/files/recordings`), replay them with `test_pitch -t`, and tune
-   the detector and thresholds on them (proposal 2 below).
-2. **Tidy up the menus** after his tests. There is much more going on than in
+1. **Finish v18.3:** run the UI layout tests (the Preset tab is now the
+   workbench, mixture rows have a third button), merge PR #2, and release.
+   Then ask Onno to retest, above all the ">90 cent" case and mixture follow.
+2. **The 19 Oct recordings as a regression set** (issue #1): label each one
+   with the note it was corrected to, score `test_pitch` on them, and tune on
+   that:
+   - Trompete reads a fifth or a twelfth low (the f0/2, f0/3 rule).
+   - Rohrflöte and Gedackt are slow (weak fundamental).
+   - Many "octave errors" are 4' and 16' stops sounding an octave from the
+     key. That speaks for stop profiles (proposal 5).
+3. **Onno's list of 19 Oct, still open:**
+   - meantone with more than 12 notes (subsemitones D#/Eb, G#/Ab), with one
+     menu to place the wolf or pick the notes, and German names with "is"
+     for such tunings;
+   - the strobe's cent readout only in mixture mode;
+   - the Preset tab has no note stepping since it became the workbench.
+     Ask Onno whether that is right.
+4. **Tidy up the menus** after his tests. There is much more going on than in
    the original app. Onno sees the features as deliberate, long-considered
    ideas, not feature creep, so this is about arrangement, not removal.
-3. **Mutations in follow mode:** with continuity, a Quinte 2 2/3' played
+5. **Mutations in follow mode:** with continuity, a Quinte 2 2/3' played
    chromatically without its row tapped needs a hand correction on every key
    (simulator: 0/16 right without help, the old rule 15/16). With the row
    tapped it is 16/16. Check with Onno whether tapping the row is acceptable
@@ -92,9 +142,9 @@ are answered and implemented:
 
 | # | Topic | Decision |
 |---|---|---|
-| 1 | Length mode and temperature | No change. The tuner allows for the temperature by hand via the A frequency (~0.7 Hz/K); the T± setting only scales the speed of sound. |
+| 1 | Length mode and temperature | No change. The tuner allows for the temperature by hand via the A frequency (~0.7 Hz/K). Since 06f3337 (Onno, one-line length readout) the T± buttons are gone and the speed of sound is taken at 18 °C. |
 | 2 | Octave correction in follow mode | Current note only. After a hand correction, continuity: detections are taken in the octave nearest the note shown and move it only within a fourth (±500 c). Ends on auto off/on or 10 s of silence. `sim_organ -f old/new` compares. Mutations: focus their row. |
-| 3 | Cent readout top right in organ mode | Tapped row: its measured offset. No row: "target −05.9c", the set target's offset from equal temperament. |
+| 3 | Cent readout top right in organ mode | Tapped row: its measured offset. No row: nothing since 06f3337 (the target and temperament are in the title); Onno wants it in mixture mode only. |
 | 4 | Debug recordings | Same triggers; the .txt now has a timeline of estimates, strobe drift and UI events (`EventLog.java`), on the WAV's time base; `test_pitch -t` replays on the same base. |
 | 5 | Wording for stopped pipes | Unchanged. |
 | 6 | Mixture step by step | Ton± focuses the reference row last measured again. |
@@ -136,10 +186,14 @@ numbers from before the simulation fixes and DET_AGREE 4.
 
 ## Building on this PC
 
-Details in README "Building"; what is specific here:
+Details in README "Building"; what is specific here. Since 20 Oct the
+checkout is `C:\Users\Volker\Documents\tunertime`. The old profile, with
+the previous checkout and its agent worktrees, is on `E:\Users\Volker`.
 
-- **JDK:** `JAVA_HOME` defaults to JDK 11, which fails. Use
-  `export JAVA_HOME="C:\\Program Files\\Java\\jdk-22"`.
+- **JDK 17:** `%LOCALAPPDATA%\jdk17` (Temurin, unpacked, not installed).
+  `export JAVA_HOME="$(cygpath -w "$LOCALAPPDATA/jdk17")"`.
+- **SDK** in `%LOCALAPPDATA%\Android\Sdk`: platform 36, build-tools 35 and
+  36, platform-tools, the emulator and system images (copied from E:).
 - **NDK 21** (`%LOCALAPPDATA%\Android\Sdk\ndk\21.1.6352462`), called through
   the 8.3 short path:
   ```sh
@@ -148,12 +202,16 @@ Details in README "Building"; what is specific here:
   ./gradlew assembleDev --offline
   ```
 - **Network:** the network here drops TLS connections, especially from Java.
-  Gradle's cache is complete, so always build with `--offline`. Fetch
-  downloads with curl in a retry loop.
+  The Gradle cache in `~/.gradle` is copied from E: and complete, so always
+  build with `--offline`. Fetch downloads with curl in a retry loop.
+- **C tools** (`test_pitch`, `sim_organ`): there is no gcc. `pip install
+  ziglang` into a venv, then `python -m ziglang cc -O2 -Ijni -Itools/hostjni
+  …` in place of gcc.
 - **Signing key:** `keystore.properties` points to
-  `C:\Users\Volker\tuner\keys\debug.keystore`, the other PC's debug key
-  (SHA-256 `21:42:89:17:…:49:DC`). Builds from either PC update the same
-  installed app. Keep `keys\` out of the repo.
+  `C:\Users\Volker\tuner\keys\debug.keystore` (copied from
+  `E:\Users\Volker\tuner\keys`; SHA-256 `21:42:89:17:…:49:DC`). The releases
+  and the dev app on the S25 are signed with it. Keep `keys\` out of the repo.
+  Onno's `.local` app is signed with his own debug key.
 - **Local files out of git:** `local.properties`, `keystore.properties` and
   `app/src/main/lib` are marked `skip-worktree`. Build output, `.claude/` and
   `obj/` are in `.git/info/exclude`.
@@ -177,7 +235,7 @@ Details in README "Building"; what is specific here:
   `app/src/androidTest/assets/known_ui_issues.txt`.
 - **Detector bench:** `tools/test_pitch.c` (537 synthetic cases; also replays
   WAVs).
-- **Realistic simulator:** `tools/sim_organ.c` (46 scenarios: reverb, wind,
+- **Realistic simulator:** `tools/sim_organ.c` (47 scenarios: reverb, wind,
   speech, phone mic, mixtures, chromatic runs). It mirrors the Java constants
   DET_AGREE, follow continuity (`-f new`), mixture timing and length logic;
   keep it in sync when changing them.
@@ -192,9 +250,10 @@ Details in README "Building"; what is specific here:
 
 ## Housekeeping
 
-- 14 agent worktrees are still under `.claude/worktrees/`, with their
-  branches (`worktree-agent-…` and the feature branches). Everything in them
-  is merged into `main`. Remove them with `git worktree remove <path>` and
+- 14 agent worktrees are still under `.claude/worktrees/` of the old
+  checkout (`E:\Users\Volker\tuner\tunertime`), with their branches
+  (`worktree-agent-…` and the feature branches). Everything in them is merged
+  into `main`. Remove them with `git worktree remove <path>` and
   `git branch -d <branch>` when no longer needed.
 - Play Store publishing is planned for later, with Greg's approval. It needs:
   - its own app ID and signing key
