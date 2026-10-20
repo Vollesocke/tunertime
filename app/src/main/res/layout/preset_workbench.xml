@@ -27,10 +27,13 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+                <!-- wraps: temperament names are long next to the
+                     buttons ("Neidhardt f&#252;r die gro&#223;e Stadt"),
+                     above all at large font sizes -->
                 <TextView android:id="@+id/preset_workbench_static_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
+                    android:maxLines="3"
                     android:ellipsize="end"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textStyle="bold" />

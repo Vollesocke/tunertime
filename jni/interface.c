@@ -45,6 +45,7 @@ static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_num_strobes;
 static jfieldID fid_p_auto_note;
 static jfieldID fid_p_mixture_mode;
+static jfieldID fid_p_mixture_focus_follow;
 static jfieldID fid_p_length_mode;
 static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_organ_mode;
@@ -309,6 +310,7 @@ jni_init(JNIEnv *env_)
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
 	STFIELD(p_auto_note, parms, "auto_note", "Z")
 	STFIELD(p_mixture_mode, parms, "mixture_mode", "Z")
+	STFIELD(p_mixture_focus_follow, parms, "mixture_focus_follow", "Z")
 	STFIELD(p_length_mode, parms, "length_mode", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
@@ -514,15 +516,20 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
 			/* the partial the user focused on (organ mode),
-			 * looked for near where the shown note puts it; in
-			 * mixture mode too, where it is the reference rank
-			 * measured (without it a mixture whose loudest rank
-			 * is a fifth reads a fifth off, tools/sim_organ.c),
-			 * and TunerTime.on_pitch() keeps the key from
-			 * jumping when another rank sounds alone */
-			double detector_focus = (*env)->GetStaticDoubleField(env,
-					cl_parms, fid_p_focus_ratio);
-			double detector_expect = pitch_expect;
+			 * looked for near where the shown note puts it.  In
+			 * mixture mode the focus is the reference rank
+			 * measured, and the key is detected independent of
+			 * it (Onno), unless Settings asks to follow the
+			 * reference rank (then TunerTime.on_pitch() keeps the
+			 * key from jumping when another rank sounds alone) */
+			jboolean unfocused = (*env)->GetStaticBooleanField(env,
+					cl_parms, fid_p_mixture_mode) &&
+				!(*env)->GetStaticBooleanField(env, cl_parms,
+					fid_p_mixture_focus_follow);
+			double detector_focus = unfocused ? 0.0 :
+				(*env)->GetStaticDoubleField(env, cl_parms,
+					fid_p_focus_ratio);
+			double detector_expect = unfocused ? 0.0 : pitch_expect;
 			long long at = record_total() - snd_buflen;
 			pitch_hint(detector_focus, detector_expect);
 			if ((detector_focus != logged_focus) ||

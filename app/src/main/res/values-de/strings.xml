@@ -263,6 +263,9 @@
 	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
 	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
 	<string name="cat_debug">Debug</string>
+	<string name="mixture_focus_follow">Mixtur: dem Bezugschor folgen</string>
+	<string name="mixture_focus_follow_on">Die Taste wird am fokussierten Chor (Bezug) erkannt und bewegt sich h&#246;chstens um einen Ganzton; Oktaven und andere allein klingende Ch&#246;re verschieben sie nicht. Gr&#246;&#223;ere Schritte von Hand.</string>
+	<string name="mixture_focus_follow_off">Die Taste wird an dem erkannt, was klingt, unabh&#228;ngig vom fokussierten Chor.</string>
 	<string name="debug_rec">Debug-Aufnahmen</string>
 	<string name="debug_rec_summary">Wird der verfolgte Ton von Hand korrigiert, 7 s Mikrofonsignal als WAV speichern (zur Verbesserung der Tonerkennung). Abholen mit: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
 

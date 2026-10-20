@@ -62,6 +62,14 @@
 		android:defaultValue="@array/footage_default" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/cat_debug">
+	<!-- two ways for mixture mode to follow the key, to compare in
+	     practice (TunerTime.on_pitch) -->
+	<CheckBoxPreference
+		android:key="mixture_focus_follow"
+		android:title="@string/mixture_focus_follow"
+		android:summaryOn="@string/mixture_focus_follow_on"
+		android:summaryOff="@string/mixture_focus_follow_off"
+		android:defaultValue="false" />
 	<CheckBoxPreference
 		android:key="debug_rec"
 		android:title="@string/debug_rec"

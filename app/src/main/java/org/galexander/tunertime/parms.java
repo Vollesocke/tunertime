@@ -67,6 +67,10 @@ public class parms {
 		 * is wherever the focused partial was measured to be, in
 		 * tenths of a cent like strobe_cents */
 	static public boolean mixture_mode = false;
+		/* Settings: mixture mode's follow looks for the focused
+		 * (reference) rank and keeps to the key (TunerTime.MIX_SEMIS);
+		 * off (Onno's, the default): the detector ignores the focus */
+	static public volatile boolean mixture_focus_follow = false;
 	static public int mixture_cents = 48000;
 		/* the footage (row ratio, like focus_ratio) mixture_cents was
 		 * last measured on; 0 = not measured since the last reset or
@@ -171,6 +175,8 @@ public class parms {
 		microphone = prefs.getString("microphone", "auto");
 		mixture_mode = organ_mode &&
 				prefs.getBoolean("mixture_mode", false);
+		mixture_focus_follow = prefs.getBoolean("mixture_focus_follow",
+							false);
 		mixture_cents = prefs.getInt("mixture_cents10", strobe_cents);
 		mixture_ref = prefs.getFloat("mixture_ref", 0.0f);
 		/* TunerTime.organ_resume() drops it if the row is not shown */

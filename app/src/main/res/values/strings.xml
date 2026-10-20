@@ -275,6 +275,9 @@
 	<string name="footages">Footages shown</string>
 	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
 	<string name="cat_debug">Debug</string>
+	<string name="mixture_focus_follow">Mixture: follow the reference rank</string>
+	<string name="mixture_focus_follow_on">The key is detected from the focused (reference) rank and moves by a whole tone at most; octaves and other ranks sounding alone do not move it. Bigger steps by hand.</string>
+	<string name="mixture_focus_follow_off">The key is detected from whatever sounds, independent of the focused rank.</string>
 	<string name="debug_rec">Debug recordings</string>
 	<string name="debug_rec_summary">When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
 
