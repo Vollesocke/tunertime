@@ -119,6 +119,21 @@ public class EventLog {
 		"#  ui    what the app did and why (stamped when it was " +
 			"handled, input latency not taken off)\n";
 
+	/* the detector hints in effect at sample p: { focus ratio,
+	 * expected note in Hz }, the focus < 0 if none is known */
+	public static synchronized double[] hint_at(long p) {
+		int first = (head - count + MAX) % MAX;
+		double f = base_focus, e = base_expect;
+		for (int j = 0; j < count; j++) {
+			int i = (first + j) % MAX;
+			if ((kind[i] == HINT) && (pos[i] < p)) {
+				f = va[i];
+				e = vb[i];
+			}
+		}
+		return new double[] { f, e };
+	}
+
 	/* the events from sample start to end, one line each */
 	public static synchronized String timeline(long start, long end,
 							int rate) {
@@ -126,17 +141,10 @@ public class EventLog {
 		int first = (head - count + MAX) % MAX;
 		/* the hints in effect at the start, as the first line, so
 		 * that test_pitch --hints replays from the right ones */
-		double f = base_focus, e = base_expect;
-		for (int j = 0; j < count; j++) {
-			int i = (first + j) % MAX;
-			if ((kind[i] == HINT) && (pos[i] < start)) {
-				f = va[i];
-				e = vb[i];
-			}
-		}
-		if (f >= 0.0d) {
+		double[] h = hint_at(start);
+		if (h[0] >= 0.0d) {
 			sb.append(String.format(Locale.US, "%9.5f %8d  " +
-					"hint %.4f %.3f\n", 0.0d, 0L, f, e));
+					"hint %.4f %.3f\n", 0.0d, 0L, h[0], h[1]));
 		}
 		for (int j = 0; j < count; j++) {
 			int i = (first + j) % MAX;

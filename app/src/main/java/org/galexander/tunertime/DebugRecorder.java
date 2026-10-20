@@ -112,6 +112,10 @@ public class DebugRecorder {
 		final File wav = new File(dir, base + ".wav");
 		final File txt = new File(dir, base + ".txt");
 		final String timeline = EventLog.timeline(start, end[0], rate);
+		/* the hints at the start also on the replay line, so that it
+		 * replays the same without --hints (the app gives the
+		 * detector the shown note's Hz with the focus, jni/interface.c) */
+		final double[] h0 = EventLog.hint_at(start);
 		final String info =
 			"time " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
 				Locale.US).format(when) + "\n" +
@@ -135,8 +139,8 @@ public class DebugRecorder {
 				((t_est >= 0.0) ? String.format(Locale.US,
 					"-t %.5f ", t_est) : "") +
 				base + ".wav" +
-				((parms.focus_ratio > 0.0) ?
-				 (" " + parms.focus_ratio) : "") +
+				((h0[0] > 0.0) ? String.format(Locale.US,
+					" %.4f %.3f", h0[0], h0[1]) : "") +
 				(timeline.contains(" hint ") ?
 				 (" --hints " + base + ".txt") : "") + "\n" +
 			"\n" + EventLog.HEADER + timeline;
