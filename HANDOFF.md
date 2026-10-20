@@ -1,12 +1,12 @@
 # Handoff: TunerTime Organ
 
-Status as of 20 Oct 2026: release **v18.2-organ** is on `main` (GitHub
-Vollesocke/tunertime). **v18.3-organ** is being prepared on branch
-`onno-workbench` (PR #2): Onno's commits from his fork, and the fixes after
-reviewing them (below). `organ` is the older integration branch that became
-v18.0.
+Status as of 20 Oct 2026: release
+[**v18.3-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.3-organ)
+is on `main` (GitHub Vollesocke/tunertime). It holds Onno's commits from his
+fork (PR #2) and the fixes after reviewing them (below). The APK is installed
+on the S25. `organ` is the older integration branch that became v18.0.
 
-## Review fixes for v18.3 (20 Oct 2026, branch onno-workbench)
+## Review fixes in v18.3 (20 Oct 2026)
 
 Onno is *the* user of this app; Volker only helps. Where Onno changed
 behaviour on purpose, that is the requirement. Fix bugs in it, measure it,
@@ -123,9 +123,10 @@ wanted.
 
 ## Next steps
 
-1. **Finish v18.3:** run the UI layout tests (the Preset tab is now the
-   workbench, mixture rows have a third button), merge PR #2, and release.
-   Then ask Onno to retest, above all the ">90 cent" case and mixture follow.
+1. **Onno retests v18.3**, above all the ">90 cent" case, and mixture
+   follow with the setting off and on. His `.local` app updates with
+   `assembleLocal` signed with his key. The UI tests ran on tt_fairphone4
+   only; tt_galaxy_s25 is still to do.
 2. **The 19 Oct recordings as a regression set** (issue #1): label each one
    with the note it was corrected to, score `test_pitch` on them, and tune on
    that:
