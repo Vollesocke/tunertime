@@ -1418,12 +1418,12 @@ static void sc_mix_chrom(void) {
 	S->mixmode = 1;
 	for (i = 0; i < 4; i++) {	/* MAXK keys */
 		for (r = 0; r < 4; r++) {
-			int k = key(C3 + i, t, 2.5);
+			int k = key(C3 + i, t, 3.5);
 			int a = pipe(k, f[r], 2.0, OPEN, 2000, 0.4);
 			S->k[k].focus = 4.0;
 			S->k[k].truth = a;
 			S->k[k].pc_only = 1;
-			t += 3.0;
+			t += 4.2;
 		}
 	}
 }
