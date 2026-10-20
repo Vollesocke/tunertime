@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/temperament_heading"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <!-- wraps: temperament names are long next to the
+                     buttons ("Neidhardt f&#252;r die gro&#223;e Stadt"),
+                     above all at large font sizes -->
+                <TextView android:id="@+id/preset_workbench_static_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="3"
+                    android:ellipsize="end"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+                <Button android:id="@+id/preset_workbench_wolf"
+                    style="@style/Tuner.Button.Panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="56dp"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="8dp"
+                    android:textAllCaps="false"
+                    android:maxLines="2"
+                    android:onClick="do_choose_wolf"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </LinearLayout>
+        <Button
+            style="@style/Tuner.Button.Panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="72dp"
+            android:text="@string/temperament_select"
+            android:onClick="do_preset_select" />
+        <Button
+            style="@style/Tuner.Button.Panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="72dp"
+            android:text="@string/temperament_edit"
+            android:onClick="do_preset_edit" />
+    </LinearLayout>
+
+    <TextView android:id="@+id/preset_workbench_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="6dp"
+        android:textColor="@color/text_muted"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:background="@color/surface"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="8dp"
+            android:textStyle="bold"
+            android:text="@string/preset_note_column" />
+        <TextView
+            android:layout_width="96dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:paddingRight="8dp"
+            android:textStyle="bold"
+            android:text="@string/preset_deviation_column" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+        <LinearLayout android:id="@+id/preset_workbench_notes"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
+
+</LinearLayout>

@@ -5,19 +5,32 @@
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     >
-    <!-- vertical, so the strobe-mode tab bar added below the surface
-	 never covers the bottom strobe row -->
-    <LinearLayout android:id="@+id/surface_frame"
+    <!-- the strobe (or the preset workbench) with, in preset mode, its
+	 navigation below; as layout/main.xml, which TunerTime expects -->
+    <LinearLayout
 	android:orientation="vertical"
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
 	android:layout_weight="5">
-	<SurfaceView android:id="@+id/strobe"
+	<!-- vertical, so the strobe-mode tab bar added below the surface
+	     never covers the bottom strobe row -->
+	<LinearLayout android:id="@+id/surface_frame"
+	    android:orientation="vertical"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
-	    android:layout_weight="1" />
+	    android:layout_weight="1">
+	    <SurfaceView android:id="@+id/strobe"
+		android:layout_width="fill_parent"
+		android:layout_height="1dp"
+		android:layout_weight="1" />
+	</LinearLayout>
+	<FrameLayout android:id="@+id/preset_nav_holder"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:minHeight="56dp"
+	    android:visibility="gone" />
     </LinearLayout>
-    <LinearLayout
+    <LinearLayout android:id="@+id/controls_frame"
 	android:layout_height="fill_parent"
 	android:layout_width="1dp"
 	android:layout_weight="2"
@@ -26,7 +39,7 @@
 	    android:layout_height="1dp"
 	    android:layout_width="fill_parent"
 	    android:layout_weight="3" />
-	<LinearLayout
+	<LinearLayout android:id="@+id/main_controls_side"
 	    android:layout_height="1dp"
 	    android:layout_width="fill_parent"
 	    android:layout_weight="1"

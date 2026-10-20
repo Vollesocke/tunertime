@@ -51,6 +51,10 @@
 				 * harmonics; the synthetic tones of
 				 * tools/test_pitch.c score 0.84-1,
 				 * the lowest with mains hum */
+#define WEAK_CONF	0.60	/* weaker series are considered only after
+				 * repeated, stable estimates in pitch_feed() */
+#define WEAK_AGREE	3	/* consecutive FFT windows */
+#define WEAK_TOL_CENTS	25.0	/* maximum change between weak estimates */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */
 #define SUB_SCORE	0.85	/* f0/2 or f0/3 replaces f0 if it scores at
 				 * least this share of f0's score.. */
@@ -79,6 +83,8 @@ static int hb_pos;
 static int odd;			/* the next input sample makes no output */
 static double focus_ratio, expect_hz;	/* pitch_hint() */
 static int last_at;		/* pitch_last_at() */
+static double weak_hz, weak_conf;
+static int weak_count;
 #if 2*HOP != PITCH_STEP
 #error PITCH_STEP in pitch.h must be 2*HOP
 #endif
@@ -109,6 +115,8 @@ pitch_init(int sample_rate)
 	memset(ring, 0, sizeof ring);
 	memset(hb_x, 0, sizeof hb_x);
 	ring_pos = fresh = odd = hb_pos = 0;
+	weak_hz = weak_conf = 0.0;
+	weak_count = 0;
 	{
 		double sum = 0.0;
 		for (i = 0; i <= HB_M; i++) {
@@ -139,8 +147,14 @@ pitch_init(int sample_rate)
 void
 pitch_hint(double focus, double expect)
 {
-	focus_ratio = (focus > 0.0) ? focus : 0.0;
-	expect_hz = (expect > 0.0) ? expect : 0.0;
+	double new_focus = (focus > 0.0) ? focus : 0.0;
+	double new_expect = (expect > 0.0) ? expect : 0.0;
+	if ((new_focus != focus_ratio) || (new_expect != expect_hz)) {
+		weak_count = 0;
+		weak_hz = weak_conf = 0.0;
+	}
+	focus_ratio = new_focus;
+	expect_hz = new_expect;
 }
 
 static void
@@ -423,7 +437,7 @@ analyse(double *conf)
 		}
 		best_f = f;
 		*conf = c;
-		if (*conf < MIN_CONF) return 0.0;
+		if (*conf < WEAK_CONF) return 0.0;
 	} else {
 		return 0.0;
 	}
@@ -453,8 +467,45 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 		ring[ring_pos] = (float)y;
 		ring_pos = (ring_pos+1) % N;
 		if (++fresh >= HOP) {
+			double candidate;
 			fresh = 0;
-			*hz = analyse(conf);
+			candidate = analyse(conf);
+			if ((candidate > 0.0) && (*conf >= MIN_CONF)) {
+				/* Keep the original high-confidence path exactly as is. */
+				*hz = candidate;
+				weak_count = 0;
+				weak_hz = weak_conf = 0.0;
+			} else if ((candidate > 0.0) && (*conf >= WEAK_CONF)) {
+				double cents = (weak_hz > 0.0) ?
+					1200.0*log(candidate/weak_hz)/log(2.0) : 0.0;
+				if ((weak_hz <= 0.0) ||
+				    (fabs(cents) > WEAK_TOL_CENTS)) {
+					weak_hz = candidate;
+					weak_conf = *conf;
+					weak_count = 1;
+				} else {
+					if (weak_count < WEAK_AGREE) {
+						weak_hz = exp((weak_count*log(weak_hz) +
+							log(candidate))/(weak_count+1));
+						weak_conf = (weak_conf*weak_count + *conf) /
+							(weak_count+1);
+						weak_count++;
+					} else {
+						weak_hz = sqrt(weak_hz*candidate);
+						weak_conf = (weak_conf + *conf)/2.0;
+					}
+				}
+				if (weak_count >= WEAK_AGREE) {
+					*hz = weak_hz;
+					*conf = weak_conf;
+				} else {
+					*hz = 0.0;
+				}
+			} else {
+				*hz = 0.0;
+				weak_count = 0;
+				weak_hz = weak_conf = 0.0;
+			}
 			last_at = i+1;
 			ret = 1;
 		}

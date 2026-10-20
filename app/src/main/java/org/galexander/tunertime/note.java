@@ -94,6 +94,18 @@ public class note {
 							: Integer.toString(key));
 	}
 
+	/* Organ builders commonly write sharp notes without the German "is". */
+	public String organ_name() {
+		if (!german()) return name_oct;
+		String[] organ = { "C", "Cs", "D", "Ds", "E", "F",
+			"Fs", "G", "Gs", "A", "B", "H" };
+		String s = organ[note_idx];
+		if (octave <= 2) return (octave == 2) ? s :
+			(s + digits(2-octave, SUB));
+		s = s.toLowerCase();
+		return (octave == 3) ? s : (s + digits(octave-3, SUPER));
+	}
+
 		/* translates note names in English text (C D E F G A B with an
 		 * optional # or b, not part of a longer word, e.g. "wolf G#-Eb")
 		 * to the German names ("wolf Gis-Es") if those are selected */

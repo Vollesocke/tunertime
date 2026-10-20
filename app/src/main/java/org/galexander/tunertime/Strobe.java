@@ -261,7 +261,9 @@ public class Strobe extends Thread {
 		String s = pianoname;
 		if (parms.organ_mode) {
 			if (parms.focus_ratio <= 0.0d) {
-				s = target_str();
+				/* The target pitch and temperament are already in the
+				 * title in organ mode. */
+				s = null;
 			} else {
 				s = (focus_str_ratio == parms.focus_ratio) ?
 							focus_str : null;

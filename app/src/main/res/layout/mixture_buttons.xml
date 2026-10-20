@@ -18,6 +18,13 @@
 	    android:layout_weight="1"
 	    android:text="@string/semi_plus"
 	    android:onClick="mixture_semi_incr" />
+	<Button
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/oct_plus"
+	    android:onClick="mixture_oct_incr" />
 	<Button android:id="@+id/mixture_measure"
 	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="1dp"
@@ -30,6 +37,11 @@
 	style="@style/Tuner.Readout"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content" />
+	<TextView android:id="@+id/mixture_pitch"
+	style="@style/Tuner.Readout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:textColor="@color/text_muted" />
     <TextView android:id="@+id/mixture_status"
 	style="@style/Tuner.Caption"
 	android:layout_width="fill_parent"
@@ -47,6 +59,13 @@
 	    android:layout_weight="1"
 	    android:text="@string/semi_minus"
 	    android:onClick="mixture_semi_decr" />
+	<Button
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/oct_minus"
+	    android:onClick="mixture_oct_decr" />
 	<Button android:id="@+id/mixture_reset"
 	    style="@style/Tuner.Button.Panel"
 	    android:layout_width="1dp"

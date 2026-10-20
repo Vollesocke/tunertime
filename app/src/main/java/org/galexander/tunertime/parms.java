@@ -15,8 +15,6 @@ public class parms {
 	static public volatile int strobe_cents = 48000;
 		/* note-mode position before any temperament is applied */
 	static public int note_cents = 48000;
-		/* apply a 12-note preset as temperament in note mode */
-	static public boolean note_temper = true;
 		/* auto note detection is following the input (read natively) */
 	static public volatile boolean auto_note = false;
 		/* auto is on but locked to the note (not following) */
@@ -60,7 +58,6 @@ public class parms {
 		 * is too long or short.  keeps the detector running natively */
 	static public volatile boolean length_mode = false;
 	static public boolean pipe_stopped = false;	/* gedackt */
-	static public int temperature = 18;		/* degrees C */
 		/* Settings "Audio", see MicSelect: auto, unprocessed,
 		 * voice_recognition, mic, camcorder */
 	static public volatile String audio_source = "auto";
@@ -70,6 +67,10 @@ public class parms {
 		 * is wherever the focused partial was measured to be, in
 		 * tenths of a cent like strobe_cents */
 	static public boolean mixture_mode = false;
+		/* Settings: mixture mode's follow looks for the focused
+		 * (reference) rank and keeps to the key (TunerTime.MIX_SEMIS);
+		 * off (Onno's, the default): the detector ignores the focus */
+	static public volatile boolean mixture_focus_follow = false;
 	static public int mixture_cents = 48000;
 		/* the footage (row ratio, like focus_ratio) mixture_cents was
 		 * last measured on; 0 = not measured since the last reset or
@@ -138,9 +139,6 @@ public class parms {
 		return t[(((c+semi/2)/semi)%12+12)%12];
 	}
 	public static int[] temper_offsets() {
-		if (!note_temper) {
-			return null;
-		}
 		preset p = preset.find(preset_id);
 		return ((p == null) ? null : p.temper_offsets());
 	}
@@ -167,18 +165,18 @@ public class parms {
 					preset.UNITS_PER_CENT;
 		}
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
-		note_temper = prefs.getBoolean("note_temper", true);
 		auto_note = prefs.getBoolean("auto_note", false);
 		auto_locked = !auto_note &&
 				prefs.getBoolean("auto_locked", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
-		temperature = prefs.getInt("temperature", 18);
 		audio_source = prefs.getString("audio_source", "auto");
 		microphone = prefs.getString("microphone", "auto");
 		mixture_mode = organ_mode &&
 				prefs.getBoolean("mixture_mode", false);
+		mixture_focus_follow = prefs.getBoolean("mixture_focus_follow",
+							false);
 		mixture_cents = prefs.getInt("mixture_cents10", strobe_cents);
 		mixture_ref = prefs.getFloat("mixture_ref", 0.0f);
 		/* TunerTime.organ_resume() drops it if the row is not shown */
@@ -303,7 +301,6 @@ public class parms {
 		/* float holds the footage ratios (multiples of 1/4) exactly */
 		editor.putFloat("focus_ratio", (float)focus_ratio);
 		editor.putBoolean("pipe_stopped", pipe_stopped);
-		editor.putInt("temperature", temperature);
 		editor.putInt("preset_id", preset_id);
 		editor.putInt("preset_note", preset_note);
 		editor.putInt("preset_oct", preset_oct);

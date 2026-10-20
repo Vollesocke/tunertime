@@ -22,7 +22,7 @@ import java.util.Locale;
  * events carry a String.  Kept only while debug recordings are on. */
 public class EventLog {
 	private static final int MAX = 8192;
-	private static final byte EST = 1, DRIFT = 2, UI = 3;
+	private static final byte EST = 1, DRIFT = 2, UI = 3, HINT = 4;
 	private static final long[] pos = new long[MAX];
 	private static final byte[] kind = new byte[MAX];
 	private static final double[] va = new double[MAX];
@@ -30,6 +30,10 @@ public class EventLog {
 	private static final double[] vc = new double[MAX];
 	private static final String[] text = new String[MAX];
 	private static int head = 0, count = 0;	/* head: next to write */
+	/* the detector hints in effect before the oldest event kept: the
+	 * native side logs a hint only when it changes, so the one in effect
+	 * at a recording's start may be older than the log (or than 'on') */
+	private static double base_focus = -1.0d, base_expect = 0.0d;
 
 	/* DebugRecorder.enabled(), set by TunerTime.onResume() */
 	public static volatile boolean on = false;
@@ -58,6 +62,20 @@ public class EventLog {
 		}
 	}
 
+	/* strobe thread: the exact detector hints used for this audio buffer */
+	public static synchronized void hint(long p, double focus,
+						double expect) {
+		if (on) {
+			add(p, HINT, focus, expect, 0.0d, null);
+		} else {
+			/* nothing is recorded meanwhile: start the log afresh,
+			 * from this hint */
+			head = count = 0;
+			base_focus = focus;
+			base_expect = expect;
+		}
+	}
+
 	/* any thread but the strobe thread */
 	public static void ui(String s) {
 		if (!on) {
@@ -74,6 +92,10 @@ public class EventLog {
 
 	private static synchronized void add(long p, byte k, double a,
 					double b, double c, String s) {
+		if ((count == MAX) && (kind[head] == HINT)) {
+			base_focus = va[head];	/* overwritten: still in effect */
+			base_expect = vb[head];
+		}
 		pos[head] = p;
 		kind[head] = k;
 		va[head] = a;
@@ -92,6 +114,8 @@ public class EventLog {
 		"#        (as tools/test_pitch -t prints them)\n" +
 		"#  drift the focused row's strobe drift in one audio buffer: " +
 			"row, cents, seconds of usable signal\n" +
+		"#  hint  detector hints for following samples: focus ratio, " +
+			"expected note in Hz\n" +
 		"#  ui    what the app did and why (stamped when it was " +
 			"handled, input latency not taken off)\n";
 
@@ -100,6 +124,20 @@ public class EventLog {
 							int rate) {
 		StringBuilder sb = new StringBuilder();
 		int first = (head - count + MAX) % MAX;
+		/* the hints in effect at the start, as the first line, so
+		 * that test_pitch --hints replays from the right ones */
+		double f = base_focus, e = base_expect;
+		for (int j = 0; j < count; j++) {
+			int i = (first + j) % MAX;
+			if ((kind[i] == HINT) && (pos[i] < start)) {
+				f = va[i];
+				e = vb[i];
+			}
+		}
+		if (f >= 0.0d) {
+			sb.append(String.format(Locale.US, "%9.5f %8d  " +
+					"hint %.4f %.3f\n", 0.0d, 0L, f, e));
+		}
 		for (int j = 0; j < count; j++) {
 			int i = (first + j) % MAX;
 			long p = pos[i] - start;
@@ -123,6 +161,9 @@ public class EventLog {
 					"drift %s %+.2fc %.3fs\n",
 					parms.footage_str(va[i]).trim(), vb[i],
 					vc[i]));
+			} else if (kind[i] == HINT) {
+				sb.append(String.format(Locale.US,
+					"hint %.4f %.3f\n", va[i], vb[i]));
 			} else {
 				sb.append("ui    ").append(text[i]).append('\n');
 			}

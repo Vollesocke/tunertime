@@ -47,28 +47,29 @@
 		android:entryValues="@array/color_value"
 		android:defaultValue="batlow" />
 	<!-- summaries: the rows chosen (Settings.java) -->
-	<MultiSelectListPreference
+	<org.galexander.tunertime.DirectMultiSelectListPreference
 		android:key="harmonics"
 		android:title="@string/harmonics"
 		android:entries="@array/harmonics"
 		android:entryValues="@array/harmonics"
 		android:defaultValue="@array/harmonics_default" />
 	<!-- shown instead of "harmonics" in organ mode (Settings.java) -->
-	<MultiSelectListPreference
+	<org.galexander.tunertime.DirectMultiSelectListPreference
 		android:key="organ_footages"
 		android:title="@string/footages"
 		android:entries="@array/footage_name"
 		android:entryValues="@array/footage_value"
 		android:defaultValue="@array/footage_default" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/cat_presets">
-	<CheckBoxPreference
-		android:key="note_temper"
-		android:title="@string/note_temper"
-		android:summary="@string/note_temper_summary"
-		android:defaultValue="true" />
-    </PreferenceCategory>
     <PreferenceCategory android:title="@string/cat_debug">
+	<!-- two ways for mixture mode to follow the key, to compare in
+	     practice (TunerTime.on_pitch) -->
+	<CheckBoxPreference
+		android:key="mixture_focus_follow"
+		android:title="@string/mixture_focus_follow"
+		android:summaryOn="@string/mixture_focus_follow_on"
+		android:summaryOff="@string/mixture_focus_follow_off"
+		android:defaultValue="false" />
 	<CheckBoxPreference
 		android:key="debug_rec"
 		android:title="@string/debug_rec"

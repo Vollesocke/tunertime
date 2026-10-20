@@ -5,6 +5,10 @@
 	<!-- Titel -->
 	<string name="title_settings">Einstellungen</string>
 	<string name="title_preset_select">Preset w&#228;hlen</string>
+	<string name="title_preset_workbench">Temperierung</string>
+	<string name="wolf_select_title">Lage der Wolfsquinte</string>
+	<string name="wolf_interval">%1$s&#8211;%2$s</string>
+	<string name="wolf_label">Wolfsquinte: %1$s</string>
 	<string name="title_preset_edit">Preset bearbeiten</string>
 	<string name="title_preset_note">Preset-Ton bearbeiten</string>
 	<string name="title_strobe">TunerTime Organ: Strobe</string>
@@ -25,7 +29,7 @@
 	<string name="tab_afreq">Kammerton</string>
 	<string name="tab_stretch">Spreizung</string>
 	<string name="tab_mixture">Mixtur</string>
-	<string name="tab_preset">Preset</string>
+	<string name="tab_preset">Temperierung</string>
 
 	<string name="auto">Auto</string>
 	<string name="auto_follow">Folgen</string>
@@ -57,6 +61,13 @@
 	<string name="note_minus">Ton-</string>
 	<string name="select">W&#228;hlen</string>
 	<string name="edit">&#196;ndern</string>
+	<string name="temperament_heading">Temperierung</string>
+	<string name="preset_note_column">Ton</string>
+	<string name="preset_deviation_column">Abweichung</string>
+	<string name="preset_workbench_count_one">%1$d Ton pro Oktave</string>
+	<string name="preset_workbench_count_many">%1$d T&#246;ne pro Oktave</string>
+	<string name="temperament_select">Auswahl</string>
+	<string name="temperament_edit">Bearbeiten</string>
 	<string name="fft_n">N</string>
 	<string name="fft_n_plus">N+</string>
 	<string name="fft_n_minus">N-</string>
@@ -73,14 +84,7 @@
 	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
 	<string name="pipe_open">offen</string>
 	<string name="pipe_stopped">gedackt</string>
-	<string name="temp_minus">T-</string>
-	<string name="temp_plus">T+</string>
-	<string name="temp_colder">Lufttemperatur senken</string>
-	<string name="temp_warmer">Lufttemperatur erh&#246;hen</string>
 	<string name="length_listening">warte auf Ton&#8230;</string>
-	<string name="length_in_tune">0.0 mm\nstimmt</string>
-	<string name="length_too_long">%1$s mm\nzu lang: abschneiden</string>
-	<string name="length_too_short">%1$s mm\nzu kurz: anl&#228;ngen</string>
 	<string name="length_held">%1$s (gehalten)</string>
 	<string name="length_unclear">unklar</string>
 
@@ -159,9 +163,25 @@
 		<item>Mittelt&#246;nig 1/6 Komma</item>
 		<item>Werckmeister III</item>
 		<item>Kirnberger III</item>
-		<item>Vallotti</item>
+		<item>Vallotti (1754)</item>
 		<item>Young II</item>
 		<item>Kellner (Bach)</item>
+		<item>Young-Sorge</item>
+		<item>Fast gleichstufig</item>
+		<item>Gr&#228;f-Sorge</item>
+		<item>Vallotti modifiziert</item>
+		<item>Wegscheider / Reinfeld</item>
+		<item>Johannes Lang (Freiburg)</item>
+		<item>Thomas Rothert (Bayreuth)</item>
+		<item>Frischknecht II</item>
+		<item>Neidhardt modifiziert</item>
+		<item>Neidhardt f&#252;r das Dorf (1732)</item>
+		<item>Neidhardt f&#252;r die kleine Stadt (1732)</item>
+		<item>Neidhardt f&#252;r die gro&#223;e Stadt (1724)</item>
+		<item>Werckmeister 1691 modifiziert (Niederrodenbach)</item>
+		<item>Werckmeister IV (Rohlf)</item>
+		<item>Werckmeister V (Rohlf)</item>
+		<item>Werckmeister III (Rohlf)</item>
 	</string-array>
 	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
 	     sie als Gis, Es angezeigt -->
@@ -170,11 +190,27 @@
 		<item>reine Quinten, Wolf G#-Eb</item>
 		<item>reine gro&#223;e Terzen, Wolf G#-Eb; Renaissance/Fr&#252;hbarock</item>
 		<item>Barockorgeln, milder Wolf G#-Eb</item>
-		<item>1691, wohltemperiert, alle Tonarten spielbar</item>
+		<item>1691, wohltemperiert, alle Tonarten spielbar; bei Rohlf: Werckmeister 1691</item>
 		<item>1779, reine Terz C-E</item>
 		<item>um 1750, sechs Quinten um 1/6 pyth. Komma verkleinert</item>
 		<item>1800, wie Vallotti, auf C zentriert</item>
 		<item>1977 rekonstruierte Stimmung Bachs</item>
+		<item>Stimmung von Young und Sorge</item>
+		<item>Historische fast gleichstufige Temperierung</item>
+		<item>Stimmung von Gr&#228;f und Sorge</item>
+		<item>Modifizierte Vallotti-Stimmung</item>
+		<item>Temperierung nach Wegscheider f&#252;r die Orgel Reinfeld</item>
+		<item>Stimmung nach Johannes Lang, Freiburg</item>
+		<item>Stimmung nach Thomas Rothert, Bayreuth</item>
+		<item>Frischknecht II</item>
+		<item>Modifizierte Neidhardt-Stimmung</item>
+		<item>Neidhardts Dorf-Stimmung von 1732</item>
+		<item>Neidhardts Stimmung f&#252;r die kleine Stadt von 1732</item>
+		<item>Neidhardts Stimmung f&#252;r die gro&#223;e Stadt von 1724</item>
+		<item>Werckmeister 1691 mit 1,9 c h&#246;herem A; Rohlfs Tabelle Niederrodenbach</item>
+		<item>Z&#228;hlung nach Rohlf; meist Werckmeister V genannt</item>
+		<item>Z&#228;hlung nach Rohlf</item>
+		<item>Z&#228;hlung nach Rohlf; 1/3 Komma, meist Werckmeister IV genannt</item>
 	</string-array>
 
 	<!-- Mikrofone -->
@@ -226,15 +262,22 @@
 	<string name="harmonics_summary">%1$s: je eine Strobe-Zeile, der tiefste oben (h&#246;chstens 8)</string>
 	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
 	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
-	<string name="cat_presets">Presets</string>
-	<string name="note_temper">Ton-Modus temperieren</string>
-	<string name="note_temper_summary">Hat das gew&#228;hlte Preset je einen Ton f&#252;r die 12 Halbt&#246;ne, stimmt der Ton-Modus nach dessen Abweichungen (Temperatur)</string>
 	<string name="cat_debug">Debug</string>
+	<string name="mixture_focus_follow">Mixtur: dem Bezugschor folgen</string>
+	<string name="mixture_focus_follow_on">Die Taste wird am fokussierten Chor (Bezug) erkannt und bewegt sich h&#246;chstens um einen Ganzton; Oktaven und andere allein klingende Ch&#246;re verschieben sie nicht. Gr&#246;&#223;ere Schritte von Hand.</string>
+	<string name="mixture_focus_follow_off">Die Taste wird an dem erkannt, was klingt, unabh&#228;ngig vom fokussierten Chor.</string>
 	<string name="debug_rec">Debug-Aufnahmen</string>
 	<string name="debug_rec_summary">Wird der verfolgte Ton von Hand korrigiert, 7 s Mikrofonsignal als WAV speichern (zur Verbesserung der Tonerkennung). Abholen mit: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
 
 	<!-- Mixturmodus: Schwebung im gemessenen Teilton -->
 	<string name="mixture_beating">Schwebung: zweite Pfeife auf diesem Teilton?</string>
 	<!-- L&#228;ngenmodus, innerhalb 0,2 Cent -->
-	<string name="length_in_tune_mm">%1$s mm\nstimmt</string>
+	<string name="length_mm_compact">%1$s%2$s mm (%3$s)</string>
+	<!-- length mode: the sign of the mm (+ too long, cut off;
+	     - too short, lengthen) and the pipe's reference length -->
+	<string name="length_sign_in_tune">&#177;</string>
+	<string name="length_sign_long">+</string>
+	<string name="length_sign_short">&#8722;</string>
+	<string name="length_ref_stopped">&#955;/4</string>
+	<string name="length_ref_open">&#955;/2</string>
 </resources>

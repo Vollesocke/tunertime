@@ -6,6 +6,10 @@
 	<!-- activity titles -->
 	<string name="title_settings">Settings</string>
 	<string name="title_preset_select">Select preset</string>
+	<string name="title_preset_workbench">Temperament</string>
+	<string name="wolf_select_title">Wolf fifth location</string>
+	<string name="wolf_interval">%1$s&#8211;%2$s</string>
+	<string name="wolf_label">Wolf fifth: %1$s</string>
 	<string name="title_preset_edit">Edit preset</string>
 	<string name="title_preset_note">Edit preset note</string>
 	<string name="title_strobe">TunerTime Organ: strobe</string>
@@ -26,7 +30,7 @@
 	<string name="tab_afreq">A freq</string>
 	<string name="tab_stretch">stretch</string>
 	<string name="tab_mixture">mixture</string>
-	<string name="tab_preset">preset</string>
+	<string name="tab_preset">temperament</string>
 
 	<!-- buttons beside the panels -->
 	<string name="auto">auto</string>
@@ -61,6 +65,13 @@
 	<string name="note_minus">note-</string>
 	<string name="select">select</string>
 	<string name="edit">edit</string>
+	<string name="temperament_heading">Temperament</string>
+	<string name="preset_note_column">Note</string>
+	<string name="preset_deviation_column">Deviation</string>
+	<string name="preset_workbench_count_one">%1$d note per octave</string>
+	<string name="preset_workbench_count_many">%1$d notes per octave</string>
+	<string name="temperament_select">Select</string>
+	<string name="temperament_edit">Edit</string>
 	<string name="fft_n">N</string>
 	<string name="fft_n_plus">N+</string>
 	<string name="fft_n_minus">N-</string>
@@ -77,14 +88,7 @@
 	<!-- organ mode: length panel (pipe too long / too short) -->
 	<string name="pipe_open">open pipe</string>
 	<string name="pipe_stopped">stopped pipe</string>
-	<string name="temp_minus">T-</string>
-	<string name="temp_plus">T+</string>
-	<string name="temp_colder">air temperature down</string>
-	<string name="temp_warmer">air temperature up</string>
 	<string name="length_listening">listening&#8230;</string>
-	<string name="length_in_tune">0.0 mm\nin tune</string>
-	<string name="length_too_long">%1$s mm\ntoo long: cut off</string>
-	<string name="length_too_short">%1$s mm\ntoo short: lengthen</string>
 	<string name="length_held">%1$s (held)</string>
 	<string name="length_unclear">unclear</string>
 
@@ -167,9 +171,25 @@
 		<item>Meantone 1/6 comma</item>
 		<item>Werckmeister III</item>
 		<item>Kirnberger III</item>
-		<item>Vallotti</item>
+		<item>Vallotti (1754)</item>
 		<item>Young II</item>
 		<item>Kellner (Bach)</item>
+		<item>Young-Sorge</item>
+		<item>Near equal temperament</item>
+		<item>Gr&#228;f-Sorge</item>
+		<item>Modified Vallotti</item>
+		<item>Wegscheider / Reinfeld</item>
+		<item>Johannes Lang (Freiburg)</item>
+		<item>Thomas Rothert (Bayreuth)</item>
+		<item>Frischknecht II</item>
+		<item>Modified Neidhardt</item>
+		<item>Neidhardt for a village (1732)</item>
+		<item>Neidhardt for a small town (1732)</item>
+		<item>Neidhardt for a large town (1724)</item>
+		<item>Modified Werckmeister 1691 (Niederrodenbach)</item>
+		<item>Werckmeister IV (Rohlf)</item>
+		<item>Werckmeister V (Rohlf)</item>
+		<item>Werckmeister III (Rohlf)</item>
 	</string-array>
 	<!-- note names in these are English (G#, Eb); they are shown in
 	     German if German note names are on -->
@@ -178,11 +198,27 @@
 		<item>pure fifths, wolf G#-Eb</item>
 		<item>pure major thirds, wolf G#-Eb; Renaissance/early Baroque</item>
 		<item>Baroque organs, mild wolf G#-Eb</item>
-		<item>1691, well-tempered, all keys usable</item>
+		<item>1691, well-tempered, all keys usable; Rohlf: Werckmeister 1691</item>
 		<item>1779, pure C-E third</item>
 		<item>c. 1750, six 1/6 Pythagorean comma fifths</item>
 		<item>1800, like Vallotti centred on C</item>
 		<item>1977 reconstruction of Bach\'s tuning</item>
+		<item>Temperament by Young and Sorge</item>
+		<item>Historical near-equal temperament</item>
+		<item>Temperament by Gr&#228;f and Sorge</item>
+		<item>Modified Vallotti temperament</item>
+		<item>Wegscheider tuning for the Reinfeld organ</item>
+		<item>Tuning by Johannes Lang, Freiburg</item>
+		<item>Tuning by Thomas Rothert, Bayreuth</item>
+		<item>Frischknecht II</item>
+		<item>Modified Neidhardt temperament</item>
+		<item>Neidhardt for a village (1732)</item>
+		<item>Neidhardt for a small town (1732)</item>
+		<item>Neidhardt for a large town (1724)</item>
+		<item>Werckmeister 1691 with A 1.9 c higher; Rohlf\'s Niederrodenbach chart</item>
+		<item>Rohlf\'s numbering; usually called Werckmeister V</item>
+		<item>Rohlf\'s numbering</item>
+		<item>Rohlf\'s numbering; 1/3 comma, usually called Werckmeister IV</item>
 	</string-array>
 
 	<!-- microphones (Settings, toasts) -->
@@ -238,10 +274,10 @@
 	<string name="harmonics_summary">%1$s: one strobe row each, lowest first (up to 8)</string>
 	<string name="footages">Footages shown</string>
 	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
-	<string name="cat_presets">Presets</string>
-	<string name="note_temper">Temper note mode</string>
-	<string name="note_temper_summary">If the selected preset has one note for each of the 12 semitones, note mode tunes to its offsets</string>
 	<string name="cat_debug">Debug</string>
+	<string name="mixture_focus_follow">Mixture: follow the reference rank</string>
+	<string name="mixture_focus_follow_on">The key is detected from the focused (reference) rank and moves by a whole tone at most; octaves and other ranks sounding alone do not move it. Bigger steps by hand.</string>
+	<string name="mixture_focus_follow_off">The key is detected from whatever sounds, independent of the focused rank.</string>
 	<string name="debug_rec">Debug recordings</string>
 	<string name="debug_rec_summary">When you correct the followed note by hand, save 7 s of microphone input as WAV (for improving the note detection). Get them with: adb pull /sdcard/Android/data/&lt;package&gt;/files/recordings</string>
 
@@ -250,5 +286,12 @@
 	<string name="mixture_beating">beating: another pipe on this partial?</string>
 	<!-- length mode, within 0.2 cent; %1$s is 0, 0.0 or 0.00 by the
 	     pipe's size -->
-	<string name="length_in_tune_mm">%1$s mm\nin tune</string>
+	<string name="length_mm_compact">%1$s%2$s mm (%3$s)</string>
+	<!-- length mode: the sign of the mm (+ too long, cut off;
+	     - too short, lengthen) and the pipe's reference length -->
+	<string name="length_sign_in_tune">&#177;</string>
+	<string name="length_sign_long">+</string>
+	<string name="length_sign_short">&#8722;</string>
+	<string name="length_ref_stopped">&#955;/4</string>
+	<string name="length_ref_open">&#955;/2</string>
 </resources>

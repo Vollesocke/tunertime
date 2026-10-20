@@ -16,9 +16,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.view.ViewConfiguration;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.app.Activity;
@@ -34,6 +37,13 @@ public class TunerTime extends Activity
 	private SurfaceView w_strobe;
 	private ViewGroup buttons_holder;
 	private ViewGroup surface_frame;
+	private ViewGroup controls_frame;
+	private ViewGroup preset_nav_holder;
+	private View preset_workbench;
+	private TextView preset_workbench_static_name;
+	private Button preset_workbench_wolf;
+	private TextView preset_workbench_summary;
+	private LinearLayout preset_workbench_notes;
 	private ViewGroup mode_holder;
 	private TextView center_display;
 	private TextView stretch_display;
@@ -47,6 +57,7 @@ public class TunerTime extends Activity
 	private View mixture_buttons;
 	private TextView mixture_display;
 	private TextView mixture_status;
+	private TextView mixture_pitch;
 	private final mixture mix = new mixture();
 	private View preset_buttons;
 	private TextView preset_semi_display;
@@ -100,6 +111,8 @@ public class TunerTime extends Activity
 		w_strobe.setOnTouchListener(new strobe_listener());
 		buttons_holder = (ViewGroup)findViewById(R.id.buttons_holder);
 		surface_frame = (ViewGroup)findViewById(R.id.surface_frame);
+		controls_frame = (ViewGroup)findViewById(R.id.controls_frame);
+		preset_nav_holder = (ViewGroup)findViewById(R.id.preset_nav_holder);
 		mode_holder = (ViewGroup)findViewById(R.id.mode_holder);
 		center_display = (TextView)findViewById(R.id.center_display);
 		stretch_display = (TextView)findViewById(R.id.stretch_display);
@@ -145,11 +158,23 @@ public class TunerTime extends Activity
 				findViewById(R.id.mixture_display);
 		mixture_status = (TextView)mixture_buttons.
 				findViewById(R.id.mixture_status);
+		mixture_pitch = (TextView)mixture_buttons.
+				findViewById(R.id.mixture_pitch);
 
 		preset_buttons = fl8r.inflate(
 				R.layout.preset_buttons, buttons_holder, false);
 		preset_semi_display = (TextView)preset_buttons.findViewById(
 				R.id.preset_semi_display);
+		preset_workbench = fl8r.inflate(
+				R.layout.preset_workbench, surface_frame, false);
+			preset_workbench_static_name = (TextView)preset_workbench.findViewById(
+				R.id.preset_workbench_static_name);
+			preset_workbench_wolf = (Button)preset_workbench.findViewById(
+				R.id.preset_workbench_wolf);
+		preset_workbench_summary = (TextView)preset_workbench.findViewById(
+				R.id.preset_workbench_summary);
+		preset_workbench_notes = (LinearLayout)preset_workbench.findViewById(
+				R.id.preset_workbench_notes);
 
 		fft_buttons = fl8r.inflate(
 				R.layout.fft_buttons, buttons_holder, false);
@@ -316,8 +341,7 @@ public class TunerTime extends Activity
 						parms.preset_id = p.id;
 					}
 				}
-				title = getString(R.string.title_strobe);
-				subtitle = (p != null) ? p.name : "...";
+				title = getString(R.string.title_preset_workbench);
 			} else {
 				title = getString(R.string.title_strobe);
 			}
@@ -347,11 +371,41 @@ public class TunerTime extends Activity
 	private void place_strobe_extras() {
 		surface_frame.removeView(length_panel);
 		surface_frame.removeView(strobe_buttons);
+		surface_frame.removeView(preset_workbench);
+		if (strobe_buttons.getParent() != null) {
+			((ViewGroup)strobe_buttons.getParent()).removeView(strobe_buttons);
+		}
+		if (parms.preset_mode) {
+			w_strobe.setVisibility(View.GONE);
+			controls_frame.setVisibility(View.GONE);
+			preset_nav_holder.setVisibility(View.VISIBLE);
+			preset_nav_holder.addView(strobe_buttons,
+				new FrameLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					(int)(56 * getResources().getDisplayMetrics()
+						.density)));
+			surface_frame.addView(preset_workbench,
+				new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.MATCH_PARENT));
+		} else {
+			w_strobe.setVisibility(View.VISIBLE);
+			controls_frame.setVisibility(View.VISIBLE);
+			preset_nav_holder.setVisibility(View.GONE);
+			if (mode_holder.getParent() == preset_nav_holder) {
+				ViewGroup old_parent = (ViewGroup)mode_holder.getParent();
+				old_parent.removeView(mode_holder);
+				mode_holder.setLayoutParams(new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+				((LinearLayout)findViewById(R.id.main_controls_side))
+					.addView(mode_holder);
+			}
+		}
 		if (!parms.fft_mode) {
-			if (parms.length_mode) {
+			if (!parms.preset_mode && parms.length_mode) {
 				surface_frame.addView(length_panel);
 			}
-			surface_frame.addView(strobe_buttons);
+			if (!parms.preset_mode) surface_frame.addView(strobe_buttons);
 		}
 		/* in organ mode a toggle, highlighted while the length
 		 * panel is shown */
@@ -402,7 +456,7 @@ public class TunerTime extends Activity
 	}
 
 	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  only note mode follows.  the state is
+	 * long press turns it off.  the state is
 	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
@@ -436,6 +490,16 @@ public class TunerTime extends Activity
 	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it. */
 	private boolean near = false;		/* continuity on */
 	private static final int NEAR_SEMIS = 5;
+	/* Mixture mode following the reference rank (Settings,
+	 * parms.mixture_focus_follow) keeps to the key: a mixture is tuned
+	 * key by key, and the detector, looking for the focused rank, reads
+	 * another rank sounding alone as a key an octave, a fourth or a
+	 * third away (2 2/3', 1 3/5' with the 2' focused).  Octaves fold,
+	 * and the key moves by at most a whole tone; a bigger jump is made
+	 * by hand (key and octave buttons).  tools/sim_organ.c -x focus
+	 * against the default, wrong keys shown: "Mixture III muted" 0
+	 * instead of 4, "Mixture chromatic, ranks alone" 0 instead of 8 */
+	private static final int MIX_SEMIS = 2;
 	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
 	private double det_stable_hz = 0.0;
 	private long det_stable_time = 0, last_heard = 0;
@@ -475,13 +539,10 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
-	/* follow moves note_cents, which only note mode shows: preset mode
-	 * steps through its notes, and mixture mode tunes to mixture_cents.
-	 * elsewhere the button is disabled and auto_note is kept as it is,
-	 * so following resumes when going back to note mode */
+	/* Preset and FFT modes have their own navigation.  Tone and mixture
+	 * modes both follow the detector. */
 	private boolean auto_applies() {
-		return !parms.preset_mode && !parms.mixture_mode &&
-			!parms.fft_mode;
+		return !parms.preset_mode && !parms.fft_mode;
 	}
 
 	/* from the strobe thread */
@@ -492,11 +553,14 @@ public class TunerTime extends Activity
 			} });
 	}
 
-	/* moves note mode to the nearest note once DET_AGREE estimates in a
+	/* moves the target to the nearest note once DET_AGREE estimates in a
 	 * row agree; silence holds the current note.  the cents offset set
 	 * by hand carries over to the new note.  after a correction, only
 	 * near the current note (continuity, above). */
 	private void on_pitch(double hz) {
+		if (parms.mixture_mode && (hz > 0.0d)) {
+			mixture_pitch.setText(new note(freq_to_cents(hz)).organ_name());
+		}
 		if (parms.length_mode && !ToneGenerator.playing) {
 			length.add(hz);
 		}
@@ -515,10 +579,41 @@ public class TunerTime extends Activity
 			return;
 		}
 		int semi = 100*U;
-		int cur = (parms.note_cents + semi/2) / semi;
-		int off = parms.note_cents - cur*semi;
-		int k = (int)Math.round((freq_to_cents(hz) - off) /
+		int cur, off;
+		if (parms.mixture_mode) {
+			/* the mixture's key, and its measured offset from the
+			 * tempered note: the organ's own pitch, which the keys
+			 * heard next share */
+			cur = nearest_step(parms.mixture_cents);
+			off = parms.mixture_cents - step_cents(cur);
+		} else {
+			cur = (parms.note_cents + semi/2) / semi;
+			off = parms.note_cents - cur*semi;
+		}
+		int heard_cents = freq_to_cents(hz);
+		int k = (int)Math.round((heard_cents - off) /
 							(double)semi);
+		if (parms.mixture_mode) {
+			/* Mixture ranks on the same key should stay within 20 cents
+			 * of its tempered note.  Choose the nearest temperament step,
+			 * and reject outliers before they can move the target. */
+			int best = k;
+			int best_error = Integer.MAX_VALUE;
+			for (int candidate = Math.max(0, k-1);
+			     candidate <= Math.min(96, k+1); candidate++) {
+				int error = Math.abs(heard_cents -
+					(step_cents(candidate) + off));
+				if (error < best_error) {
+					best = candidate;
+					best_error = error;
+				}
+			}
+			if (best_error > 20*U) {
+				det_count = 0;
+				return;
+			}
+			k = best;
+		}
 		if (k == det_semi) {
 			det_count++;
 		} else {
@@ -534,15 +629,28 @@ public class TunerTime extends Activity
 		det_stable_hz = hz;
 		det_stable_time = now;
 		int t = k;
-		if (near) {
+		boolean keep_key = parms.mixture_mode &&
+				   parms.mixture_focus_follow;
+		if (near || keep_key) {
 			/* the octave nearest the current note */
 			t = k + 12*(int)Math.floor((cur - k)/12.0d + 0.5d);
-			if (Math.abs(t - cur) > NEAR_SEMIS) {
+			if (Math.abs(t - cur) >
+			    (keep_key ? MIX_SEMIS : NEAR_SEMIS)) {
 				return;
 			}
 		}
 		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
-			parms.note_cents = t*semi + off;
+			if (parms.mixture_mode) {
+				/* Keep the mixture's measured offset from its tempered
+				 * note while moving to the newly heard key. */
+				cause = String.format(Locale.US,
+					"follow (heard %.2f Hz%s)", hz,
+					near ? ", near" : "");
+				mixture_move(t - cur);
+				mixture_measure(mixture.ONSET_SKIP);
+			} else {
+				parms.note_cents = t*semi + off;
+			}
 			if (EventLog.on) {
 				cause = String.format(Locale.US,
 					"follow (heard %.2f Hz%s)", hz,
@@ -690,6 +798,36 @@ public class TunerTime extends Activity
 	public void do_preset_select(View v) {
 		startActivity(new Intent(this, PresetSelectActivity.class));
 	}
+	public void do_choose_wolf(View v) {
+		final preset p = preset.find(parms.preset_id);
+		if ((p == null) || (p.wolf_template() < 1)) return;
+		final int[] roots = temperaments.fifth_roots;
+		final String[] items = new String[roots.length];
+		for (int i = 0; i < roots.length; i++) {
+			items[i] = wolf_interval(roots[i]);
+		}
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.wolf_select_title)
+			.setItems(items,
+				new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface d, int which) {
+					preset.set_temporary_wolf(p.id, roots[which]);
+					cause = "temporary wolf selection";
+					update_status();
+					d.dismiss();
+				} })
+			.setNegativeButton(R.string.cancel, null)
+			.show();
+	}
+	private String wolf_interval(int root) {
+		String[] english = { "C", "C#", "D", "D#", "E", "F",
+			"F#", "G", "G#", "A", "A#", "B" };
+		String[] german = { "C", "Cs", "D", "Ds", "E", "F",
+			"Fs", "G", "Gs", "A", "B", "H" };
+		String[] names = parms.german_names ? german : english;
+		return getString(R.string.wolf_interval, names[root],
+			names[(root + 7) % 12]);
+	}
 	public void do_preset_edit(View v) {
 		startActivity(new Intent(this, PresetEditActivity.class));
 	}
@@ -757,6 +895,10 @@ public class TunerTime extends Activity
 	}
 
 	public void mixture_measure(View v) {
+		mixture_measure(0.0d);
+	}
+
+	private void mixture_measure(double settle) {
 		if (cause == null) {
 			cause = "measure";
 		}
@@ -777,7 +919,7 @@ public class TunerTime extends Activity
 			parms.focus_ratio = parms.row_ratio(
 					(i < parms.num_strobes) ? i : 0);
 		}
-		mix.start();
+		mix.start(settle);
 		update_status();
 	}
 
@@ -819,6 +961,17 @@ public class TunerTime extends Activity
 	public void mixture_semi_decr(View v) {
 		cause = "mixture key-";
 		mixture_move(-1);
+	}
+	public void mixture_oct_incr(View v) { mixture_octave(1); }
+	public void mixture_oct_decr(View v) { mixture_octave(-1); }
+	private void mixture_octave(int d) {
+		cause = (d > 0) ? "mixture octave+" : "mixture octave-";
+		parms.mixture_cents = range_limit(parms.mixture_cents + d*1200*U,
+				0, 9600*U);
+		parms.mixture_ref = 0.0d;
+		parms.note_cents = range_limit(parms.note_cents + d*1200*U,
+				0, 9600*U);
+		update_status();
 	}
 	private double mixture_last_ref = 0.0d;	/* row last measured on */
 	private void mixture_move(int d) {
@@ -1024,7 +1177,7 @@ public class TunerTime extends Activity
 				parms.preset_note += n;
 			}
 			parms.preset_note %= n;
-			parms.strobe_cents = p.notes.get(parms.preset_note) +
+			parms.strobe_cents = p.tuning_notes().get(parms.preset_note) +
 					1200*U*parms.preset_oct;
 			while (parms.strobe_cents < 0) {
 				parms.strobe_cents += 1200*U;
@@ -1085,14 +1238,15 @@ public class TunerTime extends Activity
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
-		note_semi_display.setText(nn.name_oct);
+		note_semi_display.setText(parms.organ_mode ? nn.organ_name() : nn.name_oct);
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode) {
 			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
-		preset_semi_display.setText(n.name_oct + " " + n.cents_str);
+		preset_semi_display.setText((parms.organ_mode ? n.organ_name() : n.name_oct) + " " + n.cents_str);
+		update_preset_workbench();
 
 		String center_str = string_int10(parms.A_freq);
 		center_display.setText(getString(R.string.status_a, center_str));
@@ -1139,6 +1293,61 @@ public class TunerTime extends Activity
 			length.update();
 		}
 		log_changes();
+	}
+
+	private void update_preset_workbench() {
+		if (preset_workbench == null) return;
+		preset p = preset.find(parms.preset_id);
+		preset_workbench_notes.removeAllViews();
+		if (p == null) {
+			preset_workbench_static_name.setText(getString(R.string.no_presets));
+			preset_workbench_static_name.setVisibility(View.VISIBLE);
+			preset_workbench_wolf.setVisibility(View.GONE);
+			preset_workbench_summary.setText("");
+			return;
+		}
+		preset_workbench_static_name.setText(p.name);
+		int template = p.wolf_template();
+		preset_workbench_wolf.setVisibility((template >= 1) ?
+			View.VISIBLE : View.GONE);
+		preset_workbench_static_name.setVisibility((template >= 1) ?
+			View.GONE : View.VISIBLE);
+		if (template >= 1) {
+			int root = preset.temporary_wolf_root(p.id);
+			if (root < 0) root = 8;
+			preset_workbench_wolf.setText(p.name + "\n" +
+				getString(R.string.wolf_label, wolf_interval(root)));
+		}
+		int count = p.notes.size();
+		preset_workbench_summary.setText(count == 1 ?
+			getString(R.string.preset_workbench_count_one, count) :
+			getString(R.string.preset_workbench_count_many, count));
+		for (int i = 0; i < count; i++) {
+			final note n = new note(p.tuning_notes().get(i));
+			LinearLayout row = new LinearLayout(this);
+			row.setOrientation(LinearLayout.HORIZONTAL);
+			row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+			row.setMinimumHeight((int)(48 * getResources()
+				.getDisplayMetrics().density));
+			row.setPadding((int)(8 * getResources()
+				.getDisplayMetrics().density), 0,
+				(int)(8 * getResources().getDisplayMetrics().density), 0);
+			TextView name = new TextView(this);
+			name.setText(parms.organ_mode ? n.organ_name() : n.name_oct);
+			name.setTextSize(18);
+			name.setTextColor(getResources().getColor(R.color.text));
+			row.addView(name, new LinearLayout.LayoutParams(0,
+				ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+			TextView deviation = new TextView(this);
+			deviation.setText(n.cents_str);
+			deviation.setTextSize(17);
+			deviation.setGravity(android.view.Gravity.RIGHT);
+			deviation.setTextColor(getResources().getColor(R.color.text));
+			row.addView(deviation, new LinearLayout.LayoutParams(
+				(int)(96 * getResources().getDisplayMetrics().density),
+				ViewGroup.LayoutParams.WRAP_CONTENT));
+			preset_workbench_notes.addView(row);
+		}
 	}
 
 	/* Debug recordings (EventLog): what changed since the last call and
@@ -1415,6 +1624,7 @@ public class TunerTime extends Activity
 		private int start_fft_width = 0, start_fft_height = 0;
 		private boolean doing_x = false, doing_y = false;
 		private boolean could_be_click = false;
+		private long down_time = 0;
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
 			int x1 = -1, x2 = -1;
@@ -1453,6 +1663,7 @@ public class TunerTime extends Activity
 			}
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
+			down_time = event.getEventTime();
 				start_x = x1; start_x_width = 0;
 				start_y = y1; start_y_height = 0;
 				start_fft_xoffset = parms.fft_xoffset +
@@ -1501,6 +1712,17 @@ public class TunerTime extends Activity
 				update_status();
 				return true;
 			case MotionEvent.ACTION_UP:
+				if (could_be_click && !parms.fft_mode &&
+				    (event.getEventTime() - down_time >=
+					 ViewConfiguration.getLongPressTimeout())) {
+					Intent settings_intent = new Intent(
+						TunerTime.this, Settings.class);
+					settings_intent.putExtra(
+						Settings.EXTRA_OPEN_STROBE_ROWS, true);
+					cause = "strobe long press: partial settings";
+					startActivity(settings_intent);
+					return true;
+				}
 				if (could_be_click && parms.organ_mode &&
 				    !parms.fft_mode) {
 					tap_row(y1, height);

@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.text.Collator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +67,9 @@ public class PresetSelectActivity extends Activity {
 				    (pos >= preset.presets.size())) {
 					return;
 				}
-				parms.preset_id = preset.presets.get(pos).id;
+				int selected_id = preset.presets.get(pos).id;
+				preset.clear_temporary_wolf_if_different(selected_id);
+				parms.preset_id = selected_id;
 				finish();
 			} });
 		registerForContextMenu(list);
@@ -114,6 +117,7 @@ public class PresetSelectActivity extends Activity {
 	}
 
 	public void do_new(View v) {
+		preset.clear_temporary_wolf();
 		parms.preset_id = -1;
 		startActivity(new Intent(this, PresetEditActivity.class));
 	}
@@ -226,18 +230,32 @@ public class PresetSelectActivity extends Activity {
 		String[] about = res_or(R.array.temperament_about,
 					temperaments.about);
 		String[] items = new String[names.length];
+		final ArrayList<Integer> order = new ArrayList<Integer>();
+		for (int i = 0; i < items.length; i++) order.add(i);
+		final Collator collator = Collator.getInstance(getResources()
+				.getConfiguration().locale);
+		Collections.sort(order.subList(Math.min(4, order.size()), order.size()),
+			new Comparator<Integer>() {
+				public int compare(Integer a, Integer b) {
+					return collator.compare(names[a], names[b]);
+				}
+			});
 		for (int i = 0; i < items.length; i++) {
-			items[i] = names[i] + "\n    " + note.names_in(about[i]);
+			int temperament = order.get(i);
+			items[i] = names[temperament] + "\n    "
+				+ note.names_in(about[temperament]);
 		}
 		new AlertDialog.Builder(this)
 			.setTitle(R.string.add_temperament_title)
 			.setItems(items, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int which) {
+					int temperament = order.get(which);
+					preset.clear_temporary_wolf();
 					preset n = preset.make();
 					n.name = PresetIO.unique_name(
-						names[which], names());
+							names[temperament], names());
 					n.notes.addAll(
-						temperaments.make_notes(which));
+							temperaments.make_notes(temperament));
 					parms.preset_id = n.id;
 					changed();
 					Toast.makeText(PresetSelectActivity.this,

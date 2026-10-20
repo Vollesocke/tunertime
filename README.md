@@ -17,7 +17,7 @@ this fork.
   and the spacing of neighbouring peaks, so a missing or weak fundamental is
   found, and stopped pipes with odd partials only do not come out an octave
   high), gated on level and on the share of peak energy that lies on the
-  winner's harmonics. Down to C0 (32' C). Note mode follows after 3 agreeing
+  winner's harmonics. Down to C0 (32' C). Note mode follows after 4 agreeing
   estimates, holds on silence and keeps the cent offset set by hand. The
   "auto" button cycles off → follow → lock → follow; a long press turns it
   off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
@@ -37,23 +37,26 @@ this fork.
   `adb pull /sdcard/Android/data/org.galexander.tunertime.dev/files/recordings`.
   The .txt also holds a timeline of the recorded 7 s (`EventLog.java`), one
   line per event, in seconds and samples from the start of the WAV: every
-  detector estimate (`est`: Hz, note, cents, confidence), the focused row's
+  detector estimate (`est`: Hz, note, cents, confidence), the detector hints
+  (`hint`: focus ratio and expected note frequency), the focused row's
   strobe drift per audio buffer (`drift`), and what the app did and why
   (`ui`: note changes with their cause, follow, which button, auto
   follow/lock/off, focus taps, tabs, mixture, length mode, A, stretch,
   presets, microphone switches). The `replay:` line in the .txt runs
-  `test_pitch -t secs file.wav`, which prints its estimates in the same
-  columns and analyses at the same samples as the app did, so the two lists
-  can be compared line by line. UI events are stamped when the app handled
-  them; the audio input latency (a few buffers) is not taken off.
+  `test_pitch -t secs file.wav --hints file.txt`; it applies the recorded
+  focus and expected-note hints as they changed in the app, at the same
+  samples, so the two estimate lists can be compared line by line. UI events
+  are stamped when the app handled them; the audio input latency (a few
+  buffers) is not taken off.
 - **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
   A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy)
   and organ pipes (Gedackt, Quintadena, Principal, reeds, 16'/32' through a
   phone mic, mixtures, focused partials). `test_pitch [-t secs] file.wav
-  [focus_ratio [expect_hz]]` replays a recording and prints the estimates
-  over time, in seconds and samples from the start of the file (`-t`: at
-  the same samples as the app's estimate at secs, see above). It
-  is plain C, so build it with any compiler, together with `jni/pitch.c`.
+  [focus_ratio [expect_hz]] [--hints file.txt]` replays a recording and
+  prints the estimates over time, in seconds and samples from the start of
+  the file (`-t`: align with the app; `--hints`: apply its recorded dynamic
+  pitch hints). It is plain C, so build it with any compiler, together with
+  `jni/pitch.c`.
 - **Realistic organ bench** (`tools/sim_organ.c`): simulated pipes (speech
   transients, chiff, reed onset, wind, tremulant, celeste, mixtures, 32'
   to 1') in a reverberant church through a phone (high-pass mic, AGC,
@@ -68,17 +71,39 @@ this fork.
 - **Presets in tenths of a cent** (`preset.UNITS_PER_CENT`, 48000 = A4), with
   ±1c / ±0.1c buttons and a ± key in the note editor. Existing whole-cent
   presets and settings are migrated.
-- **A 12-note preset can temper note mode** (Settings toggle, on by default).
-  The action bar's subtitle shows the active temperament and offset (the
-  preset in preset and mixture mode).
+- **Temperament workbench for organ builders**: the Preset tab is now the
+  Temperierung screen, with a note/deviation table and the temperament menu
+  along the bottom. The first four special entries stay fixed; the remaining
+  choices are alphabetized in the active language. A selected temperament
+  always affects note mode. For Pythagorean and meantone tunings, tap the
+  temperament name to choose a temporary wolf fifth; that choice resets when
+  another temperament is selected.
+- **Historical temperaments** (`temperaments.java`): equal, Pythagorean, ¼-
+  and ⅙-comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II
+  and Kellner, and all charts of
+  [Orgelbau Rohlf](http://www.orgelbau-rohlf.de/themen/stimmungen/stimmungen.htm):
+  Young-Sorge, near-equal, Gräf-Sorge, modified Vallotti,
+  Wegscheider/Reinfeld, Johannes Lang, Thomas Rothert, Frischknecht II,
+  Neidhardt (modified, village 1732, small town 1732, large town 1724),
+  modified Werckmeister 1691 (= Rohlf's Niederrodenbach) and Werckmeister
+  III/IV/V in Rohlf's numbering, which is one off the usual names (his 1691 is
+  the usual III, his III the usual IV). Tables are normalized to A = 0 so the
+  A-frequency setting still means the A you hear.
+- **Mixture mode follows detected notes** like tone mode, displays the detected
+  pitch and has key and octave buttons. A key the follow moves to is measured
+  again from 0.5 s after the onset, as a trailing average (0.65 s from 500 Hz
+  up, 1 s from 250 Hz, else 2 s / 3 s) that ends once it is steady.
+  Detections more than 20 cents from the mixture's measured pitch are
+  rejected. Key detection ignores the focused rank. Settings → "Mixture:
+  follow the reference rank" instead looks for that rank and moves the key by
+  a whole tone at most, so another rank sounding alone does not move it.
+- **Organ display refinements**: German organ note labels use Cs/Ds/Fs/Gs;
+  length mode presents the cut/add distance in millimetres with the
+  stopped/open reference.
 - **Preset management** (`PresetIO.java`): long-press for
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
   exported file.
-- **Historical temperaments** (`temperaments.java`): Pythagorean, ¼ and ⅙
-  comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II and
-  Kellner, normalised to A = 0 so the A-frequency setting still means the A
-  you hear.
 - **Neutral dark UI** (`res/values/colors.xml`, theme `Tuner`), with the
   native drawing in `jni/fft.c` and `jni/strobe.c` using the same palette.
   Both the strobe (new default colour scheme) and the FFT spectrogram use
@@ -86,16 +111,20 @@ this fork.
   Settings.
 - **Android 15+ edge-to-edge fixes**: no screen draws under the status or
   navigation bar, and the strobe tab bar no longer covers the last row.
-- **`dev` build type**: `org.galexander.tunertime.dev`, labelled
-  "TunerTime dev", which installs next to the Play Store app with its own
-  settings and presets.
+- **`dev` and `local` build types**: `org.galexander.tunertime.dev`
+  (`assembleDev`, the releases) and `org.galexander.tunertime.local`
+  (`assembleLocal`, Onno's own builds), labelled "TunerTime Organ", which
+  install next to the Play Store app with their own settings and presets.
+  Each updates only an app signed with the same key, so keep building with
+  the keystore the installed app came from.
 
 Open ideas from users, in `NOTES`: octave advance when stepping past the end
 of a preset, and CSV import/export.
 
 ## Building
 
-You need the Android SDK and NDK (tested with NDK 28.2) and JDK 17.
+You need the Android SDK (platform 36, build-tools 35), the NDK (the
+releases use r21, 21.1.6352462; r28 works too) and JDK 17.
 
 1. Create `local.properties` with `sdk.dir=/path/to/Android/Sdk`.
 2. Point `keystore.properties` at a keystore. The Android debug keystore

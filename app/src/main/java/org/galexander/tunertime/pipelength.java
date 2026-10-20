@@ -64,7 +64,7 @@ public class pipelength {
 	private static final int[] STOPPED_PARTIALS = { 1, 3, 5 };
 
 	private final TunerTime ui;
-	private final TextView main_display, temp_display;
+	private final TextView main_display;
 	private final Button kind_button;
 
 	private final double[] hz = new double[MAX_EST];
@@ -76,7 +76,6 @@ public class pipelength {
 	pipelength(TunerTime ui_, View panel) {
 		ui = ui_;
 		main_display = (TextView)panel.findViewById(R.id.length_display);
-		temp_display = (TextView)panel.findViewById(R.id.temp_display);
 		kind_button = (Button)panel.findViewById(R.id.pipe_kind_button);
 		kind_button.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -85,18 +84,6 @@ public class pipelength {
 						"stopped" : "open") + " pipe");
 				update();
 			} });
-		((Button)panel.findViewById(R.id.temp_plus)).setOnClickListener(
-				new View.OnClickListener() {
-			public void onClick(View v) { incr_temp(1); } });
-		((Button)panel.findViewById(R.id.temp_minus)).setOnClickListener(
-				new View.OnClickListener() {
-			public void onClick(View v) { incr_temp(-1); } });
-	}
-
-	private void incr_temp(int d) {
-		parms.temperature += d;
-		update();
-		EventLog.ui("length: temperature " + parms.temperature + " C");
 	}
 
 	public void clear() {
@@ -202,9 +189,6 @@ public class pipelength {
 	}
 
 	public void update() {
-		parms.temperature = Math.max(-20, Math.min(45,
-						parms.temperature));
-		temp_display.setText(parms.temperature + "\u00b0C");
 		kind_button.setText(parms.pipe_stopped ? R.string.pipe_stopped
 						       : R.string.pipe_open);
 
@@ -323,7 +307,7 @@ public class pipelength {
 		double f_act = f_ref * Math.pow(2.0d, cents/1200.0d);
 
 		double div = parms.pipe_stopped ? 4.0d : 2.0d;
-		double cs = speed_of_sound(parms.temperature);
+		double cs = speed_of_sound(18.0d);
 		double len_ref = 1000.0d * cs/(div*f_ref);	/* mm */
 		double mm = 1000.0d * cs/(div*f_act) - len_ref;
 
@@ -341,12 +325,13 @@ public class pipelength {
 			amm = fmt("%." + dec + "f", Math.abs(mm));
 		}
 		String s;
-		if (in_tune) {
-			s = ui.getString(R.string.length_in_tune_mm, amm);
-		} else {
-			s = ui.getString((mm > 0.0d) ? R.string.length_too_long
-						     : R.string.length_too_short, amm);
-		}
+		String sign = ui.getString(in_tune ? R.string.length_sign_in_tune
+				: (mm > 0.0d) ? R.string.length_sign_long
+					      : R.string.length_sign_short);
+		s = ui.getString(R.string.length_mm_compact, sign, amm,
+				ui.getString(parms.pipe_stopped
+					? R.string.length_ref_stopped
+					: R.string.length_ref_open));
 		if (!recent) {
 			s = ui.getString(R.string.length_held, s);
 		}

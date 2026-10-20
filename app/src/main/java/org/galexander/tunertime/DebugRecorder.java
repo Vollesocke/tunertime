@@ -111,6 +111,7 @@ public class DebugRecorder {
 		final short[] samps = Arrays.copyOf(buf, n);
 		final File wav = new File(dir, base + ".wav");
 		final File txt = new File(dir, base + ".txt");
+		final String timeline = EventLog.timeline(start, end[0], rate);
 		final String info =
 			"time " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
 				Locale.US).format(when) + "\n" +
@@ -135,9 +136,10 @@ public class DebugRecorder {
 					"-t %.5f ", t_est) : "") +
 				base + ".wav" +
 				((parms.focus_ratio > 0.0) ?
-				 (" " + parms.focus_ratio) : "") + "\n" +
-			"\n" + EventLog.HEADER +
-			EventLog.timeline(start, end[0], rate);
+				 (" " + parms.focus_ratio) : "") +
+				(timeline.contains(" hint ") ?
+				 (" --hints " + base + ".txt") : "") + "\n" +
+			"\n" + EventLog.HEADER + timeline;
 		final File dir_ = dir;
 		final int rate_ = rate;
 		new Thread() {

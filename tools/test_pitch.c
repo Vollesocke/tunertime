@@ -2,14 +2,15 @@
  *
  *   test_pitch                   runs the synthetic cases, prints a score
  *   test_pitch [-t secs] file.wav [focus_ratio [expect_hz]]
+ *               [--hints recording.txt]
  *                                replays a recording (16-bit PCM WAV, e.g.
  *                                one saved by the app's debug recording)
  *                                and prints every estimate over time,
  *                                in seconds and samples from its start
  *                                like the timeline in the app's .txt;
  *                                -t secs: analyse at the same samples
- *                                as the app's estimate at secs (the
- *                                .txt's "replay:" line gives it)
+ *                                as the app's estimate at secs; --hints
+ *                                applies the changing hints from the .txt
  *
  * Build with any C compiler, e.g.
  *   gcc -O2 -Ijni -o test_pitch tools/test_pitch.c jni/pitch.c -lm
@@ -119,6 +120,94 @@ static void name(int s, char *out) {
 	sprintf(out, "%s%d", names[((k%12)+12)%12], (int)floor((k+9)/12.0));
 }
 
+struct hint_event {
+	long sample;
+	double focus, expect;
+};
+
+/* Reads `hint focus_ratio expect_hz` events from a DebugRecorder .txt. */
+static struct hint_event *load_hints(const char *path, int *count)
+{
+	FILE *f = fopen(path, "r");
+	struct hint_event *hints = NULL;
+	char line[512];
+	int n = 0, cap = 0;
+	if (!f) {
+		perror(path);
+		return NULL;
+	}
+	while (fgets(line, sizeof line, f)) {
+		double secs, focus, expect;
+		long sample;
+		if (sscanf(line, "%lf %ld hint %lf %lf", &secs, &sample,
+				&focus, &expect) != 4) {
+			continue;
+		}
+		if (n == cap) {
+			int new_cap = cap ? cap*2 : 32;
+			struct hint_event *p = realloc(hints,
+					new_cap*sizeof(*hints));
+			if (!p) {
+				free(hints);
+				fclose(f);
+				return NULL;
+			}
+			hints = p;
+			cap = new_cap;
+		}
+		hints[n].sample = sample;
+		hints[n].focus = focus;
+		hints[n].expect = expect;
+		n++;
+	}
+	fclose(f);
+	if (n == 0) {
+		/* recordings before v18.3 often have none: the hints from
+		 * the command line then hold throughout */
+		fprintf(stderr, "%s: no pitch-hint events found, using the "
+			"command line's\n", path);
+		free(hints);
+		*count = 0;
+		return NULL;
+	}
+	*count = n;
+	return hints;
+}
+
+static int replay_options(int argc, char **argv, int first,
+		double *focus, double *expect, const char **hint_path)
+{
+	int have_focus = 0, have_expect = 0, i;
+	for (i = first; i < argc; i++) {
+		if (!strcmp(argv[i], "--hints")) {
+			if (++i >= argc) {
+				fprintf(stderr, "--hints needs a .txt path\n");
+				return 0;
+			}
+			*hint_path = argv[i];
+		} else {
+			char *end;
+			double v = strtod(argv[i], &end);
+			if ((end == argv[i]) || (*end != '\0')) {
+				fprintf(stderr, "unexpected replay argument: %s\n",
+					argv[i]);
+				return 0;
+			}
+			if (!have_focus) {
+				*focus = v;
+				have_focus = 1;
+			} else if (!have_expect) {
+				*expect = v;
+				have_expect = 1;
+			} else {
+				fprintf(stderr, "too many numeric replay arguments\n");
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 /* replays a WAV file through the detector, one line per estimate: the
  * time in seconds from the start of the file and the sample at which the
  * analysed window ended, as the timeline in a debug recording's .txt
@@ -127,12 +216,14 @@ static void name(int s, char *out) {
  * same samples as the app's (every PITCH_STEP samples), by feeding a few
  * samples of silence first, so that both lists line up */
 static int replay(const char *path, double focus, double expect,
-		double align)
+		double align, const char *hint_path)
 {
 	FILE *f = fopen(path, "rb");
 	unsigned char hdr[12], ck[8];
 	int rate = 0, chans = 0, bits = 0, fmt = 0;
 	long data_len = -1;
+	int nhints = 0, ihint = 0;
+	struct hint_event *hints = NULL;
 
 	if (!f) { perror(path); return 1; }
 	if ((fread(hdr, 1, 12, f) != 12) || memcmp(hdr, "RIFF", 4) ||
@@ -173,8 +264,25 @@ static int replay(const char *path, double focus, double expect,
 	frames = i;
 	fclose(f);
 
+	if (hint_path) {
+		nhints = -1;
+		hints = load_hints(hint_path, &nhints);
+		if (!hints && (nhints != 0)) {
+			free(buf);
+			return 1;
+		}
+	}
 	printf("# %s: %d Hz, %ld samples (%.2f s), focus %.3f, expect %.2f Hz\n",
 		path, rate, frames, (double)frames/rate, focus, expect);
+	if (hints) {
+		printf("# using %d pitch-hint changes from %s\n", nhints,
+				hint_path);
+		while ((ihint < nhints) && (hints[ihint].sample <= 0)) {
+			focus = hints[ihint].focus;
+			expect = hints[ihint].expect;
+			ihint++;
+		}
+	}
 	printf("#     time   sample        Hz  note    cents  conf\n");
 	pitch_init(rate);
 	pitch_hint(focus, expect);
@@ -191,6 +299,13 @@ static int replay(const char *path, double focus, double expect,
 	}
 	for (i = 0; i + 1024 <= frames; i += 1024) {
 		double hz, c;
+		while (hints && (ihint < nhints) &&
+		       (hints[ihint].sample <= i)) {
+			focus = hints[ihint].focus;
+			expect = hints[ihint].expect;
+			ihint++;
+			pitch_hint(focus, expect);
+		}
 		if (pitch_feed(buf+i, 1024, &hz, &c)) {
 			long at = i + pitch_last_at();
 			double t = (double)at/rate;
@@ -207,25 +322,30 @@ static int replay(const char *path, double focus, double expect,
 			}
 		}
 	}
+	free(hints);
 	free(buf);
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
+	double focus = 0.0, expect = 0.0;
+	const char *hint_path = NULL;
 	if ((argc > 2) && !strcmp(argv[1], "-t")) {
 		double align = atof(argv[2]);
 		if (argc < 4) {
 			fprintf(stderr, "usage: test_pitch [-t secs] file.wav "
-				"[focus_ratio [expect_hz]]\n");
+				"[focus_ratio [expect_hz]] [--hints file.txt]\n");
 			return 1;
 		}
-		return replay(argv[3], (argc > 4) ? atof(argv[4]) : 0.0,
-				(argc > 5) ? atof(argv[5]) : 0.0, align);
+		if (!replay_options(argc, argv, 4, &focus, &expect,
+				&hint_path)) return 1;
+		return replay(argv[3], focus, expect, align, hint_path);
 	}
 	if (argc > 1) {
-		return replay(argv[1], (argc > 2) ? atof(argv[2]) : 0.0,
-				(argc > 3) ? atof(argv[3]) : 0.0, -1.0);
+		if (!replay_options(argc, argv, 2, &focus, &expect,
+				&hint_path)) return 1;
+		return replay(argv[1], focus, expect, -1.0, hint_path);
 	}
 
 	static const double full[8]   = { 1, .6, .4, .3, .2, .15, .1, .08 };

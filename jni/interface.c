@@ -23,6 +23,7 @@ static jclass cl_strobe;
 static jclass cl_tunertime;
 static jclass cl_listener;
 static jclass cl_parms;
+static jclass cl_eventlog;
 
 static jmethodID mid_println;
 static jmethodID mid_st_do_draw;
@@ -33,6 +34,7 @@ static jmethodID mid_st_focus_drift;
 static jmethodID mid_tt_cents_to_freq;
 static jmethodID mid_li_read;
 static jmethodID mid_li_get_samplerate;
+static jmethodID mid_eventlog_hint;
 
 static jfieldID fid_out;
 static jfieldID fid_st_labels;
@@ -42,6 +44,8 @@ static jfieldID fid_st_paused;
 static jfieldID fid_p_strobe_cents;
 static jfieldID fid_p_num_strobes;
 static jfieldID fid_p_auto_note;
+static jfieldID fid_p_mixture_mode;
+static jfieldID fid_p_mixture_focus_follow;
 static jfieldID fid_p_length_mode;
 static jfieldID fid_p_harm_mult;
 static jfieldID fid_p_organ_mode;
@@ -284,6 +288,7 @@ jni_init(JNIEnv *env_)
 	CLASS(tunertime, "org/galexander/tunertime/TunerTime")
 	CLASS(listener, "org/galexander/tunertime/Listener")
 	CLASS(parms, "org/galexander/tunertime/parms")
+	CLASS(eventlog, "org/galexander/tunertime/EventLog")
 
 	METHOD(println, printstream, "println", "(Ljava/lang/String;)V")
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
@@ -294,6 +299,7 @@ jni_init(JNIEnv *env_)
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
 	STMETHOD(li_get_samplerate, listener, "get_samplerate", "()I")
+	STMETHOD(eventlog_hint, eventlog, "hint", "(JDD)V")
 
 	STFIELD(out, system, "out", "Ljava/io/PrintStream;")
 	FIELD(st_labels, strobe, "labels", "[Ljava/lang/String;")
@@ -303,6 +309,8 @@ jni_init(JNIEnv *env_)
 
 	STFIELD(p_strobe_cents, parms, "strobe_cents", "I")
 	STFIELD(p_auto_note, parms, "auto_note", "Z")
+	STFIELD(p_mixture_mode, parms, "mixture_mode", "Z")
+	STFIELD(p_mixture_focus_follow, parms, "mixture_focus_follow", "Z")
 	STFIELD(p_length_mode, parms, "length_mode", "Z")
 	STFIELD(p_num_strobes, parms, "num_strobes", "I")
 	STFIELD(p_harm_mult, parms, "harm_mult", "[I")
@@ -472,6 +480,7 @@ Java_org_galexander_tunertime_Strobe_organ_1max_1freq(JNIEnv *env_, jclass cl)
 JNIEXPORT void JNICALL
 Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 {
+	double logged_focus = -1.0, logged_expect = -1.0;
 	if (!jni_init(env_)) {
 		return;
 	}
@@ -502,18 +511,39 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 		 * and handed to the UI as a plain call */
 		if ((snd_buflen > 0) && !fft_mode &&
 		    ((*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) ||
+		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_mixture_mode) ||
 		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
 			/* the partial the user focused on (organ mode),
-			 * looked for near where the shown note puts it */
-			pitch_hint((*env)->GetStaticDoubleField(env, cl_parms,
-					fid_p_focus_ratio), pitch_expect);
+			 * looked for near where the shown note puts it.  In
+			 * mixture mode the focus is the reference rank
+			 * measured, and the key is detected independent of
+			 * it (Onno), unless Settings asks to follow the
+			 * reference rank (then TunerTime.on_pitch() keeps the
+			 * key from jumping when another rank sounds alone) */
+			jboolean unfocused = (*env)->GetStaticBooleanField(env,
+					cl_parms, fid_p_mixture_mode) &&
+				!(*env)->GetStaticBooleanField(env, cl_parms,
+					fid_p_mixture_focus_follow);
+			double detector_focus = unfocused ? 0.0 :
+				(*env)->GetStaticDoubleField(env, cl_parms,
+					fid_p_focus_ratio);
+			double detector_expect = unfocused ? 0.0 : pitch_expect;
+			long long at = record_total() - snd_buflen;
+			pitch_hint(detector_focus, detector_expect);
+			if ((detector_focus != logged_focus) ||
+			    (detector_expect != logged_expect)) {
+				(*env)->CallStaticVoidMethod(env, cl_eventlog,
+					mid_eventlog_hint, (jlong)at, detector_focus,
+					detector_expect);
+				logged_focus = detector_focus;
+				logged_expect = detector_expect;
+			}
 			if (pitch_feed(snd_buf, snd_buflen, &hz, &conf)) {
 				/* the sample the analysed window ended
 				 * on, for the debug recordings' timeline */
-				long long at = record_total() - snd_buflen +
-						pitch_last_at();
+				at += pitch_last_at();
 				(*env)->CallVoidMethod(env, this,
 					mid_st_pitch_detected, hz, conf,
 					(jlong)at);

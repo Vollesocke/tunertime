@@ -33,8 +33,8 @@ android {
         applicationId = "org.galexander.tunertime"
         minSdk = 21
         targetSdk = 36
-        versionCode = 20
-        versionName = "18.2-organ"
+        versionCode = 21
+        versionName = "18.3-organ"
         manifestPlaceholders["appLabel"] = "TunerTime Organ"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,6 +57,13 @@ android {
         create("dev") {
             initWith(getByName("release"))
             applicationIdSuffix = ".dev"
+            manifestPlaceholders["appLabel"] = "TunerTime Organ"
+        }
+        // the same, as Onno installs it on his phone (from his own build,
+        // signed with his keystore.properties): ./gradlew assembleLocal
+        create("local") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".local"
             manifestPlaceholders["appLabel"] = "TunerTime Organ"
         }
         create("uitest") {

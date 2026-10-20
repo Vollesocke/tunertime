@@ -14,6 +14,50 @@ public class preset {
 	public List<Integer> notes;
 
 	public static List<preset> presets = new ArrayList<preset>();
+	private static int temporary_wolf_preset_id = -1;
+	private static int temporary_wolf_root = -1;
+
+	public static int temporary_wolf_root(int id) {
+		return (id == temporary_wolf_preset_id) ? temporary_wolf_root : -1;
+	}
+	public static void set_temporary_wolf(int id, int root) {
+		temporary_wolf_preset_id = id;
+		temporary_wolf_root = root;
+	}
+	public static void clear_temporary_wolf() {
+		temporary_wolf_preset_id = temporary_wolf_root = -1;
+	}
+	public static void clear_temporary_wolf_if_different(int id) {
+		if ((temporary_wolf_preset_id != -1) &&
+		    (temporary_wolf_preset_id != id)) {
+			clear_temporary_wolf();
+		}
+	}
+
+	/* Index in temperaments, or -1 if this preset is not the built-in
+	 * Pythagorean or a meantone temperament.  Within a cent per note,
+	 * so that presets saved in whole cents (before tenths) and their
+	 * exports count as well */
+	public int wolf_template() {
+		for (int i = 1; i <= 3; i++) {
+			List<Integer> t = temperaments.make_notes(i);
+			if (notes.size() != t.size()) continue;
+			boolean same = true;
+			for (int j = 0; same && (j < t.size()); j++) {
+				same = Math.abs(notes.get(j) - t.get(j)) <=
+						UNITS_PER_CENT;
+			}
+			if (same) return i;
+		}
+		return -1;
+	}
+
+	public List<Integer> tuning_notes() {
+		int root = temporary_wolf_root(id);
+		int template = wolf_template();
+		return ((root >= 0) && (template >= 1) && (template <= 3)) ?
+			temperaments.with_wolf(template, root) : notes;
+	}
 
 
 	public void sort_notes() {
@@ -50,12 +94,13 @@ public class preset {
 		 * 0=A (like strobe_cents).  Otherwise null. */
 	public int[] temper_offsets() {
 		final int semi = 100*UNITS_PER_CENT;
-		if (notes.size() != 12) {
+		List<Integer> tuning = tuning_notes();
+		if (tuning.size() != 12) {
 			return null;
 		}
 		int[] ret = new int[12];
 		boolean[] seen = new boolean[12];
-		for (int v : notes) {
+		for (int v : tuning) {
 			int t = v+semi/2;
 			int et = ((t >= 0) ? t : (t-semi+1)) / semi;	/* floor */
 			int pc = ((et%12)+12)%12;

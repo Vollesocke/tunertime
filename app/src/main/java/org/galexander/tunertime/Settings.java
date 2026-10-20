@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 public class Settings extends PreferenceActivity {
+	public static final String EXTRA_OPEN_STROBE_ROWS =
+			"org.galexander.tunertime.OPEN_STROBE_ROWS";
 	private PreferenceCategory strobe_category;
 	private Preference harmonics, organ_footages;
 
@@ -39,6 +41,22 @@ public class Settings extends PreferenceActivity {
 			content.getChildAt(0).setFitsSystemWindows(true);
 		}
 		organ_rows_init();
+		if (getIntent().getBooleanExtra(EXTRA_OPEN_STROBE_ROWS, false)) {
+			final MultiSelectListPreference rows =
+				(PreferenceManager.getDefaultSharedPreferences(this)
+					.getBoolean("organ_mode", false)) ?
+				(MultiSelectListPreference)organ_footages :
+				(MultiSelectListPreference)harmonics;
+			((DirectMultiSelectListPreference)rows).setOnDialogClosed(
+				new Runnable() {
+				public void run() { finish(); }
+				});
+			getListView().post(new Runnable() {
+				public void run() {
+					((DirectMultiSelectListPreference)rows).openDialog();
+				}
+			});
+		}
 	}
 
 	/* "Language / Sprache", see Lang.java */

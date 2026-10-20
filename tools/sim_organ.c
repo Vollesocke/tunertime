@@ -109,9 +109,26 @@ static int det_agree = 4;	/* TunerTime.DET_AGREE; -a N */
 #define FOLLOW_OLD	1	/* follow_shift, v18.1 */
 #define FOLLOW_NEW	2	/* continuity */
 static int follow_mode = FOLLOW_NONE;
+/* the mixture measurement of mixture.java (Onno, 06f3337): a trailing
+ * average over mix_window() seconds, done when 3 results in a row
+ * agree within 0.15 c, or after MEASURE_SECONDS(_LOW) of usable signal
+ * at the latest.  -m fixed: the fixed 2 s / 3 s average of v18.2 */
+static int mix_trail = 1;
+/* -x focus: mixture mode follows the reference rank (Settings,
+ * parms.mixture_focus_follow): the detector hinted with the focus, the
+ * key kept within MIX_SEMIS.  Default (Onno's): the detector unhinted */
+static int mix_focus = 0;
+#define TRAIL_STABLE_CENTS	0.15
+#define TRAIL_STABLE_BUFFERS	3
+static double mix_window(double f_row, double r)
+{
+	return (f_row >= 500.0) ? 0.65 : (f_row >= 250.0) ? 1.0 :
+		((r < 1.0 - 1e-6) ? MEASURE_SECONDS_LOW : MEASURE_SECONDS);
+}
 #define CORR_RECENT	4.0	/* TunerTime.CORR_RECENT */
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
+#define MIX_SEMIS	2	/* TunerTime.MIX_SEMIS */
 #define CORR_AFTER	1.5	/* the user corrects a wrong note this long
 				 * into the key */
 /* organ rows, in multiples of the 32' pitch: 32' 16' 8' 4' 2 2/3' 2' 1 1/3' 1' */
@@ -207,6 +224,10 @@ struct scen {
 	double steps, steps_on, steps_off;
 	int hint;		/* pitch_hint(focus, key) like the app with
 				 * a row focused */
+	int mixmode;		/* mixture mode: with -x focus the shown key
+				 * folds octaves and moves by MIX_SEMIS at
+				 * most, bigger steps between keys made by
+				 * hand; without, the detector is unhinted */
 	double mstart;
 	int nk, np;
 	struct key k[MAXK];
@@ -741,6 +762,14 @@ static int row_for(double ratio) {
 	return -1;
 }
 
+/* pitch_hint() as the app gives it: none in mixture mode, unless it
+ * follows the reference rank */
+static void hint(const struct scen *sc, double focus, double expect)
+{
+	if (sc->mixmode && !mix_focus) pitch_hint(0.0, 0.0);
+	else pitch_hint(focus, expect);
+}
+
 static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 {
 	static struct est est[MAXEST];
@@ -758,6 +787,12 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	/* mixture */
 	int mx_on = 0, mx_b0 = 0;
 	double mx_c = 0.0, mx_s = 0.0, mx_lo = 0.0, mx_hi = 0.0;
+	/* -m trail: the buffers in the window (no limit on their number,
+	 * unlike 06f3337's 64), and the stability count */
+	static double tr_c[MAXEST*4], tr_s[MAXEST*4];
+	static int tr_b[MAXEST*4];
+	int tr_first = 0, tr_n = 0, tr_stable = 0;
+	double tr_el = 0.0, tr_prev = NAN;
 	int tgt_key = -1;
 
 	memset(kr, 0, sizeof kr);
@@ -803,13 +838,21 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			base_cents = 48000 + 1000*k->semi;
 			strobe_recalculate(0);
 			strobe_focus(row_for(r) >= 0 ? r : 0.0);
+			/* mixture mode: the tuner sets the key by hand
+			 * where it jumps (Ton+/-, octave buttons) */
+			if (S->mixmode && mix_focus && ((shown == -999) ||
+			    (abs(k->semi - shown) > MIX_SEMIS)))
+				shown = k->semi;
 			/* the app hints the note shown; without -f that is
 			 * taken to be the key's */
-			if (S->hint) pitch_hint(r, key_hz((follow_mode &&
+			if (S->hint) hint(S, r, key_hz((follow_mode &&
 					(shown != -999)) ? shown : k->semi));
 			nd = 0;
 			mx_on = 0;
 			mx_c = mx_s = mx_lo = mx_hi = 0.0;
+			tr_first = tr_n = tr_stable = 0;
+			tr_el = 0.0;
+			tr_prev = NAN;
 			tgt_key = ki;
 		}
 		memcpy(snd_buf, buf + b*BUFLEN, BUFLEN*sizeof(short));
@@ -833,7 +876,12 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				int to = g;
 				det_stable = g;
 				det_stable_t = t;
-				if (follow_mode == FOLLOW_OLD) {
+				if (S->mixmode && mix_focus && (shown != -999)) {
+					to = g + 12*(int)floor((shown - g)/12.0
+								+ 0.5);
+					if (abs(to - shown) > MIX_SEMIS)
+						to = shown;
+				} else if (follow_mode == FOLLOW_OLD) {
 					to = g + shift;
 				} else if (cont && (shown != -999)) {
 					to = g + 12*(int)floor((shown - g)/12.0
@@ -844,7 +892,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				if (to != shown) {
 					shown = to;
 					if (S->hint && follow_mode && (ki >= 0))
-						pitch_hint(key_focus(S,
+						hint(S, key_focus(S,
 							&S->k[ki]), key_hz(to));
 					if (verbose > 1) {
 						char nm[8];
@@ -895,7 +943,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				}
 				shown = to;
 				if (S->hint)
-					pitch_hint(key_focus(S, &S->k[ki]),
+					hint(S, key_focus(S, &S->k[ki]),
 						key_hz(to));
 			}
 			if (ne < MAXEST) {
@@ -923,6 +971,33 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				}
 				mx_c += c;
 				mx_s += s;
+				if (mix_trail && (s > 0.0)) {
+					double w = mix_window(fr,
+						key_focus(S, &S->k[ki]));
+					tr_c[tr_first + tr_n] = c;
+					tr_s[tr_first + tr_n] = s;
+					tr_b[tr_first + tr_n] = b;
+					tr_n++;
+					tr_el += s;
+					while ((mx_s > w) && (tr_n > 1)) {
+						double x = mx_s - w;
+						if (tr_s[tr_first] <= x) {
+							mx_s -= tr_s[tr_first];
+							mx_c -= tr_c[tr_first];
+							tr_first++;
+							tr_n--;
+						} else {
+							double keep = (tr_s[tr_first] - x)
+								/ tr_s[tr_first];
+							mx_s -= x;
+							mx_c -= tr_c[tr_first]*(1.0 - keep);
+							tr_s[tr_first] *= keep;
+							tr_c[tr_first] *= keep;
+							break;
+						}
+					}
+					mx_b0 = tr_b[tr_first];
+				}
 				{
 					double a;
 					if (strobe_drift_amp(&a) && (a > 0.0)) {
@@ -931,9 +1006,27 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 						if (a > mx_hi) mx_hi = a;
 					}
 				}
-				if (mx_s >= ((key_focus(S, &S->k[ki]) <
+				int done;
+				double need = (key_focus(S, &S->k[ki]) <
 					      1.0 - 1e-6) ? MEASURE_SECONDS_LOW
-							  : MEASURE_SECONDS)) {
+							  : MEASURE_SECONDS;
+				if (!mix_trail) {
+					done = (mx_s >= need);
+				} else if ((s <= 0.0) || (mx_s < mix_window(fr,
+					    key_focus(S, &S->k[ki])))) {
+					done = 0;
+				} else {
+					double cn = 1200.0*log2((fr + mx_c/mx_s)/fr);
+					if (!isnan(tr_prev) &&
+					    (fabs(cn - tr_prev) < TRAIL_STABLE_CENTS))
+						tr_stable++;
+					else
+						tr_stable = 0;
+					tr_prev = cn;
+					done = (tr_stable >= TRAIL_STABLE_BUFFERS) ||
+						(tr_el >= need);
+				}
+				if (done) {
 					struct key *k = &S->k[ki];
 					int j = focus_pipe(S, ki);
 					double f_row = cents_to_freq(0,
@@ -1373,6 +1466,7 @@ static void mixture(const char *nm, double other, int nr) {
 	double t = 0.5;
 	church(nm);
 	S->hint = 1;
+	S->mixmode = 1;
 	for (i = 0; i < 4; i++) {
 		for (r = 0; r < nr; r++) {
 			int k = key(n[i], t, 3.5);
@@ -1390,6 +1484,28 @@ static void mixture(const char *nm, double other, int nr) {
 	}
 }
 static void sc_mix_all(void) { mixture("Mixture III open", 1.0, 2); }
+/* mixture mode played chromatically, the 2' rank focused as the
+ * reference, the ranks sounding one at a time as when they are tuned
+ * against it (the others muted): 2', then 2 2/3', 1 3/5' and 1' alone.
+ * The key shown has to stay on each key while the other ranks sound */
+static void sc_mix_chrom(void) {
+	static const double f[4] = { 4.0, 3.0, 5.0, 8.0 };
+	int i, r;
+	double t = 0.5;
+	church("Mixture chromatic, ranks alone");
+	S->hint = 1;
+	S->mixmode = 1;
+	for (i = 0; i < 4; i++) {	/* MAXK keys */
+		for (r = 0; r < 4; r++) {
+			int k = key(C3 + i, t, 3.5);
+			int a = pipe(k, f[r], 2.0, OPEN, 2000, 0.4);
+			S->k[k].focus = 4.0;
+			S->k[k].truth = a;
+			S->k[k].pc_only = 1;
+			t += 4.2;
+		}
+	}
+}
 static void sc_mix_muted(void) { mixture("Mixture III muted -20dB", 0.1, 3); }
 /* Sesquialtera 2 2/3' + 1 3/5', the 2 2/3' focused, with a Gedackt 8' */
 static void sc_sesq(void) {
@@ -1502,7 +1618,7 @@ static const builder builders[] = {
 	sc_subhum,
 	sc_prin16, sc_32, sc_prin32, sc_posaune, sc_high2, sc_high1,
 	sc_trem_flute, sc_trem_prin, sc_wobble, sc_celeste, sc_unda,
-	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_sesq, sc_octaves,
+	sc_leak, sc_neighbour, sc_mix_all, sc_mix_muted, sc_mix_chrom, sc_sesq, sc_octaves,
 	sc_fifths, sc_longtail, sc_speech_over, sc_steps_over,
 	sc_chr_prin, sc_chr_ged, sc_chr_flute4, sc_chr_quint,
 	sc_chr_quint_row, sc_chr_sub,
@@ -1522,6 +1638,10 @@ int main(int argc, char **argv) {
 		else if (!strcmp(argv[a], "-w") && (a+1 < argc)) wavdir = argv[++a];
 		else if (!strcmp(argv[a], "-a") && (a+1 < argc))
 			det_agree = atoi(argv[++a]);
+		else if (!strcmp(argv[a], "-x") && (a+1 < argc))
+			mix_focus = !strcmp(argv[++a], "focus");
+		else if (!strcmp(argv[a], "-m") && (a+1 < argc))
+			mix_trail = strcmp(argv[++a], "fixed");
 		else if (!strcmp(argv[a], "-f") && (a+1 < argc)) {
 			a++;
 			follow_mode = !strcmp(argv[a], "old") ? FOLLOW_OLD :
