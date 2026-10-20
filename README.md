@@ -48,6 +48,19 @@ this fork.
   samples, so the two estimate lists can be compared line by line. UI events
   are stamped when the app handled them; the audio input latency (a few
   buffers) is not taken off.
+- **Chromatic run recordings** (`RunRecorder.java`; menu "Record chromatic
+  run"): a whole stop key by key, so that every key's note is known, for
+  tuning the detector on real pipes. A dialog asks for organ, stop, kind
+  (open, stopped, reed, mixture, mutation), footage and notes. During the
+  run auto is off and the note shown is the key played: hold each key
+  about 3 s, release, then semi+ (also in mixture mode); semi- plays a key
+  again ("redo"). The detector still runs and logs. The action bar shows
+  the time and keys, with stop and "Mark" (noise, faulty pipe, wrong key,
+  text). The input is streamed to `files/runs/run_<time>_<stop>.wav`, the
+  .txt has the header (tuning, device, microphone), one `key` line per key
+  (start, end, note, target Hz) and the full timeline as above. With a row
+  focused, its strobe drift says how far each pipe is off. At most 20 min;
+  leaving the app ends the run. `tools/field/run_score.py` scores them.
 - **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
   A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy)
   and organ pipes (Gedackt, Quintadena, Principal, reeds, 16'/32' through a
