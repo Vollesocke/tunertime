@@ -61,6 +61,13 @@ this fork.
   (start, end, note, target Hz) and the full timeline as above. With a row
   focused, its strobe drift says how far each pipe is off. At most 20 min;
   leaving the app ends the run. `tools/field/run_score.py` scores them.
+- **Recordings to GitHub** (`ShareRecordings.java`; menu): the runs and
+  debug recordings not sent before are packed into zips in
+  Downloads/TunerTime, each under 25 MB (GitHub's attachment limit; a
+  bigger file goes on in the next zip as pieces `name.001`, `name.002`),
+  and a new issue on Vollesocke/tunertime opens in the browser with a list
+  of them, to attach the zips to. `tools/field/unpack.py DIR` unpacks and
+  joins them.
 - **Bench test for the detector** (`tools/test_pitch.c`): synthetic tones from
   A0 to C8 (harmonic, missing fundamental, piano inharmonicity, sine, noisy)
   and organ pipes (Gedackt, Quintadena, Principal, reeds, 16'/32' through a

@@ -91,6 +91,11 @@ public class RunRecorder {
 		return active;
 	}
 
+	/* the file name of the run being recorded, without extension */
+	public static String base() {
+		return base;
+	}
+
 	/* seconds recorded so far */
 	public static int secs() {
 		return (rate > 0) ? (int)(written/rate) : 0;

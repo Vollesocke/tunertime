@@ -2040,6 +2040,7 @@ public class TunerTime extends Activity
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		boolean on = RunRecorder.active();
 		menu.findItem(R.id.action_run).setVisible(!on);
+		menu.findItem(R.id.action_share).setVisible(!on);
 		/* each would leave the screen, which ends the run */
 		menu.findItem(R.id.action_settings).setVisible(!on);
 		menu.findItem(R.id.action_help).setVisible(!on);
@@ -2059,6 +2060,9 @@ public class TunerTime extends Activity
 		int id = item.getItemId();
 		if (id == R.id.action_run) {
 			run_dialog();
+			return true;
+		} else if (id == R.id.action_share) {
+			ShareRecordings.start(this);
 			return true;
 		} else if (id == R.id.action_run_stop) {
 			run_stop("stop button");

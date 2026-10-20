@@ -316,6 +316,15 @@
 	<string name="run_stop_status">&#9632; Stop %1$d:%2$02d &#183; %3$d</string>
 	<string name="afreq_enter">Pitch of A (Hz)</string>
 	<string name="afreq_range">A between 220 and 880 Hz</string>
+	<string name="menu_share">Recordings to GitHub</string>
+	<string name="share_none">No recordings yet</string>
+	<string name="share_packing">Packing the recordings&#8230;</string>
+	<string name="share_failed">Could not pack the recordings: %1$s</string>
+	<string name="share_ready">%1$d zip(s) in %2$s. Attach them to the issue that opens now.</string>
+	<string name="share_issue_title">Recordings %1$s</string>
+	<string name="share_issue_body">%1$d zip(s) from %2$s, attached below (drag them here, or tap &#8220;Paste, drop, or click to add files&#8221;):</string>
+	<string name="share_issue_runs">Chromatic runs:</string>
+	<string name="share_issue_recs">Debug recordings: %1$d</string>
 	<string name="run_tab_blocked">Not during a chromatic run</string>
 	<string name="run_mark">Mark</string>
 	<string name="run_started">Recording. Play the key shown, then semi+.</string>

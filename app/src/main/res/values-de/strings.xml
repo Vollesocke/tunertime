@@ -299,6 +299,15 @@
 	<string name="run_stop_status">&#9632; Ende %1$d:%2$02d &#183; %3$d</string>
 	<string name="afreq_enter">Kammerton a (Hz)</string>
 	<string name="afreq_range">a zwischen 220 und 880 Hz</string>
+	<string name="menu_share">Aufnahmen an GitHub</string>
+	<string name="share_none">Noch keine Aufnahmen</string>
+	<string name="share_packing">Aufnahmen werden gepackt&#8230;</string>
+	<string name="share_failed">Aufnahmen konnten nicht gepackt werden: %1$s</string>
+	<string name="share_ready">%1$d Zip-Datei(en) in %2$s. Bitte an das Issue anh&#228;ngen, das sich jetzt &#246;ffnet.</string>
+	<string name="share_issue_title">Aufnahmen %1$s</string>
+	<string name="share_issue_body">%1$d Zip-Datei(en) aus %2$s, unten angeh&#228;ngt (hierher ziehen oder &#8222;Paste, drop, or click to add files&#8220; antippen):</string>
+	<string name="share_issue_runs">Chromatische L&#228;ufe:</string>
+	<string name="share_issue_recs">Debug-Aufnahmen: %1$d</string>
 	<string name="run_tab_blocked">Nicht w&#228;hrend eines chromatischen Laufs</string>
 	<string name="run_mark">Markieren</string>
 	<string name="run_started">Aufnahme l&#228;uft. Angezeigte Taste spielen, dann Ton+.</string>

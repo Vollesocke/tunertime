@@ -10,6 +10,8 @@
 		android:visible="false" />
 	<item android:id="@+id/action_run"
 		android:title="@string/menu_run" />
+	<item android:id="@+id/action_share"
+		android:title="@string/menu_share" />
 	<item android:id="@+id/action_settings"
 		android:icon="@android:drawable/ic_menu_manage"
 		android:title="@string/menu_settings" />

@@ -1,10 +1,10 @@
 # Handoff: TunerTime Organ
 
-Status as of 20 Oct 2026, late: pre-release
-[**v18.4-organ-pre2**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ-pre2)
-on branch `onno-list` (not merged to `main`; the full UI test suite was
-stopped early for it: 6 of 7 ran, the only failure, a German menu item cut
-at font scale 1.3, is fixed but not re-run). It adds to v18.3: chromatic run recordings, meantone with more
+Status as of 20 Oct 2026, late: release
+[**v18.4-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ)
+is on `main` (pre-release v18.4-organ-pre2 before it). UI tests clean on
+tt_fairphone4 (full suite on pre2, the menu tests again on the release);
+tt_galaxy_s25 still not run. It adds to v18.3: chromatic run recordings, meantone with more
 than 12 notes, the mixture measurement ending on key release, a warning when
 the mixture is heard more than a semitone off, and tapping a workbench note.
 
@@ -45,6 +45,12 @@ aufnehmen" (`RunRecorder.java`, README "Chromatic run recordings").
   run header names the mic in use); tapping the A readout opens a keypad
   (220-880 Hz); the strobe long press opens the partial settings as soon
   as it is recognised.
+- **Recordings to GitHub** (menu, `ShareRecordings.java`, Volker's
+  request): zips the new runs and debug recordings into
+  Downloads/TunerTime (under 25 MB each, big files in pieces), then opens
+  a new issue with the list; the zips are attached by hand (no GitHub
+  login in the app). `tools/field/unpack.py` joins them. Tested on the
+  emulator with a 50 MB file: 3 zips, the files come back identical.
 - **Then:** tune `MIN_CONF`/`WEAK_CONF`, the octave lock with a focused
   row and the Trompete bass on these runs (Next steps 2).
 
@@ -84,6 +90,17 @@ aufnehmen" (`RunRecorder.java`, README "Chromatic run recordings").
 4. Semitone warning against all rows or only the reference row?
 5. Workbench tap: also switch to note mode?
 6. Run mode: restore follow after a run? A share button for the files?
+
+**Onno's answers (20 Oct, late), to 1, 3 and 6:**
+- Meantone picker (1): he had dropped the idea after thinking it over,
+  but it is fine as built.
+- Key release timing (3): tune it on the real recordings he provides on
+  21 Oct.
+- Restoring follow after a run (6): does not matter.
+- Share button (6): not needed yet, he uses adb; interesting once wider
+  testing starts. Volker asked for a "Recordings to GitHub" menu item
+  anyway (ShareRecordings.java, below).
+- Still open: 2, 4, 5 and the meantone details in 1.
 
 ## State before the evening of 20 Oct
 
