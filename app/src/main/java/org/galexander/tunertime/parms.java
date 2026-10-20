@@ -131,19 +131,89 @@ public class parms {
 
 	private static SharedPreferences prefs = null;
 
+		/* which note of the pitch class note mode is on where the
+		 * temperament has two (notes picked in the workbench, Dis and
+		 * Es): 0 the lower, 1 the higher.  semi+ and semi- step
+		 * through both, D Dis Es E (TunerTime.semi_step) */
+	static public int note_alt = 0;
+	static public final int NO_CHAIN = Integer.MIN_VALUE;
+
 		/* offset (tenths of a cent) that the selected preset applies to
-		 * the pitch class of c in note mode, if it is a temperament */
+		 * the pitch class of c, if it is a temperament: the lower note
+		 * where it has two (mixture mode rounds to these) */
 	public static int temper_offset(int c) {
-		int[] t = temper_offsets();
+		return temper_offset(c, 0);
+	}
+		/* the same for note mode's note, note_alt */
+	public static int note_offset(int c) {
+		return temper_offset(c, note_alt);
+	}
+	public static int temper_offset(int c, int alt) {
+		int[][] t = temper_offsets();
 		if (t == null) {
 			return 0;
 		}
-		final int semi = 100*preset.UNITS_PER_CENT;
-		return t[(((c+semi/2)/semi)%12+12)%12];
+		int[] o = t[pitch_class(c)];
+		return o[Math.min(Math.max(alt, 0), o.length-1)];
 	}
-	public static int[] temper_offsets() {
+		/* how many notes the temperament has on the pitch class of c:
+		 * 2 for Dis and Es, else 1 */
+	public static int temper_alts(int c) {
+		int[][] t = temper_offsets();
+		return (t == null) ? 1 : t[pitch_class(c)].length;
+	}
+	public static int[][] temper_offsets() {
 		preset p = preset.find(preset_id);
 		return ((p == null) ? null : p.temper_offsets());
+	}
+		/* any pitch class with two notes */
+	public static boolean temper_has_alts() {
+		int[][] t = temper_offsets();
+		for (int i = 0; (t != null) && (i < 12); i++) {
+			if (t[i].length > 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private static int pitch_class(int c) {
+		final int semi = 100*preset.UNITS_PER_CENT;
+		return (((c+semi/2)/semi)%12+12)%12;	/* 0 = A */
+	}
+
+		/* the note of the temperament nearest to c (tenths of a cent,
+		 * without a hand offset): { k, alt }, k*100*U being its
+		 * untempered semitone and alt which of its notes (note_alt) */
+	public static int[] nearest_note(int c) {
+		final int semi = 100*preset.UNITS_PER_CENT;
+		int k0 = (c + semi/2) / semi;
+		int[] best = { k0, 0 };
+		int best_d = Integer.MAX_VALUE;
+		for (int k = k0-1; k <= k0+1; k++) {
+			for (int a = 0; a < temper_alts(k*semi); a++) {
+				int d = Math.abs(c - (k*semi +
+						temper_offset(k*semi, a)));
+				if ((k >= 0) && (d < best_d)) {
+					best[0] = k;
+					best[1] = a;
+					best_d = d;
+				}
+			}
+		}
+		return best;
+	}
+
+		/* note mode's note as a chain position, if the names are
+		 * spelled from the chain of fifths (preset.spelled()), else
+		 * NO_CHAIN */
+	public static int note_chain() {
+		preset p = preset.find(preset_id);
+		int[][] t = (p == null) ? null : p.temper_chain();
+		if (t == null) {
+			return NO_CHAIN;
+		}
+		int[] o = t[pitch_class(note_cents)];
+		return o[Math.min(Math.max(note_alt, 0), o.length-1)];
 	}
 
 
@@ -168,6 +238,7 @@ public class parms {
 					preset.UNITS_PER_CENT;
 		}
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
+		note_alt = (prefs.getInt("note_alt", 0) == 1) ? 1 : 0;
 		auto_note = prefs.getBoolean("auto_note", false);
 		auto_locked = !auto_note &&
 				prefs.getBoolean("auto_locked", false);
@@ -280,6 +351,7 @@ public class parms {
 		editor.putInt("cents_per_octave", cents_per_octave);
 		editor.putInt("strobe_cents10", strobe_cents);
 		editor.putInt("note_cents10", note_cents);
+		editor.putInt("note_alt", note_alt);
 		editor.putBoolean("mixture_mode", mixture_mode);
 		editor.putInt("mixture_cents10", mixture_cents);
 		editor.putFloat("mixture_ref", (float)mixture_ref);

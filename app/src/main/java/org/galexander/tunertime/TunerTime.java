@@ -333,8 +333,10 @@ public class TunerTime extends Activity
 			parms.preset_mode = (buttons == preset_buttons);
 			if (was_preset && !parms.preset_mode) {
 				/* carry the preset note over to note mode */
+				int[] nn = parms.nearest_note(parms.strobe_cents);
+				parms.note_alt = nn[1];
 				parms.note_cents = parms.strobe_cents -
-					parms.temper_offset(parms.strobe_cents);
+					parms.note_offset(nn[0]*100*U);
 			}
 			if (parms.mixture_mode) {
 				/* the readout rounds to this temperament */
@@ -470,6 +472,7 @@ public class TunerTime extends Activity
 	 * long press turns it off.  the state is
 	 * parms.auto_note and parms.auto_locked, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
+	private int det_alt = 0;	/* with det_semi: parms.note_alt */
 	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
 	 * loud speech near the phone moves the note 3 times in 40 s
 	 * instead of 6, a Principal with speech around it never to a wrong
@@ -605,6 +608,13 @@ public class TunerTime extends Activity
 		int heard_cents = freq_to_cents(hz);
 		int k = (int)Math.round((heard_cents - off) /
 							(double)semi);
+		int alt = 0;
+		if (!parms.mixture_mode && parms.temper_has_alts()) {
+			/* more than 12 notes: the nearest of all, Dis or Es */
+			int[] nn = parms.nearest_note(heard_cents - off);
+			k = nn[0];
+			alt = nn[1];
+		}
 		if (parms.mixture_mode) {
 			/* Mixture ranks on the same key should stay within 20 cents
 			 * of its tempered note.  Choose the nearest temperament step,
@@ -626,10 +636,11 @@ public class TunerTime extends Activity
 			}
 			k = best;
 		}
-		if (k == det_semi) {
+		if ((k == det_semi) && (alt == det_alt)) {
 			det_count++;
 		} else {
 			det_semi = k;
+			det_alt = alt;
 			det_count = 1;
 		}
 		if (det_count < DET_AGREE) {
@@ -651,7 +662,10 @@ public class TunerTime extends Activity
 				return;
 			}
 		}
-		if ((t != cur) && (t >= 0) && (t*semi + off <= 9600*U)) {
+		boolean other_alt = !parms.mixture_mode && (alt != parms.note_alt) &&
+				    (parms.temper_alts(t*semi) > 1);
+		if (((t != cur) || other_alt) &&
+		    (t >= 0) && (t*semi + off <= 9600*U)) {
 			if (parms.mixture_mode) {
 				/* Keep the mixture's measured offset from its tempered
 				 * note while moving to the newly heard key. */
@@ -662,6 +676,7 @@ public class TunerTime extends Activity
 				mixture_measure(mixture.ONSET_SKIP);
 			} else {
 				parms.note_cents = t*semi + off;
+				parms.note_alt = alt;
 			}
 			if (EventLog.on) {
 				cause = String.format(Locale.US,
@@ -729,13 +744,34 @@ public class TunerTime extends Activity
 		parms.note_cents = range_limit(parms.note_cents, 0, 9600*U);
 		int after = (parms.note_cents + semi/2) / semi;
 		if (after != before) {
+			if ((after - before) % 12 != 0) {
+				/* a pitch class with two notes (Dis, Es):
+				 * from below the lower, from above the
+				 * higher */
+				parms.note_alt = (after > before) ? 0 :
+					(parms.temper_alts(parms.note_cents) - 1);
+			}
 			user_moved_note(before, after);
 		}
 		update_status();
 	}
 
-	public void semi_incr(View v) { incr_cents(  100*U, "semi+"); }
-	public void semi_decr(View v) { incr_cents( -100*U, "semi-"); }
+	public void semi_incr(View v) { semi_step( 1, "semi+"); }
+	public void semi_decr(View v) { semi_step(-1, "semi-"); }
+	/* where the temperament has two notes on the pitch class (notes
+	 * picked in the workbench), semi+ goes to the higher one before the
+	 * next semitone: D Dis Es E in meantone */
+	private void semi_step(int d, String what) {
+		int n = parms.temper_alts(parms.note_cents);
+		int a = Math.min(parms.note_alt, n-1) + d;
+		if ((a >= 0) && (a < n)) {
+			cause = what;
+			parms.note_alt = a;
+			update_status();
+		} else {
+			incr_cents(d*100*U, what);
+		}
+	}
 	public void oct_incr(View v)  { incr_cents( 1200*U, "oct+"); }
 	public void oct_decr(View v)  { incr_cents(-1200*U, "oct-"); }
 	public void cent_incr(View v) { incr_cents(    1*U, "cent+"); }
@@ -814,22 +850,115 @@ public class TunerTime extends Activity
 		final preset p = preset.find(parms.preset_id);
 		if ((p == null) || (p.wolf_template() < 1)) return;
 		final int[] roots = temperaments.fifth_roots;
-		final String[] items = new String[roots.length];
+		/* one menu (Onno): the 12 places of the wolf, then the notes */
+		final String[] items = new String[roots.length + 1];
 		for (int i = 0; i < roots.length; i++) {
 			items[i] = wolf_interval(roots[i]);
 		}
+		items[roots.length] = getString(R.string.pick_notes_item);
 		new AlertDialog.Builder(this)
 			.setTitle(R.string.wolf_select_title)
 			.setItems(items,
 				new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface d, int which) {
+					d.dismiss();
+					if (which >= roots.length) {
+						pick_notes(p);
+						return;
+					}
 					preset.set_temporary_wolf(p.id, roots[which]);
 					cause = "temporary wolf selection";
 					update_status();
-					d.dismiss();
 				} })
 			.setNegativeButton(R.string.cancel, null)
 			.show();
+	}
+
+	/* the workbench: any notes of the chain of fifths Fes..His, each
+	 * natural note with its flat and sharp, e.g. both Dis and Es for
+	 * meantone with more than 12 notes.  until another temperament is
+	 * selected, like the wolf.  each pitch class needs a note */
+	private void pick_notes(final preset p) {
+		final int template = p.wolf_template();
+		/* C D E F G A H, each with its flat and sharp */
+		final int[] naturals = { -3, -1, 1, -4, -2, 0, 2 };
+		final int[] pos = new int[21];
+		final String[] items = new String[21];
+		final boolean[] checked = new boolean[21];
+		int mask = preset.temporary_chain(p.id);
+		if (mask == 0) {
+			int root = preset.temporary_wolf_root(p.id);
+			mask = temperaments.wolf_chain((root < 0) ? 8 : root);
+		}
+		for (int i = 0; i < 21; i++) {
+			int n = naturals[i/3] + 7*((i%3) - 1);
+			pos[i] = n;
+			items[i] = note.chain_name(n) + "   " + note.cents_str(
+					temperaments.chain_offset(template, n));
+			checked[i] = (mask & (1 << (n - temperaments.CHAIN_LOW)))
+					!= 0;
+		}
+		final AlertDialog dlg = new AlertDialog.Builder(this)
+			.setTitle(R.string.pick_notes_title)
+			.setMultiChoiceItems(items, checked,
+				new DialogInterface.OnMultiChoiceClickListener() {
+				public void onClick(DialogInterface d, int which,
+						    boolean on) {
+					checked[which] = on;
+				} })
+			.setPositiveButton(R.string.ok, null)
+			.setNegativeButton(R.string.cancel, null)
+			.create();
+		dlg.setOnShowListener(new DialogInterface.OnShowListener() {
+			public void onShow(DialogInterface d) {
+				dlg.getButton(AlertDialog.BUTTON_POSITIVE)
+				   .setOnClickListener(new View.OnClickListener() {
+					public void onClick(View v) {
+						int m = 0;
+						boolean[] pc = new boolean[12];
+						for (int i = 0; i < 21; i++) {
+							if (!checked[i]) continue;
+							m |= 1 << (pos[i] -
+								temperaments.CHAIN_LOW);
+							pc[temperaments.chain_class(
+								pos[i])] = true;
+						}
+						String missing = "";
+						for (int c = 0; c < 12; c++) {
+							if (!pc[c]) {
+								missing += (missing.isEmpty() ?
+									"" : " ") +
+									note.class_name(c);
+							}
+						}
+						if (!missing.isEmpty()) {
+							Toast.makeText(TunerTime.this,
+								getString(R.string.pick_notes_missing,
+									missing),
+								Toast.LENGTH_LONG).show();
+							return;
+						}
+						preset.set_temporary_chain(p.id, m);
+						cause = "temporary note selection";
+						update_status();
+						dlg.dismiss();
+					} });
+			} });
+		dlg.show();
+	}
+
+	/* the workbench button with picked notes: how many, and those with
+	 * an accidental, in pitch order: "Notes (14): Cis Dis Es Fis Gis
+	 * As B" in meantone */
+	private String notes_label(preset p) {
+		java.util.List<Integer> chain = p.tuning_chain();
+		String s = "";
+		for (int n : chain) {
+			if (note.chain_accidental(n) != 0) {
+				s += (s.isEmpty() ? "" : " ") + note.chain_name(n);
+			}
+		}
+		return getString(R.string.pick_notes_label, chain.size(), s);
 	}
 	private String wolf_interval(int root) {
 		String[] english = { "C", "C#", "D", "D#", "E", "F",
@@ -1184,7 +1313,7 @@ public class TunerTime extends Activity
 			parms.preset_oct = 0;
 			parms.strobe_cents = 4800*U;
 		} else {
-			int n = p.notes.size();
+			int n = p.tuning_notes().size();
 			while (parms.preset_note < 0) {
 				parms.preset_note += n;
 			}
@@ -1221,7 +1350,7 @@ public class TunerTime extends Activity
 							0, 9600*U);
 			int off = 0;
 			if (parms.temper_offsets() != null) {
-				off = parms.temper_offset(parms.note_cents);
+				off = parms.note_offset(parms.note_cents);
 				temper_str = preset.find(parms.preset_id).name +
 					" " + note.cents_str(off);
 			}
@@ -1250,14 +1379,18 @@ public class TunerTime extends Activity
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
-		note_semi_display.setText(parms.organ_mode ? nn.organ_name() : nn.name_oct);
+		int chain = parms.note_chain();
+		note_semi_display.setText((chain != parms.NO_CHAIN) ?
+			nn.spelled(chain) :
+			parms.organ_mode ? nn.organ_name() : nn.name_oct);
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode) {
 			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
-		preset_semi_display.setText((parms.organ_mode ? n.organ_name() : n.name_oct) + " " + n.cents_str);
+		preset_semi_display.setText(tuning_name(preset.find(
+			parms.preset_id), parms.preset_note, n) + " " + n.cents_str);
 		update_preset_workbench();
 
 		String center_str = string_int10(parms.A_freq);
@@ -1308,6 +1441,18 @@ public class TunerTime extends Activity
 		log_changes();
 	}
 
+	/* the name of n, preset p's i-th note (tuning_notes()): spelled
+	 * from the chain of fifths where more than 12 notes were picked */
+	private static String tuning_name(preset p, int i, note n) {
+		java.util.List<Integer> chain = (p == null) ? null :
+							p.tuning_chain();
+		if ((chain != null) && p.spelled() && (i >= 0) &&
+		    (i < chain.size())) {
+			return n.spelled(chain.get(i));
+		}
+		return parms.organ_mode ? n.organ_name() : n.name_oct;
+	}
+
 	private void update_preset_workbench() {
 		if (preset_workbench == null) return;
 		preset p = preset.find(parms.preset_id);
@@ -1325,18 +1470,20 @@ public class TunerTime extends Activity
 			View.VISIBLE : View.GONE);
 		preset_workbench_static_name.setVisibility((template >= 1) ?
 			View.GONE : View.VISIBLE);
+		java.util.List<Integer> tuning = p.tuning_notes();
 		if (template >= 1) {
 			int root = preset.temporary_wolf_root(p.id);
 			if (root < 0) root = 8;
 			preset_workbench_wolf.setText(p.name + "\n" +
-				getString(R.string.wolf_label, wolf_interval(root)));
+				((p.tuning_chain() != null) ? notes_label(p) :
+				getString(R.string.wolf_label, wolf_interval(root))));
 		}
-		int count = p.notes.size();
+		int count = tuning.size();
 		preset_workbench_summary.setText(count == 1 ?
 			getString(R.string.preset_workbench_count_one, count) :
 			getString(R.string.preset_workbench_count_many, count));
 		for (int i = 0; i < count; i++) {
-			final note n = new note(p.tuning_notes().get(i));
+			final note n = new note(tuning.get(i));
 			LinearLayout row = new LinearLayout(this);
 			row.setOrientation(LinearLayout.HORIZONTAL);
 			row.setGravity(android.view.Gravity.CENTER_VERTICAL);
@@ -1346,7 +1493,7 @@ public class TunerTime extends Activity
 				.getDisplayMetrics().density), 0,
 				(int)(8 * getResources().getDisplayMetrics().density), 0);
 			TextView name = new TextView(this);
-			name.setText(parms.organ_mode ? n.organ_name() : n.name_oct);
+			name.setText(tuning_name(p, i, n));
 			name.setTextSize(18);
 			name.setTextColor(getResources().getColor(R.color.text));
 			row.addView(name, new LinearLayout.LayoutParams(0,

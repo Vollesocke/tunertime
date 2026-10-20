@@ -132,4 +132,56 @@ public class temperaments {
 		}
 		return ret;
 	}
+
+	/* The chain of fifths the workbench picks notes from (Onno, more
+	 * than 12 notes, e.g. both Dis and Es): position n is n fifths
+	 * above A, from Fes (-11) to His (+9), see note.chain_name() */
+	public static final int CHAIN_LOW = -11, CHAIN_HIGH = 9;
+
+	/* the fifth of the templates 1..3 in cents: Pythagorean (pure),
+	 * meantone 1/4 and 1/6 syntonic comma */
+	public static double fifth(int idx) {
+		double pure = 1200.0d*Math.log(1.5d)/Math.log(2.0d);
+		double comma = 1200.0d*Math.log(81.0d/80.0d)/Math.log(2.0d);
+		return (idx == 2) ? (pure - comma/4.0d) :
+		       (idx == 3) ? (pure - comma/6.0d) : pure;
+	}
+
+	/* pitch class (0 = C) of chain position n */
+	public static int chain_class(int n) {
+		return (((9 + 7*n) % 12) + 12) % 12;
+	}
+
+	/* chain position n in template idx: its deviation from equal
+	 * temperament in preset units, with A = 0 (n fifths of fifth(idx)
+	 * against n fifths of 700 c) */
+	public static int chain_offset(int idx, int n) {
+		return (int)Math.round(n*(fifth(idx) - 700.0d) *
+					preset.UNITS_PER_CENT);
+	}
+
+	/* the note of chain position n, C4..B4 like make_notes() */
+	public static int chain_note(int idx, int n) {
+		return 3900*preset.UNITS_PER_CENT +
+			100*preset.UNITS_PER_CENT*chain_class(n) +
+			chain_offset(idx, n);
+	}
+
+	/* the 12 chain positions of the wolf fifth at root (pitch class,
+	 * 0 = C), as with_wolf() places it: the root is the highest and
+	 * the wolf goes from it to the lowest, A is among them.  as a set
+	 * of bits (n - CHAIN_LOW), without positions beyond His */
+	public static int wolf_chain(int root) {
+		int e = 0;
+		while ((e < 11) && (chain_class(e) != root)) {
+			e++;
+		}
+		int mask = 0;
+		for (int n = e-11; n <= e; n++) {
+			if ((n >= CHAIN_LOW) && (n <= CHAIN_HIGH)) {
+				mask |= 1 << (n - CHAIN_LOW);
+			}
+		}
+		return mask;
+	}
 }

@@ -6,9 +6,13 @@
 	<string name="title_settings">Einstellungen</string>
 	<string name="title_preset_select">Preset w&#228;hlen</string>
 	<string name="title_preset_workbench">Temperierung</string>
-	<string name="wolf_select_title">Lage der Wolfsquinte</string>
+	<string name="wolf_select_title">Lage der Wolfsquinte oder T&#246;ne</string>
 	<string name="wolf_interval">%1$s&#8211;%2$s</string>
 	<string name="wolf_label">Wolfsquinte: %1$s</string>
+	<string name="pick_notes_item">T&#246;ne w&#228;hlen (auch mehr als 12)&#8230;</string>
+	<string name="pick_notes_title">T&#246;ne der Stimmung</string>
+	<string name="pick_notes_label">T&#246;ne (%1$d): %2$s</string>
+	<string name="pick_notes_missing">Jede Taste braucht einen Ton: %1$s fehlt</string>
 	<string name="title_preset_edit">Preset bearbeiten</string>
 	<string name="title_preset_note">Preset-Ton bearbeiten</string>
 	<string name="title_strobe">TunerTime Organ: Strobe</string>
