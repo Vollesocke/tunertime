@@ -16,6 +16,8 @@
  *                             new: later detections are taken in the
  *                             octave nearest the note shown, within a
  *                             fourth (TunerTime.on_pitch, continuity)
+ *   sim_organ -r off          mixture measurement without the release
+ *                             detection (mixture.java RELEASE_*)
  *   name                      only scenarios whose name contains it
  *
  * Build (plain C, any compiler):
@@ -118,6 +120,15 @@ static int mix_trail = 1;
  * parms.mixture_focus_follow): the detector hinted with the focus, the
  * key kept within MIX_SEMIS.  Default (Onno's): the detector unhinted */
 static int mix_focus = 0;
+/* the key released before the measurement is done: mixture.java
+ * RELEASE_*.  -r off: the tail measured on, as before */
+static int mix_release = 1;
+#define RELEASE_DROP	0.3
+#ifndef RELEASE_SECS
+#define RELEASE_SECS	0.5
+#endif
+#define RELEASE_GAP	1.0
+#define RELEASE_MIN	0.5
 #define TRAIL_STABLE_CENTS	0.15
 #define TRAIL_STABLE_BUFFERS	3
 static double mix_window(double f_row, double r)
@@ -690,6 +701,8 @@ struct keyres {
 	/* mixture */
 	double mx_err, mx_time;
 	double mx_swing;	/* strobe_drift_amp() over the measurement */
+	int mx_cut;		/* -r: ended by the key's release */
+	int mx_disc;		/* -r: ... with too little, discarded */
 	double focus;
 };
 
@@ -709,6 +722,7 @@ struct scenres {
 	} ld, lr;
 	double mx_mean, mx_max, mx_time;
 	int mx_n, mx_fail;
+	int mx_cut, mx_disc;	/* -r: results cut short, discarded */
 	int beat;		/* measurements with a swing > BEAT_SWING */
 	double swing;		/* the largest swing */
 };
@@ -770,6 +784,26 @@ static void hint(const struct scen *sc, double focus, double expect)
 	else pitch_hint(focus, expect);
 }
 
+/* a mixture measurement's result: drift c cycles in s seconds on the row
+ * of frequency fr, over buffers b0..b1-1 (the truth: while the pipe
+ * sounds) */
+static void mx_result(struct scen *S, struct keyres *kr, int ki, double fr,
+			double c, double s, int b0, int b1, double lo,
+			double hi, double t)
+{
+	struct key *k = &S->k[ki];
+	int j = focus_pipe(S, ki);
+	int boff = (int)(k->off*S->sr/BUFLEN);
+	double f_row = cents_to_freq(0, base_cents, 1) * key_focus(S, k);
+	double got = 1200.0*log2((fr + c/s)/fr), tru;
+	if ((b1 > boff) && (boff > b0)) b1 = boff;
+	tru = 1200.0*log2(true_hz(S, j, b0, b1) * key_focus(S, k) /
+			S->p[j].ratio / f_row);
+	kr[ki].mx_err = got - tru;
+	kr[ki].mx_time = t - k->on;
+	kr[ki].mx_swing = (hi > 0.0) ? (hi - lo)/(hi + lo) : 0.0;
+}
+
 static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 {
 	static struct est est[MAXEST];
@@ -794,6 +828,11 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	int tr_first = 0, tr_n = 0, tr_stable = 0;
 	double tr_el = 0.0, tr_prev = NAN;
 	int tgt_key = -1;
+	/* -r: mixture.java's release detection: the mean amplitude, how
+	 * long low or without a usable block, the window before the drop */
+	double rl_asum = 0.0, rl_asec = 0.0, rl_lows = 0.0, rl_gap = 0.0;
+	double rl_c = 0.0, rl_s = 0.0, rl_lo = 0.0, rl_hi = 0.0;
+	int rl_low = 0, rl_b0 = 0, rl_b = 0;
 
 	memset(kr, 0, sizeof kr);
 	memset(R, 0, sizeof *R);
@@ -854,6 +893,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			tr_el = 0.0;
 			tr_prev = NAN;
 			tgt_key = ki;
+			rl_asum = rl_asec = rl_lows = rl_gap = 0.0;
+			rl_c = rl_s = rl_lo = rl_hi = 0.0;
+			rl_low = rl_b0 = rl_b = 0;
 		}
 		memcpy(snd_buf, buf + b*BUFLEN, BUFLEN*sizeof(short));
 		snd_buflen = BUFLEN;
@@ -965,9 +1007,54 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			    isnan(kr[ki].mx_err) &&
 			    (t >= S->k[ki].on + S->mstart) &&
 			    strobe_drift(&fr, &c, &s)) {
+				double a = 0.0;
+				int done;
 				if (!mx_on) {
 					mx_on = 1;
 					mx_b0 = b;
+				}
+				if (!strobe_drift_amp(&a)) a = 0.0;
+				if (mix_release && (mx_s > 0.0)) {
+					/* mixture.release_heard() */
+					double bs = (double)BUFLEN/S->sr;
+					if (s <= 0.0) {
+						rl_gap += bs;
+					} else {
+						rl_gap = 0.0;
+						rl_low = (a < RELEASE_DROP*rl_asum/
+								rl_asec);
+					}
+					rl_lows = rl_low ? (rl_lows + bs) : 0.0;
+					if ((rl_lows >= RELEASE_SECS) ||
+					    (rl_gap >= RELEASE_GAP)) {
+						double w = !mix_trail ?
+						    ((key_focus(S, &S->k[ki]) <
+						      1.0 - 1e-6) ?
+						     MEASURE_SECONDS_LOW :
+						     MEASURE_SECONDS) :
+						    mix_window(fr, key_focus(S,
+							&S->k[ki]));
+						if (rl_s >= RELEASE_MIN*w) {
+							mx_result(S, kr, ki, fr,
+								rl_c, rl_s,
+								rl_b0, rl_b+1,
+								rl_lo, rl_hi, t);
+							kr[ki].mx_cut = 1;
+						} else {
+							kr[ki].mx_disc = 1;
+						}
+						if (verbose > 1)
+							printf("    %6.2fs mixture: "
+								"released, %s\n", t,
+								kr[ki].mx_cut ? "cut short"
+								: "discarded");
+						tgt_key = -1;
+						goto mixed;
+					}
+				}
+				if (s > 0.0) {
+					rl_asum += a*s;
+					rl_asec += s;
 				}
 				mx_c += c;
 				mx_s += s;
@@ -998,15 +1085,20 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 					}
 					mx_b0 = tr_b[tr_first];
 				}
-				{
-					double a;
-					if (strobe_drift_amp(&a) && (a > 0.0)) {
-						if ((mx_lo == 0.0) || (a < mx_lo))
-							mx_lo = a;
-						if (a > mx_hi) mx_hi = a;
-					}
+				if (a > 0.0) {
+					if ((mx_lo == 0.0) || (a < mx_lo))
+						mx_lo = a;
+					if (a > mx_hi) mx_hi = a;
 				}
-				int done;
+				if (!rl_low) {
+					/* what a release would leave */
+					rl_c = mx_c;
+					rl_s = mx_s;
+					rl_lo = mx_lo;
+					rl_hi = mx_hi;
+					rl_b0 = mx_b0;
+					rl_b = b;
+				}
 				double need = (key_focus(S, &S->k[ki]) <
 					      1.0 - 1e-6) ? MEASURE_SECONDS_LOW
 							  : MEASURE_SECONDS;
@@ -1026,25 +1118,17 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 					done = (tr_stable >= TRAIL_STABLE_BUFFERS) ||
 						(tr_el >= need);
 				}
+				if (mix_release && rl_low) {
+					/* not on what may be the tail */
+					done = 0;
+				}
 				if (done) {
-					struct key *k = &S->k[ki];
-					int j = focus_pipe(S, ki);
-					double f_row = cents_to_freq(0,
-						base_cents, 1) *
-						key_focus(S, k);
-					double got = 1200.0*log2(
-						(fr + mx_c/mx_s)/fr);
-					double tru = 1200.0*log2(
-						true_hz(S, j, mx_b0, b+1) *
-						key_focus(S, k) /
-						S->p[j].ratio / f_row);
-					kr[ki].mx_err = got - tru;
-					kr[ki].mx_time = t - S->k[ki].on;
-					kr[ki].mx_swing = (mx_hi > 0.0) ?
-						(mx_hi - mx_lo)/(mx_hi + mx_lo) : 0.0;
+					mx_result(S, kr, ki, fr, mx_c, mx_s,
+						mx_b0, b+1, mx_lo, mx_hi, t);
 					tgt_key = -1;
 				}
 			}
+		mixed:	;
 		}
 		/* length mode, once per buffer during the key */
 		if ((ki >= 0) && (t >= S->k[ki].on) && (t <= S->k[ki].off)) {
@@ -1191,7 +1275,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			}
 		}
 		if (row_for(kr[i].focus) >= 0) {
-			if (isnan(kr[i].mx_err)) R->mx_fail++;
+			R->mx_cut += kr[i].mx_cut;
+			if (kr[i].mx_disc) R->mx_disc++;
+			else if (isnan(kr[i].mx_err)) R->mx_fail++;
 			else {
 				R->mx_n++;
 				R->mx_mean += fabs(kr[i].mx_err);
@@ -1630,7 +1716,7 @@ int main(int argc, char **argv) {
 	int a, c, nb = sizeof builders / sizeof builders[0];
 	int t_keys = 0, t_shown = 0, t_woct = 0, t_woth = 0, t_false = 0;
 	int t_est = 0, t_bad = 0, t_mxn = 0, t_mxfail = 0, t_lk = 0;
-	int t_corr = 0;
+	int t_corr = 0, t_mxcut = 0, t_mxdisc = 0;
 	double t_ldst = 0, t_ldbad = 0, t_lrst = 0, t_lrbad = 0, t_mxsum = 0;
 
 	for (a = 1; a < argc; a++) {
@@ -1642,6 +1728,8 @@ int main(int argc, char **argv) {
 			mix_focus = !strcmp(argv[++a], "focus");
 		else if (!strcmp(argv[a], "-m") && (a+1 < argc))
 			mix_trail = strcmp(argv[++a], "fixed");
+		else if (!strcmp(argv[a], "-r") && (a+1 < argc))
+			mix_release = strcmp(argv[++a], "off");
 		else if (!strcmp(argv[a], "-f") && (a+1 < argc)) {
 			a++;
 			follow_mode = !strcmp(argv[a], "old") ? FOLLOW_OLD :
@@ -1706,6 +1794,9 @@ int main(int argc, char **argv) {
 				R.mx_mean, R.mx_max);
 			printf(" beat %d/%d %.2f", R.beat, R.mx_n, R.swing);
 			if (R.mx_fail) printf(" (%d unfinished)", R.mx_fail);
+			if (R.mx_cut || R.mx_disc)
+				printf(" released: %d cut, %d discarded",
+					R.mx_cut, R.mx_disc);
 			if (follow_mode) printf(" | corrected %d", R.corrections);
 			printf("\n");
 			t_corr += R.corrections;
@@ -1718,6 +1809,8 @@ int main(int argc, char **argv) {
 			t_mxn += R.mx_n;
 			t_mxsum += R.mx_mean*R.mx_n;
 			t_mxfail += R.mx_fail;
+			t_mxcut += R.mx_cut;
+			t_mxdisc += R.mx_disc;
 		}
 		for (j = 0; j < S->np; j++) free(S->p[j].cyc);
 		free(buf);
@@ -1725,11 +1818,13 @@ int main(int argc, char **argv) {
 	printf("SUMMARY shown %d/%d, wrong shown %d oct + %d other, false "
 		"triggers %d, bad estimates %d/%d; length stable %.0f%% "
 		"(stable but wrong %.1f%%), with row %.0f%% (%.1f%%); mixture "
-		"mean |err| %.2f c, unfinished %d/%d\n",
+		"mean |err| %.2f c, unfinished %d/%d, released: %d cut short, "
+		"%d discarded\n",
 		t_shown, t_keys, t_woct, t_woth, t_false, t_bad, t_est,
 		t_lk ? 100*t_ldst/t_lk : 0, t_lk ? 100*t_ldbad/t_lk : 0,
 		t_lk ? 100*t_lrst/t_lk : 0, t_lk ? 100*t_lrbad/t_lk : 0,
-		t_mxn ? t_mxsum/t_mxn : 0, t_mxfail, t_mxn + t_mxfail);
+		t_mxn ? t_mxsum/t_mxn : 0, t_mxfail,
+		t_mxn + t_mxfail + t_mxdisc, t_mxcut, t_mxdisc);
 	if (follow_mode) {
 		printf("FOLLOW %s: corrected by hand %d of %d keys (shown "
 			"counts keys shown right before any correction)\n",

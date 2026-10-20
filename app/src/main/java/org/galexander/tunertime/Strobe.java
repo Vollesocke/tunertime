@@ -100,7 +100,7 @@ public class Strobe extends Thread {
 		}
 		focus_str = s;
 		focus_str_ratio = parms.focus_ratio;
-		ui.focus_drift(freq, cycles, secs, amp);
+		ui.focus_drift(freq, cycles, secs, buf_secs, amp);
 	}
 
 	public void toggle_pause() {

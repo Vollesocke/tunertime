@@ -77,7 +77,8 @@ this fork.
   `jni/pitch.c` and `jni/strobe.c` the way the app does and reports
   detection latency and errors, length-mode stability and the mixture
   measurement's error. `-w dir` writes the scenarios as WAV files for
-  `test_pitch`. Build: `gcc -O2 -Ijni -Itools/hostjni -o sim_organ
+  `test_pitch`; `-r off` measures mixtures on through a key's release.
+  Build: `gcc -O2 -Ijni -Itools/hostjni -o sim_organ
   tools/sim_organ.c jni/pitch.c jni/strobe.c -lm`.
 - **Selectable harmonic rows**: Settings → "Harmonics shown", any of 1..20,
   up to 8 strobe rows.
@@ -90,7 +91,8 @@ this fork.
   choices are alphabetized in the active language. A selected temperament
   always affects note mode. For Pythagorean and meantone tunings, tap the
   temperament name to choose a temporary wolf fifth; that choice resets when
-  another temperament is selected.
+  another temperament is selected. Tapping a note in the table makes it the
+  current note, in the octave of the one before.
 - **Historical temperaments** (`temperaments.java`): equal, Pythagorean, ¼-
   and ⅙-comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II
   and Kellner, and all charts of
@@ -110,6 +112,11 @@ this fork.
   rejected. Key detection ignores the focused rank. Settings → "Mixture:
   follow the reference rank" instead looks for that rank and moves the key by
   a whole tone at most, so another rank sounding alone does not move it.
+  A key released before the measurement is done (its partial's amplitude
+  below 30% of its mean for 0.5 s) ends it with what came before, if that
+  is half the window, else discards it and says so. The status warns when
+  the pitch heard is more than a semitone from every row, where the strobe
+  drift wraps.
 - **Organ display refinements**: German organ note labels use Cs/Ds/Fs/Gs;
   length mode presents the cut/add distance in millimetres with the
   stopped/open reference.
