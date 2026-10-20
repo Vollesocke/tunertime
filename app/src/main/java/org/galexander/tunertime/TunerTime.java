@@ -560,6 +560,12 @@ public class TunerTime extends Activity
 	private void on_pitch(double hz) {
 		if (parms.mixture_mode && (hz > 0.0d)) {
 			mixture_pitch.setText(new note(freq_to_cents(hz)).organ_name());
+			if (mix.heard(hz, cents_to_freq(parms.strobe_cents, 1),
+				      parms.strobe_cents,
+				      parms.mixture_focus_follow &&
+				      (parms.focus_row() >= 0))) {
+				update_mixture_status();
+			}
 		}
 		if (parms.length_mode && !ToneGenerator.playing) {
 			length.add(hz);
@@ -1023,7 +1029,7 @@ public class TunerTime extends Activity
 
 	/* from the strobe thread, after each buffer while a row is focused */
 	public void focus_drift(double freq, double cycles, double secs,
-				double amp) {
+				double buf_secs, double amp) {
 		if (parms.length_mode) {
 			/* shown with the next pitch estimate (on_pitch) */
 			length.add_drift(freq, cycles, secs);
@@ -1031,10 +1037,21 @@ public class TunerTime extends Activity
 		if (!mix.measuring()) {
 			return;
 		}
-		final double cents = mix.feed(freq, cycles, secs, amp);
+		final double cents = mix.feed(freq, cycles, secs, buf_secs,
+						amp);
 		runOnUiThread(new Runnable() {
 			public void run() {
 				if (!parms.mixture_mode) {
+					return;
+				}
+				if (Double.isNaN(cents) &&
+				    mix.take_released()) {
+					/* the key released too soon: no
+					 * result, the status says so */
+					cause = "mixture: key released, " +
+						"measurement discarded";
+					log_changes();
+					update_mixture_status();
 					return;
 				}
 				if (Double.isNaN(cents)) {
@@ -1046,7 +1063,9 @@ public class TunerTime extends Activity
 					return;
 				}
 				/* in tune where it was measured */
-				cause = "mixture measured";
+				cause = mix.cut() ? "mixture measured " +
+					"(cut short by the key's release)" :
+					"mixture measured";
 				parms.mixture_cents += (int)Math.round(cents*U);
 				parms.mixture_ref = parms.focus_ratio;
 				update_status();
@@ -1102,6 +1121,8 @@ public class TunerTime extends Activity
 			mixture_status.setText(getString(
 				R.string.mixture_measuring, f,
 				(int)Math.round(mix.progress()*100.0d)));
+		} else if (mix.released()) {
+			mixture_status.setText(R.string.mixture_released);
 		} else if (parms.mixture_ref > 0.0d) {
 			/* the rank the target was taken from, which need not
 			 * be the row focused now (the rank being tuned) */
@@ -1117,6 +1138,11 @@ public class TunerTime extends Activity
 			mixture_status.setText(R.string.mixture_tap_measure);
 		} else {
 			mixture_status.setText(R.string.mixture_tap_row);
+		}
+		if (mix.far(parms.strobe_cents)) {
+			/* the drift wraps (mixture.FAR_CENTS) */
+			mixture_status.append("\n" +
+				getString(R.string.mixture_far));
 		}
 	}
 	public void preset_clicked(View v) {
@@ -1319,12 +1345,20 @@ public class TunerTime extends Activity
 				getString(R.string.wolf_label, wolf_interval(root)));
 		}
 		int count = p.notes.size();
-		preset_workbench_summary.setText(count == 1 ?
+		preset_workbench_summary.setText((count == 1 ?
 			getString(R.string.preset_workbench_count_one, count) :
-			getString(R.string.preset_workbench_count_many, count));
+			getString(R.string.preset_workbench_count_many, count)) +
+			"\n" + getString(R.string.preset_workbench_hint));
 		for (int i = 0; i < count; i++) {
 			final note n = new note(p.tuning_notes().get(i));
+			final int index = i;
 			LinearLayout row = new LinearLayout(this);
+			row.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					workbench_note(index);
+				} });
+			row.setContentDescription((parms.organ_mode ?
+				n.organ_name() : n.name_oct) + " " + n.cents_str);
 			row.setOrientation(LinearLayout.HORIZONTAL);
 			row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 			row.setMinimumHeight((int)(48 * getResources()
@@ -1335,7 +1369,9 @@ public class TunerTime extends Activity
 			TextView name = new TextView(this);
 			name.setText(parms.organ_mode ? n.organ_name() : n.name_oct);
 			name.setTextSize(18);
-			name.setTextColor(getResources().getColor(R.color.text));
+			name.setTextColor(getResources().getColor(
+				(i == parms.preset_note) ? R.color.accent
+							 : R.color.text));
 			row.addView(name, new LinearLayout.LayoutParams(0,
 				ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 			TextView deviation = new TextView(this);
@@ -1348,6 +1384,25 @@ public class TunerTime extends Activity
 				ViewGroup.LayoutParams.WRAP_CONTENT));
 			preset_workbench_notes.addView(row);
 		}
+	}
+
+	/* the workbench: the tapped note of the temperament becomes the
+	 * current note, in the octave of the one before; note mode takes
+	 * it over without the temperament's offset, as on leaving the
+	 * Preset tab */
+	private void workbench_note(int i) {
+		preset p = preset.find(parms.preset_id);
+		if ((p == null) || (i < 0) || (i >= p.tuning_notes().size())) {
+			return;
+		}
+		int v = p.tuning_notes().get(i);
+		cause = "workbench tap " + new note(v).full_str;
+		parms.preset_note = i;
+		parms.preset_oct = new note(parms.note_cents).octave -
+				   new note(v).octave;
+		int c = v + 1200*U*parms.preset_oct;
+		parms.note_cents = c - parms.temper_offset(c);
+		update_status();
 	}
 
 	/* Debug recordings (EventLog): what changed since the last call and
