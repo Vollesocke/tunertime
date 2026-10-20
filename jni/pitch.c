@@ -51,8 +51,13 @@
 				 * harmonics; the synthetic tones of
 				 * tools/test_pitch.c score 0.84-1,
 				 * the lowest with mains hum */
-#define WEAK_CONF	0.60	/* weaker series are considered only after
-				 * repeated, stable estimates in pitch_feed() */
+#define WEAK_CONF	0.55	/* weaker series are considered only after
+				 * repeated, stable estimates in pitch_feed().
+				 * tools/field (Onno's church recordings):
+				 * 0.60 -> 0.55 reached the corrected note
+				 * after 40 corrections of 81 instead of 34,
+				 * no more wrong jumps, sim_organ unchanged;
+				 * 0.50 let speech through (sim_organ) */
 #define WEAK_AGREE	3	/* consecutive FFT windows */
 #define WEAK_TOL_CENTS	25.0	/* maximum change between weak estimates */
 #define SINE_CONF	0.8	/* share a lone partial needs to stand alone */

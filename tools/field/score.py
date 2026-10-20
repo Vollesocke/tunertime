@@ -10,13 +10,16 @@ TunerTime.on_pitch() does: a note is agreed after DET_AGREE estimates in
 a row on the same semitone, an empty estimate starts over.
 
 The truth is the note the tuner corrected to (the file name's "user-"),
-octaves aside, as follow mode folds them after a correction.  Per
-recording:
-  reached   the corrected note was agreed at some point in the 7 s
-  after     ... within 2 s after the correction (5.0 s into the file),
-            when the new key was already sounding
-  wrong     agreements on a note neither the corrected one nor the one
-            before it (octaves aside): the shown note jumping wrongly
+octaves aside, as follow mode folds them after a correction.  It is the
+truth only around the correction (5.0 s into the file), as a recording
+often spans several keys.  Per recording:
+  after     the corrected note was agreed in the 2 s after the correction
+            (when the tuner stepped on before the next key sounded, it is
+            not: compare builds, not absolute numbers)
+  wrong     agreements on another note in those 2 s: the shown note
+            jumping to a wrong one
+  octave    where the correction was an octave: the share of estimates
+  fix       in the 2 s before it that had the octave right
   empty     share of empty estimates
 Totals and one line per stop (tools/field/stops.csv).
 """
@@ -76,26 +79,32 @@ def replay(exe, rec):
 
 
 def score(text, est):
+    """the corrected note is the truth only around the correction (5.0 s
+    into the file): a recording often spans several keys"""
     a_freq = float(re.search(r'^A_freq (\S+)', text, re.M).group(1))
     user = midi(re.search(r'^user_note (\S+)', text, re.M).group(1))
-    before = midi(re.search(r'^note_before (\S+)', text, re.M).group(1))
+    hand = re.search(r'^\s+5\.0\d+\s+\d+\s+ui\s+(oct|semi|fifth)', text,
+                     re.M)
+    octave_fix = bool(hand) and hand.group(1) == 'oct'
     sem, n = None, 0
-    r = {'reached': 0, 'after': 0, 'wrong': 0,
-         'empty': sum(hz is None for _, hz in est), 'est': len(est)}
+    r = {'after': 0, 'wrong': 0, 'octs': int(octave_fix), 'oct_ok': 0,
+         'oct_est': 0, 'empty': sum(hz is None for _, hz in est),
+         'est': len(est)}
     for secs, hz in est:
         if hz is None:
             n = 0
             continue
         k = round(69 + 12*math.log2(hz/a_freq))
+        if octave_fix and 3.0 <= secs < 5.0:
+            r['oct_est'] += 1
+            r['oct_ok'] += (k == user)
         n = n + 1 if k == sem else 1
         sem = k
-        if n != DET_AGREE:
+        if (n != DET_AGREE) or (secs < 5.0):
             continue
         if (k - user) % 12 == 0:
-            r['reached'] = 1
-            if 5.0 <= secs <= 7.0:
-                r['after'] = 1
-        elif (k - before) % 12 != 0:
+            r['after'] = 1
+        else:
             r['wrong'] += 1
     return r
 
@@ -132,17 +141,20 @@ def main():
                 for k, v in r.items():
                     per[key][k] += v
             if verbose:
-                print('  %-46s %-34s reached %d after %d wrong %d empty %3.0f%%'
-                      % (os.path.basename(rec)[:46], stop, r['reached'],
-                         r['after'], r['wrong'],
+                print('  %-46s %-34s after %d wrong %d octave %s empty %3.0f%%'
+                      % (os.path.basename(rec)[:46], stop, r['after'],
+                         r['wrong'], ('%d/%d' % (r['oct_ok'], r['oct_est']))
+                         if r['octs'] else '-',
                          100.0*r['empty']/max(r['est'], 1)))
         print('== %s' % exe)
-        print('  %-40s %5s %8s %8s %6s %6s' % ('stop', 'recs', 'reached',
-                                              'after', 'wrong', 'empty'))
+        print('  %-40s %5s %6s %6s %11s %6s' % ('stop', 'recs', 'after',
+                                              'wrong', 'octave fix', 'empty'))
         for key in sorted(per, key=lambda k: (k == 'all', k)):
             p = per[key]
-            print('  %-40s %5d %8d %8d %6d %5.0f%%'
-                  % (key, p['n'], p['reached'], p['after'], p['wrong'],
+            octs = ('%2d: %3.0f%%' % (p['octs'], 100.0*p['oct_ok'] /
+                                       max(p['oct_est'], 1)))                 if p['octs'] else '-'
+            print('  %-40s %5d %6d %6d %11s %5.0f%%'
+                  % (key, p['n'], p['after'], p['wrong'], octs,
                      100.0*p['empty']/max(p['est'], 1)))
 
 
