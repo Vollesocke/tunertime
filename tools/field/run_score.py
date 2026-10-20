@@ -60,9 +60,11 @@ DRIFT = re.compile(r'(.+?)\s+([+-]?[\d.]+)c\s+([\d.]+)s')
 
 
 def semi_of(name):
-    """Cs2 -> 16 (48 = A4)"""
-    m = re.match(r'([A-G]s?)(-?\d+)$', name)
-    return NAMES.index(m.group(1)) + 12*int(m.group(2)) - 9
+    """Cs2 -> 16 (48 = A4); also the spelled names of tunings with
+    more than 12 notes, Eb4, Bs3 (= C4): the octave goes with the letter"""
+    m = re.match(r'([A-G])(s|b?)(-?\d+)$', name)
+    acc = {'s': 1, 'b': -1}.get(m.group(2), 0)
+    return NAMES.index(m.group(1)) + acc + 12*int(m.group(3)) - 9
 
 
 def median(v):
@@ -88,7 +90,7 @@ class Run:
         self.head, self.keys, self.marks = {}, [], []
         self.est, self.drift, self.hints, self.focus = [], [], 0, None
         self.t_align = None
-        run_keys, run_end = [], None
+        run_keys, run_end, crash_marks = [], None, []
         body = path.endswith('.timeline')
         for line in open(path, encoding='utf-8'):
             line = line.rstrip('\r\n')
@@ -132,6 +134,16 @@ class Run:
                         run_keys.append((t, u))
                     elif rest.startswith('run end'):
                         run_end = t
+                    elif rest.startswith('run mark '):
+                        crash_marks.append((t, rest[9:]))
+                continue
+            if line.startswith('#: '):
+                # the header, as the .timeline also has it
+                line = line[3:]
+                if line.startswith('#'):
+                    continue
+                k, _, v = line.partition(' ')
+                self.head.setdefault(k, v.strip())
                 continue
             if not body and not line.startswith('#'):
                 k, _, v = line.partition(' ')
@@ -146,6 +158,7 @@ class Run:
             self.t_align = '%.5f' % self.est[0][0]
         self.envelope()
         if not self.keys and run_keys:
+            self.marks = self.marks or crash_marks
             ends = [t for t, _ in run_keys[1:]]
             ends.append(run_end or (len(self.env)*FRAME if self.env
                                     else self.est[-1][0] if self.est
@@ -156,11 +169,12 @@ class Run:
                     semi=semi_of(u.group(2)), hz=float(u.group(3)),
                     redo=bool(u.group(4))))
         # the last segment of a note is the valid one
+        # (Dis and Es share a semitone, so by name too)
         last = {}
         for k in self.keys:
-            last[k['semi']] = k['i']
+            last[(k['semi'], k['name'])] = k['i']
         for k in self.keys:
-            k['valid'] = last[k['semi']] == k['i']
+            k['valid'] = last[(k['semi'], k['name'])] == k['i']
             k['marks'] = [m for t, m in self.marks
                           if k['start'] <= t < k['end']]
         self.sounding()

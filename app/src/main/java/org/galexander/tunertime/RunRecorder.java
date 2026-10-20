@@ -61,7 +61,7 @@ public class RunRecorder {
 	}
 
 	private static volatile boolean active = false;
-	private static Thread writer;
+	private static Thread writer, finisher;
 	private static volatile boolean stopping;
 	/* the writer stopped by itself: MAX_SECS reached, or it could not
 	 * write; TunerTime ends the run then (UI thread) */
@@ -78,6 +78,7 @@ public class RunRecorder {
 	private static final ArrayList<String> marks = new ArrayList<String>();
 	private static final HashSet<Integer> visited = new HashSet<Integer>();
 	private static int cur_semi = Integer.MIN_VALUE, cur_alt = 0;
+	private static double cur_hz = 0.0;
 	/* the first estimate, seconds into the WAV, for test_pitch -t */
 	private static volatile double t_est = -1.0;
 	private static volatile long written = 0;	/* samples in the WAV */
@@ -102,8 +103,10 @@ public class RunRecorder {
 	/* UI thread.  header: the tuning and device lines (TunerTime), at
 	 * the start of the run */
 	public static boolean start(Context ctx, Meta m, String header_) {
-		if (active) {
-			return true;
+		if (active || ((writer != null) && writer.isAlive()) ||
+		    ((finisher != null) && finisher.isAlive())) {
+			/* the last run's files are still being finished */
+			return active;
 		}
 		File dir = ctx.getExternalFilesDir("runs");
 		if (dir == null) {
@@ -133,6 +136,7 @@ public class RunRecorder {
 		marks.clear();
 		visited.clear();
 		cur_semi = Integer.MIN_VALUE;
+		cur_hz = 0.0;
 		t_est = -1.0;
 		written = 0;
 		limit = failed = false;
@@ -162,7 +166,8 @@ public class RunRecorder {
 	 * alt: which of two notes on the semitone (Dis or Es, parms.note_alt),
 	 * 0 where there is one */
 	public static void key(int semi, int alt, String name, double hz) {
-		if (!active || ((semi == cur_semi) && (alt == cur_alt))) {
+		boolean same = (semi == cur_semi) && (alt == cur_alt);
+		if (!active || (same && (Math.abs(hz - cur_hz) < 0.0005))) {
 			return;
 		}
 		double t = now();
@@ -177,11 +182,12 @@ public class RunRecorder {
 		k.semi = semi;
 		k.hz = hz;
 		/* played before in this run */
-		k.redo = visited.contains(2*semi + alt);
+		k.redo = !same && visited.contains(2*semi + alt);
 		visited.add(2*semi + alt);
 		keys.add(k);
 		cur_semi = semi;
 		cur_alt = alt;
+		cur_hz = hz;
 		EventLog.ui(String.format(Locale.US, "run key %d %s %.3f Hz%s",
 			keys.size(), name, hz, k.redo ? " redo" : ""));
 	}
@@ -230,16 +236,19 @@ public class RunRecorder {
 		final String keys_str = sb.toString();
 		stopping = true;
 		final Thread w = writer;
-		new Thread() {
+		finisher = new Thread() {
 			public void run() {
 				try {
 					w.join();
 				} catch (InterruptedException e) {
 				}
 				finish(keys_str);
-				EventLog.on = saved_eventlog_on;
+				if (!active) {
+					EventLog.on = saved_eventlog_on;
+				}
 			}
-		}.start();
+		};
+		finisher.start();
 		return txt;
 	}
 
@@ -257,6 +266,11 @@ public class RunRecorder {
 			out.write(wav_header(0));
 			tlw = new OutputStreamWriter(new FileOutputStream(tl),
 						"UTF-8");
+			/* the header also here, marked "#: ", for a run cut
+			 * short by a crash, which leaves no .txt */
+			for (String hl : header.split("\n")) {
+				tlw.write("#: " + hl + "\n");
+			}
 			tlw.write(EventLog.HEADER);
 			/* the hints in effect at the start, as in the
 			 * debug recordings */
@@ -357,10 +371,12 @@ public class RunRecorder {
 				base + ".wav\n\n");
 			r = new BufferedReader(new InputStreamReader(
 				new FileInputStream(tl), "UTF-8"));
-			char[] c = new char[65536];
-			int n;
-			while ((n = r.read(c)) > 0) {
-				w.write(c, 0, n);
+			String l;
+			while ((l = r.readLine()) != null) {
+				if (!l.startsWith("#: ")) {
+					w.write(l);
+					w.write('\n');
+				}
 			}
 			r.close();
 			r = null;

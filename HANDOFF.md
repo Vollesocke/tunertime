@@ -1,5 +1,85 @@
 # Handoff: TunerTime Organ
 
+Status as of 20 Oct 2026, late: release
+[**v18.4-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ)
+is on `main`. It adds to v18.3: chromatic run recordings, meantone with more
+than 12 notes, the mixture measurement ending on key release, a warning when
+the mixture is heard more than a semitone off, and tapping a workbench note.
+
+## Onno's church day (21 Oct): chromatic runs
+
+The point: real truth for the detector. Menu → "Chromatischen Lauf
+aufnehmen" (`RunRecorder.java`, README "Chromatic run recordings").
+
+- **How:** set the first key as the note shown, fill in organ, Register,
+  kind, footage, notes; Start. Then each key: hold about 3 s, release, Ton+.
+  Ton− plays a key again (later take wins). "Markieren" for noise, faulty
+  pipe, wrong key, text. "■ Ende" in the action bar stops.
+- **What is recorded:** the whole input as WAV (streamed, header updated
+  every second), and in the .txt: header (app, device, microphone setting
+  and the one in use, A, stretch, temperament and offsets, organ/mixture
+  mode, focus, rows, auto before), one `key` line per key (start, end, note,
+  semitone, target Hz, redo), marks, and the full timeline: every detector
+  estimate (the detector runs with auto off, `parms.run_active`), hints,
+  the focused row's strobe drift (= how far each pipe is off; tap the row
+  of the stop's footage), UI events.
+- **During a run:** auto is off (the note shown is the truth); the screen
+  orientation is locked; Settings/Help/About are hidden; FFT and Preset
+  tabs are refused. Leaving the app or the screen turning off ends and
+  saves the run (the wake lock keeps it on). At most 20 min (~5.8 MB/min
+  at 48 kHz). A crash leaves the WAV and a `.timeline` with the header
+  (`#: ` lines); `run_score.py` reads those too. Auto stays off after a run.
+- **Getting the files:**
+  `adb pull /sdcard/Android/data/org.galexander.tunertime.local/files/runs`
+  (Onno's `.local` app; `.dev` on the S25). No share button yet.
+- **Scoring:** `python tools/field/run_score.py [-v] [--test-pitch
+  build/test_pitch ...] [--hints none,keys,log] runs/` (tools/field/README
+  "Chromatic runs"): per key onset from the WAV envelope, the follow logic's
+  agreement, wrong notes (octave/twelfth flagged), empty share, cents,
+  strobe drift, and follow emulated over the run. `make_run.py` makes
+  synthetic runs to test the tool (`sh tools/field/run.sh synth`).
+- **Then:** tune `MIN_CONF`/`WEAK_CONF`, the octave lock with a focused
+  row and the Trompete bass on these runs (Next steps 2).
+
+## Done on 20 Oct (evening), for Onno to try
+
+- **Meantone with more than 12 notes** (design below, now built): the
+  workbench's wolf menu ends with "Töne wählen (auch mehr als 12)…", a
+  checklist of the 21 chain notes Fes..His with cents. Picked notes and the
+  temporary wolf are one state, saved in the preferences (the wolf was lost
+  on restart before), cleared when another temperament is selected.
+  `preset.temper_offsets()` is a table with 1 or 2 offsets per pitch class;
+  `parms.note_alt` picks one; Ton± goes D→Dis→Es→E; follow takes the
+  nearest of all notes; mixture mode keeps to the first. Names spelled from
+  the chain with more than 12 notes (German "dis¹"/"es¹"). JUnit test
+  `meantoneTest` (`./gradlew testDevUnitTest`).
+- **Mixture: key released early** (proposal 1): the focused row's level
+  under 30 % of its mean for 0.5 s, or no usable block for 1 s, ends the
+  measurement; with at least half the window before the drop that is the
+  result, else it is discarded ("Taste zu früh losgelassen"). `sim_organ -r
+  off` for the old behaviour. The simulator's mixture truth now counts only
+  while the pipe sounds: the old "large errors" were mostly that. 3 s holds:
+  1.75 c → 0.14 c mean error; last 16' keys no longer flagged as beating.
+- **Mixture: heard over a semitone off the rows** (proposal 4): 4 estimates
+  in a row more than 100 c from every row (octaves folded) add a status line.
+- **Workbench tap:** tapping a note in the Temperierung table makes it the
+  current note (Onno's string from 06f3337 is back).
+
+**Questions for Onno** (from the work above):
+1. Meantone picker: one list (12 wolf places, then "Töne wählen…")? The
+   21-note checklist with cents? Mixture Taste± also on both Dis and Es?
+   Spelled names also with exactly 12 picked notes (Dis instead of Es)?
+2. A Dis↔Es step by hand does not start continuity (no octave fold) in
+   follow mode: follow may flip back to the nearer one. Fine?
+3. Key release: 0.5 s of low level before a release counts (shorter makes
+   celeste ranks look released). Mark a cut-short measurement in the status?
+   "Taste zu früh losgelassen" also shows when the reference rank is muted.
+4. Semitone warning against all rows or only the reference row?
+5. Workbench tap: also switch to note mode?
+6. Run mode: restore follow after a run? A share button for the files?
+
+## State before the evening of 20 Oct
+
 Status as of 20 Oct 2026: release
 [**v18.3-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.3-organ)
 is on `main` (GitHub Vollesocke/tunertime). It holds Onno's commits from his
@@ -170,18 +250,18 @@ wanted.
    - **Trompete:** wrong jumps in big leaps (5 of 13). In the bass it
      reads high (2nd/3rd harmonic), as the phone mic cuts the low
      partials. Its runs are followed correctly.
-   - **Too little truth:** a recording only says which note Onno corrected
+   - **Too little truth** (run mode built 20 Oct evening, above): a recording only says which note Onno corrected
      to, and only around the correction. For real tuning on real pipes:
      a recording mode that records a whole chromatic run while he steps
      the key by hand (Ton+), so every key has its note. That would be
      Onno's job in the church; ask him.
 3. **Onno's list of 19 Oct, still open:**
-   - meantone with more than 12 notes (subsemitones D#/Eb, G#/Ab), with one
+   - ~~meantone with more than 12 notes~~ (done 20 Oct evening, above): (subsemitones D#/Eb, G#/Ab), with one
      menu to place the wolf or pick the notes, and German names with "is"
      for such tunings;
    - the Preset tab has no note stepping since it became the workbench.
      Ask Onno whether that is right.
-   - 06f3337 had an unused string "Tap a note to set it as the current
+   - ~~workbench tap~~ (done 20 Oct evening): 06f3337 had an unused string "Tap a note to set it as the current
      reference pitch" for the workbench: a feature he may have planned
      (removed as unused in 8fb013b).
 4. **Tidy up the menus** after his tests. There is much more going on than in
@@ -214,7 +294,7 @@ shows only the mm to cut or add.
 
 ## Proposals not done yet, ranked
 
-1. **Key released before a 3 s bass measurement ends:** the mixture
+1. ~~**Key released before a 3 s bass measurement ends:**~~ (done 20 Oct evening) the mixture
    measurement keeps collecting the release and reverb tail. The simulator
    showed large errors. Stop or discard the measurement on release. The
    release notes tell users to hold the key.
@@ -223,7 +303,7 @@ shows only the mm to cut or add.
    real organ WAVs (`tools/test_pitch file.wav`).
 3. ~~Octave shift plus a selected row can double the shift~~: gone with
    question 2 (continuity folds, it does not shift).
-4. **Mixture: warn when the reference is more than about 1 semitone from the
+4. (done 20 Oct evening) **Mixture: warn when the reference is more than about 1 semitone from the
    target,** where the strobe drift wraps.
 5. **Stop profiles** (larger): a preset per stop with its rows, open/stopped
    and expected octave, e.g. "Gedackt 8'", "Mixtur IV 1 1/3'".

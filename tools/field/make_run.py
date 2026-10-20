@@ -203,9 +203,12 @@ def make(slug, keys, first, d, exe, rng, stamp, crash):
     txt += [e for _, e in events]
     if crash:
         # what a crash leaves: the WAV and the timeline, no .txt
+        # with the header marked "#: ", as the app writes it there
         i = txt.index('')
+        h = [l for l in txt[:i] if l.startswith('samples ')]
+        head = ['#: ' + l for l in txt[:txt.index(h[0])]]
         open(base + '.timeline', 'w', encoding='utf-8').write(
-            '\n'.join(txt[i + 1:]) + '\n')
+            '\n'.join(head + txt[i + 1:]) + '\n')
         return base + '.timeline'
     open(base + '.txt', 'w', encoding='utf-8').write('\n'.join(txt) + '\n')
     return base + '.txt'

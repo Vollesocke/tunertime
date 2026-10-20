@@ -156,6 +156,15 @@ public class TunerTime extends Activity
 				R.layout.afreq_buttons, buttons_holder, false);
 		afreq_center_display = (TextView)afreq_buttons.findViewById(
 				R.id.center_display2);
+		/* tapping the A opens a keypad: some organs stand near 480 Hz,
+		 * many taps away (Onno) */
+		afreq_center_display.setMinimumHeight((int)(48 *
+			getResources().getDisplayMetrics().density));
+		afreq_center_display.setGravity(android.view.Gravity.CENTER);
+		afreq_center_display.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				afreq_dialog();
+			} });
 
 		stretch_buttons = fl8r.inflate(
 				R.layout.stretch_buttons, buttons_holder,false);
@@ -311,6 +320,14 @@ public class TunerTime extends Activity
 	}
 
 	private void set_mode(View buttons, boolean fft_mode_) {
+		if (parms.run_active && (fft_mode_ || (buttons == preset_buttons))) {
+			/* the detector stops in FFT mode, and the Preset tab
+			 * steps its own notes: not during a chromatic run */
+			cause = null;
+			Toast.makeText(this, R.string.run_tab_blocked,
+					Toast.LENGTH_SHORT).show();
+			return;
+		}
 		String title = null, subtitle = null;
 		String why = cause;	/* entering mixture mode logs too */
 		if (fft_mode_ == false) {
@@ -803,6 +820,47 @@ public class TunerTime extends Activity
 		parms.A_freq-=10;
 		update_status();
 	}
+	private void afreq_dialog() {
+		final EditText e = new EditText(this);
+		e.setInputType(InputType.TYPE_CLASS_NUMBER |
+				InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		e.setText(string_int10(parms.A_freq));
+		e.setSelectAllOnFocus(true);
+		int pad = (int)(16*getResources().getDisplayMetrics().density);
+		FrameLayout f = new FrameLayout(this);
+		f.setPadding(pad, pad/2, pad, 0);
+		f.addView(e);
+		final AlertDialog d = new AlertDialog.Builder(this)
+			.setTitle(R.string.afreq_enter)
+			.setView(f)
+			.setPositiveButton(R.string.run_ok,
+				new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface di, int w) {
+					double hz;
+					try {
+						hz = Double.parseDouble(e.getText()
+							.toString().replace(',', '.'));
+					} catch (NumberFormatException x) {
+						return;
+					}
+					if ((hz < 220.0) || (hz > 880.0)) {
+						Toast.makeText(TunerTime.this,
+							R.string.afreq_range,
+							Toast.LENGTH_SHORT).show();
+						return;
+					}
+					cause = "A keypad";
+					parms.A_freq = (int)Math.round(hz*10.0);
+					update_status();
+				} })
+			.setNegativeButton(R.string.cancel, null)
+			.create();
+		d.getWindow().setSoftInputMode(android.view.WindowManager
+			.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+		d.show();
+		e.requestFocus();
+	}
+
 	public void reset_afreq(View v) {
 		cause = "A reset";
 		parms.A_freq = 4400;
@@ -1844,6 +1902,22 @@ public class TunerTime extends Activity
 		private boolean doing_x = false, doing_y = false;
 		private boolean could_be_click = false;
 		private long down_time = 0;
+		/* the long press opens the partial settings as soon as it is
+		 * recognised, not on release (Onno) */
+		private boolean long_fired = false;
+		private final Runnable long_press = new Runnable() {
+			public void run() {
+				if (!could_be_click || parms.fft_mode) {
+					return;
+				}
+				long_fired = true;
+				Intent settings_intent = new Intent(
+					TunerTime.this, Settings.class);
+				settings_intent.putExtra(
+					Settings.EXTRA_OPEN_STROBE_ROWS, true);
+				cause = "strobe long press: partial settings";
+				startActivity(settings_intent);
+			} };
 		public boolean onTouch(View v, MotionEvent event) {
 			int i;
 			int x1 = -1, x2 = -1;
@@ -1883,6 +1957,12 @@ public class TunerTime extends Activity
 			switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 			down_time = event.getEventTime();
+				long_fired = false;
+				v.removeCallbacks(long_press);
+				if (!parms.fft_mode) {
+					v.postDelayed(long_press,
+						ViewConfiguration.getLongPressTimeout());
+				}
 				start_x = x1; start_x_width = 0;
 				start_y = y1; start_y_height = 0;
 				start_fft_xoffset = parms.fft_xoffset +
@@ -1930,16 +2010,12 @@ public class TunerTime extends Activity
 				}
 				update_status();
 				return true;
+			case MotionEvent.ACTION_CANCEL:
+				v.removeCallbacks(long_press);
+				return true;
 			case MotionEvent.ACTION_UP:
-				if (could_be_click && !parms.fft_mode &&
-				    (event.getEventTime() - down_time >=
-					 ViewConfiguration.getLongPressTimeout())) {
-					Intent settings_intent = new Intent(
-						TunerTime.this, Settings.class);
-					settings_intent.putExtra(
-						Settings.EXTRA_OPEN_STROBE_ROWS, true);
-					cause = "strobe long press: partial settings";
-					startActivity(settings_intent);
+				v.removeCallbacks(long_press);
+				if (long_fired) {
 					return true;
 				}
 				if (could_be_click && parms.organ_mode &&
@@ -1964,6 +2040,10 @@ public class TunerTime extends Activity
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		boolean on = RunRecorder.active();
 		menu.findItem(R.id.action_run).setVisible(!on);
+		/* each would leave the screen, which ends the run */
+		menu.findItem(R.id.action_settings).setVisible(!on);
+		menu.findItem(R.id.action_help).setVisible(!on);
+		menu.findItem(R.id.action_about).setVisible(!on);
 		menu.findItem(R.id.action_run_mark).setVisible(on);
 		MenuItem stop = menu.findItem(R.id.action_run_stop);
 		stop.setVisible(on);
@@ -2123,7 +2203,8 @@ public class TunerTime extends Activity
 		preset p = preset.find(parms.preset_id);
 		String h = "app " + version + "\n" +
 			"audio " + parms.audio_source + " / " +
-				parms.microphone + "\n" +
+				parms.microphone + " (in use: " +
+				MicSelect.active_name + ")\n" +
 			"A_freq " + (parms.A_freq/10.0) + "\n" +
 			"stretch " + (parms.stretch()/10.0) + " c/oct\n" +
 			"temperament " + ((p != null) ? p.name : "none") + "\n" +
@@ -2136,6 +2217,9 @@ public class TunerTime extends Activity
 			"rows " + rows + "\n" +
 			"auto_before " + before + "\n";
 		auto_off();	/* the note is stepped by hand */
+		/* turning the phone would recreate the screen and end the run */
+		setRequestedOrientation(
+			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		if (!RunRecorder.start(this, m, h)) {
 			Toast.makeText(this, R.string.run_failed,
 					Toast.LENGTH_LONG).show();
@@ -2177,12 +2261,14 @@ public class TunerTime extends Activity
 	private void run_stop(String how) {
 		File f = RunRecorder.stop(how);
 		run_handler.removeCallbacks(run_tick);
+		setRequestedOrientation(
+			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 		invalidateOptionsMenu();
 		if (f != null) {
 			cause = "run end";
 			update_status();
 			Toast.makeText(this, getString(R.string.run_saved,
-				f.getName().replace(".txt", "")),
+				f.getName().replace(".txt", ""), f.getParent()),
 				Toast.LENGTH_LONG).show();
 		}
 	}

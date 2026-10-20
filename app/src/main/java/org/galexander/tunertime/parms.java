@@ -246,7 +246,10 @@ public class parms {
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
 		audio_source = prefs.getString("audio_source", "auto");
-		microphone = prefs.getString("microphone", "auto");
+		/* the microphone choice is no longer shown (Onno: not
+		 * relevant to the tuner): always auto, also where an older
+		 * version saved another one */
+		microphone = "auto";
 		mixture_mode = organ_mode &&
 				prefs.getBoolean("mixture_mode", false);
 		mixture_focus_follow = prefs.getBoolean("mixture_focus_follow",

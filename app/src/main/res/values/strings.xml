@@ -306,17 +306,20 @@
 	<!-- chromatic run recording (RunRecorder) -->
 	<string name="menu_run">Record chromatic run</string>
 	<string name="run_title">Record a chromatic run</string>
-	<string name="run_help">For improving the note detection on real pipes. Set the first key as the note shown, then play every key in turn: hold it about 3 s, release it, and tap semi+ for the next one (also in mixture mode). semi&#8722; plays a key again. Follow is off during the run; the note shown is the key played. Tap the row of the stop&#8217;s footage to record how far each pipe is off. Stop it in the bar at the top.</string>
+	<string name="run_help">For improving the note detection on real pipes. Set the first key as the note shown, then play every key in turn: hold it about 3 s, release it, and tap semi+ for the next one (also in mixture mode). semi&#8722; plays a key again. Follow is off during the run; the note shown is the key played. Tap the row of the stop&#8217;s footage to record how far each pipe is off. Stop it in the bar at the top. Leaving the app or switching the screen off ends the run.</string>
 	<string name="run_organ">Organ, church</string>
 	<string name="run_stop_name">Stop, e.g. Rohrfl&#246;te 8&#8242;</string>
 	<string name="run_footage">Footage</string>
 	<string name="run_note">Notes: phone position, mic, temperature&#8230;</string>
 	<string name="run_start">Start</string>
 	<string name="run_ok">OK</string>
-	<string name="run_stop_status">&#9632; %1$d:%2$02d &#183; %3$d</string>
+	<string name="run_stop_status">&#9632; Stop %1$d:%2$02d &#183; %3$d</string>
+	<string name="afreq_enter">Pitch of A (Hz)</string>
+	<string name="afreq_range">A between 220 and 880 Hz</string>
+	<string name="run_tab_blocked">Not during a chromatic run</string>
 	<string name="run_mark">Mark</string>
 	<string name="run_started">Recording. Play the key shown, then semi+.</string>
-	<string name="run_saved">Run saved: %1$s (files/runs)</string>
+	<string name="run_saved">Run saved: %1$s in %2$s</string>
 	<string name="run_failed">Could not record the run</string>
 	<string name="run_need_strobe">Runs record in note or mixture mode</string>
 	<string-array name="run_kinds">

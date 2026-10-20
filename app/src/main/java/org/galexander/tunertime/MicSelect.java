@@ -134,8 +134,15 @@ public class MicSelect {
 		return Lang.res(ctx).getString(id, args);
 	}
 
+	/* only logged: the microphone is not shown to the user (Onno) */
 	private static void toast(final String msg) {
 		EventLog.ui("mic: " + msg);
+		if (SHOW_MIC) {
+			show(msg);
+		}
+	}
+	private static final boolean SHOW_MIC = false;
+	private static void show(final String msg) {
 		if (ui == null) {
 			return;
 		}

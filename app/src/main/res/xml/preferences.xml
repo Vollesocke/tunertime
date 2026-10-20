@@ -29,13 +29,6 @@
 		android:entries="@array/audio_source_name"
 		android:entryValues="@array/audio_source_value"
 		android:defaultValue="auto" />
-	<ListPreference
-		android:key="microphone"
-		android:title="@string/microphone"
-		android:summary="%s"
-		android:entries="@array/microphone_name"
-		android:entryValues="@array/microphone_value"
-		android:defaultValue="auto" />
     </PreferenceCategory>
     <PreferenceCategory android:key="strobe_category"
 		android:title="@string/cat_strobe">
