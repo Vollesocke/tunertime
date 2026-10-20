@@ -2072,6 +2072,8 @@ public class TunerTime extends Activity
 			"organ_mode " + parms.organ_mode + "\n" +
 			"mixture_mode " + parms.mixture_mode + "\n" +
 			"focus_ratio " + parms.focus_ratio + "\n" +
+			"mixture_focus_follow " + parms.mixture_focus_follow +
+				"\n" +
 			"rows " + rows + "\n" +
 			"auto_before " + before + "\n";
 		auto_off();	/* the note is stepped by hand */
@@ -2101,8 +2103,16 @@ public class TunerTime extends Activity
 		} else {
 			k = (parms.note_cents + 50*U) / (100*U);
 			hz = cents_to_freq(parms.strobe_cents, 1);
+			int chain = parms.note_chain();
+			if ((chain != parms.NO_CHAIN) &&
+			    (parms.temper_alts(k*100*U) > 1)) {
+				/* Dis and Es: two keys on one semitone */
+				RunRecorder.key(k, parms.note_alt, new note(
+					k*100*U).spelled_english(chain), hz);
+				return;
+			}
 		}
-		RunRecorder.key(k, DebugRecorder.name(k*100*U), hz);
+		RunRecorder.key(k, 0, DebugRecorder.name(k*100*U), hz);
 	}
 
 	private void run_stop(String how) {

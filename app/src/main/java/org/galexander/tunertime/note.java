@@ -123,6 +123,14 @@ public class note {
 	}
 		/* -1 for the flats (Fes..B), 0 for the naturals, 1 for the
 		 * sharps (Fis..His) of chain position n */
+	/* chain position n in English with the octave of this note's
+	 * letter, "Eb4", whatever the language: for file names */
+	public String spelled_english(int n) {
+		int letter = octave*12 + note_idx - chain_accidental(n);
+		int oct = ((letter + 1200) / 12) - 100;	/* floor */
+		return CHAIN_ENGLISH[n - temperaments.CHAIN_LOW].replace('#', 's')
+			+ oct;
+	}
 	public static int chain_accidental(int n) {
 		return ((n + 4 + 14) / 7) - 2;
 	}

@@ -77,7 +77,9 @@ public class RunRecorder {
 	private static final ArrayList<Key> keys = new ArrayList<Key>();
 	private static final ArrayList<String> marks = new ArrayList<String>();
 	private static final HashSet<Integer> visited = new HashSet<Integer>();
-	private static int cur_semi = Integer.MIN_VALUE;
+	private static int cur_semi = Integer.MIN_VALUE, cur_alt = 0;
+	/* the first estimate, seconds into the WAV, for test_pitch -t */
+	private static volatile double t_est = -1.0;
 	private static volatile long written = 0;	/* samples in the WAV */
 
 	/* from = input position, or < 0 for now; pos[0], pos[1]: the
@@ -131,6 +133,7 @@ public class RunRecorder {
 		marks.clear();
 		visited.clear();
 		cur_semi = Integer.MIN_VALUE;
+		t_est = -1.0;
 		written = 0;
 		limit = failed = false;
 		stopping = false;
@@ -155,9 +158,11 @@ public class RunRecorder {
 		return true;
 	}
 
-	/* UI thread, whenever the status is updated: the key shown now */
-	public static void key(int semi, String name, double hz) {
-		if (!active || (semi == cur_semi)) {
+	/* UI thread, whenever the status is updated: the key shown now.
+	 * alt: which of two notes on the semitone (Dis or Es, parms.note_alt),
+	 * 0 where there is one */
+	public static void key(int semi, int alt, String name, double hz) {
+		if (!active || ((semi == cur_semi) && (alt == cur_alt))) {
 			return;
 		}
 		double t = now();
@@ -171,10 +176,12 @@ public class RunRecorder {
 		k.name = name;
 		k.semi = semi;
 		k.hz = hz;
-		k.redo = visited.contains(semi);
-		visited.add(semi);
+		/* played before in this run */
+		k.redo = visited.contains(2*semi + alt);
+		visited.add(2*semi + alt);
 		keys.add(k);
 		cur_semi = semi;
+		cur_alt = alt;
 		EventLog.ui(String.format(Locale.US, "run key %d %s %.3f Hz%s",
 			keys.size(), name, hz, k.redo ? " redo" : ""));
 	}
@@ -208,7 +215,8 @@ public class RunRecorder {
 		sb.append("ended ").append(how).append('\n');
 		sb.append("keys ").append(n).append('\n');
 		sb.append("# key <i> <start s> <end s> <name> <semi> " +
-			"<target Hz> [redo]; semi: 48 = A4\n");
+			"<target Hz> [redo]; semi: 48 = A4, redo: the key " +
+			"was played before in this run\n");
 		for (int i = 0; i < n; i++) {
 			Key k = keys.get(i);
 			sb.append(String.format(Locale.US,
@@ -292,6 +300,14 @@ public class RunRecorder {
 					sb.append("# gap: ").append(lost).append(
 						" events lost\n");
 				}
+				if (t_est < 0.0) {
+					int e = sb.indexOf("  est ");
+					if (e >= 0) {
+						int b = sb.lastIndexOf("\n", e) + 1;
+						t_est = Double.parseDouble(sb.substring(
+							b, e).trim().split(" +")[0]);
+					}
+				}
 				tlw.write(sb.toString());
 				if (written - last_patch >= rate) {
 					patch(out);
@@ -336,7 +352,9 @@ public class RunRecorder {
 				String.format(Locale.US, "%.1f",
 					(double)written/rate) + " s)\n");
 			w.write(keys_str);
-			w.write("replay: test_pitch " + base + ".wav\n\n");
+			w.write("replay: test_pitch " + ((t_est >= 0.0) ?
+				String.format(Locale.US, "-t %.5f ", t_est) : "") +
+				base + ".wav\n\n");
 			r = new BufferedReader(new InputStreamReader(
 				new FileInputStream(tl), "UTF-8"));
 			char[] c = new char[65536];
