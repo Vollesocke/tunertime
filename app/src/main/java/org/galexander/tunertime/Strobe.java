@@ -238,36 +238,19 @@ public class Strobe extends Thread {
 
 	/* like "A49" for A-4.  the native side sets pianoname once the
 	 * strobe is set up, but the text is formatted here so that it
-	 * follows the note-names setting.  in organ mode, the focused
-	 * partial's measured offset in place of the piano key, like
-	 * "4' +01.5c"; with no row focused, the target's offset from equal
-	 * temperament (note, temperament and cents set by hand), like
-	 * "target -05.9c" for a Werckmeister note */
+	 * follows the note-names setting.  in organ mode nothing, as the
+	 * target and its offset are in the title (Onno, 19 Oct), except in
+	 * mixture mode: the focused partial's measured offset, which the
+	 * measurement then takes as in tune, like "4' +01.5c" */
 	private int pn_cents = -1;
 	private boolean pn_german = false;
 	private String pn_str = null;
-	private int tgt_cents = Integer.MIN_VALUE;
-	private String tgt_str = null;
-	private String target_str() {
-		int cents = parms.strobe_cents;
-		if ((cents != tgt_cents) || (tgt_str == null)) {
-			tgt_str = ui.getString(R.string.readout_target,
-					note.cents_str(new note(cents).cents));
-			tgt_cents = cents;
-		}
-		return tgt_str;
-	}
 	private void draw_pianoname(Canvas c) {
 		String s = pianoname;
 		if (parms.organ_mode) {
-			if (parms.focus_ratio <= 0.0d) {
-				/* The target pitch and temperament are already in the
-				 * title in organ mode. */
-				s = null;
-			} else {
-				s = (focus_str_ratio == parms.focus_ratio) ?
+			s = (parms.mixture_mode && (parms.focus_ratio > 0.0d) &&
+			     (focus_str_ratio == parms.focus_ratio)) ?
 							focus_str : null;
-			}
 		}
 		if (parms.fft_mode || (s == null)) {
 			return;

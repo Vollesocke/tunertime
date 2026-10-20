@@ -151,7 +151,6 @@ wanted.
    - meantone with more than 12 notes (subsemitones D#/Eb, G#/Ab), with one
      menu to place the wolf or pick the notes, and German names with "is"
      for such tunings;
-   - the strobe's cent readout only in mixture mode;
    - the Preset tab has no note stepping since it became the workbench.
      Ask Onno whether that is right.
    - 06f3337 had an unused string "Tap a note to set it as the current
@@ -175,7 +174,7 @@ are answered and implemented:
 |---|---|---|
 | 1 | Length mode and temperature | No change. The tuner allows for the temperature by hand via the A frequency (~0.7 Hz/K). Since 06f3337 (Onno, one-line length readout) the T± buttons are gone and the speed of sound is taken at 18 °C. |
 | 2 | Octave correction in follow mode | Current note only. After a hand correction, continuity: detections are taken in the octave nearest the note shown and move it only within a fourth (±500 c). Ends on auto off/on or 10 s of silence. `sim_organ -f old/new` compares. Mutations: focus their row. |
-| 3 | Cent readout top right in organ mode | Tapped row: its measured offset. No row: nothing since 06f3337 (the target and temperament are in the title); Onno wants it in mixture mode only. |
+| 3 | Cent readout top right in organ mode | Tapped row: its measured offset. Only in mixture mode (Onno, 19 Oct): there the focused row's measured offset; otherwise nothing, the target and its offset are in the title. |
 | 4 | Debug recordings | Same triggers; the .txt now has a timeline of estimates, strobe drift and UI events (`EventLog.java`), on the WAV's time base; `test_pitch -t` replays on the same base. |
 | 5 | Wording for stopped pipes | Unchanged. |
 | 6 | Mixture step by step | Ton± focuses the reference row last measured again. |

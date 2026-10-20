@@ -98,7 +98,6 @@
 	<!-- organ mode, top right with no row focused: the target's offset
 	     from equal temperament (temperament and cents set by hand),
 	     %1$s like -05.9c -->
-	<string name="readout_target">target %1$s</string>
 	<!-- harmonic row labels: the native code writes English ordinals
 	     ("2nd"); if this is not empty it replaces the suffix -->
 	<string name="ordinal_suffix"></string>

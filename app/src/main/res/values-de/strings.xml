@@ -91,7 +91,6 @@
 	<!-- auf dem Strobe -->
 	<string name="paused">Pause</string>
 	<string name="row_too_high">zu hoch</string>
-	<string name="readout_target">Soll %1$s</string>
 	<!-- Teiltonzeilen: "2." statt "2nd" -->
 	<string name="ordinal_suffix">.</string>
 
