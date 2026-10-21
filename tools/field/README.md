@@ -106,3 +106,32 @@ cents and key 7 played twice; with `--test-pitch` its timeline gets
 the estimates of a replay. All 39 keys come out right: it tests the
 tools, not the detector. With hints the estimates read up to 1.2 cents
 off on the synthetic tones (0.1 without): judge pipes by the drift.
+
+## Warped runs
+
+`warp_run.py` (needs numpy) makes new runs from real ones: each key that
+counts in `run_score.py` is cut from its tap to the next, so the real
+pipe, onset, room and noise stay, with a known truth (the note, and the
+pipe's own offset from the drift). Options detune the pipes (`--cents`,
+`--cents-random`), transpose (`--semis`), notch the source's own noise
+lines (`--hum-notch`: the stationary peaks of its quiet stretches), add
+a hum series (`--hum DB` against the keys' level, mixed as measured at
+Hmth 202) or another run's noise bed (`--noise-from`), apply gain, AGC,
+clipping, reorder (`--order up|down|shuffle`) and overlap keys
+(`--legato S`). Output goes to `runs/warped` in the app's format with
+hint lines and no estimates: score with
+`run_score.py --hints keys --test-pitch EXE runs/warped`.
+
+```sh
+python tools/field/warp_run.py --hum -14 tools/field/data/runs-2026-10-21/run_Gedackt2
+python tools/field/warp_run.py --cents-random 25 --seed 3 --order shuffle \
+    tools/field/data/runs-2026-10-21
+```
+
+A plain copy scores as its source (21 Oct runs: same ok and wrong
+per key, cents within 0.4). `--cents 20` moves the cents column by 20.0
+(median; most keys within 1 c); run_score then calls a few detuned bass
+keys silent, as its key level is taken at the target Hz. Hmth 202's
+noise lines (a 49.25 Hz blower series, not the mains) stand at -12 dB
+against its Gedackt's keys, Hmth 204's at -33 dB; the Hmth 204 Gedackt
+with `--hum -14` scores as the Hmth 202 one (79% ok, 34% empty).

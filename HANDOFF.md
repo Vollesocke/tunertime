@@ -462,8 +462,9 @@ the previous checkout and its agent worktrees, is on `E:\Users\Volker`.
   `app/src/androidTest/assets/known_ui_issues.txt`.
 - **Detector bench:** `tools/test_pitch.c` (537 synthetic cases; also replays
   WAVs).
-- **Realistic simulator:** `tools/sim_organ.c` (47 scenarios: reverb, wind,
-  speech, phone mic, mixtures, chromatic runs). It mirrors the Java constants
+- **Realistic simulator:** `tools/sim_organ.c` (50 scenarios: reverb, wind,
+  speech, phone mic, mixtures, chromatic runs; the three "Field" ones
+  calibrated on Onno's runs of 21 Oct, see its header). It mirrors the Java constants
   DET_AGREE, follow continuity (`-f new`), mixture timing and length logic;
   keep it in sync when changing them.
 - **Gradle and the native library:** Gradle once packed a stale
