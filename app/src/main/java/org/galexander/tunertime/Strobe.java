@@ -64,8 +64,13 @@ public class Strobe extends Thread {
 				   double level, double floor, double gate) {
 		in_level = level;
 		in_gate = gate;
-		EventLog.estimate(pos, hz, conf);
-		ui.pitch_detected(hz, level, floor);
+		/* the level bar is drawn here; the UI thread hears of an
+		 * estimate only where it is used, as before the bar */
+		if (parms.auto_note || parms.mixture_mode ||
+		    parms.length_mode || parms.run_active) {
+			EventLog.estimate(pos, hz, conf);
+			ui.pitch_detected(hz, level, floor);
+		}
 	}
 
 	/* organ mode: the focused row's partial gained cycles on the row's
