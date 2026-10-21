@@ -30,8 +30,9 @@ this fork.
   It ends when auto is turned off or on afresh, or after 10 s of silence.
   Mutations (Quinte, Terz) are followed by focusing their row instead.
   The correction holds while the key sounds: the note the detector heard
-  is not followed again until it hears another one or nothing for 0.3 s
-  (the key released); also Dis or Es picked by hand. In mixture mode the
+  is not followed again until it hears another one or the input stays
+  down at its noise floor for 0.3 s (the key released); also Dis or Es
+  picked by hand. In mixture mode the
   key and octave buttons are corrections too, with continuity (they were
   not before). `tools/sim_organ -f old|new` compares the v18.1 rule
   with this one.
@@ -140,6 +141,15 @@ this fork.
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
   exported file.
+- **Input level bar** (`Strobe.draw_level`): along the strobe's right
+  edge, the input as the detector sees it, on a dB scale, with the level
+  it needs as a white tick: red under it (too quiet to be read: move the
+  phone nearer the pipes), amber up to twice it, green above.
+- **Noisy churches** (`jni/pitch.c`): the steady lines of the place (a
+  blower motor in the case, mains hum) are learnt between keys and taken
+  off the spectrum below 1 kHz before the peaks are found, and the level
+  gate drops in a quiet place. `tools/field/eval.sh` scores a detector
+  build against every bench at once.
 - **Neutral dark UI** (`res/values/colors.xml`, theme `Tuner`), with the
   native drawing in `jni/fft.c` and `jni/strobe.c` using the same palette.
   Both the strobe (new default colour scheme) and the FFT spectrogram use

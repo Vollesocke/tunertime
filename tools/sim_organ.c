@@ -170,6 +170,8 @@ static double mix_window(double f_row, double r)
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
 #define HOLD_QUIET	0.3	/* TunerTime.HOLD_QUIET */
+#define KEY_QUIET	1.4	/* TunerTime.KEY_QUIET */
+#define KEY_MIN		20.0	/* TunerTime.KEY_MIN */
 #define MIX_SEMIS	2	/* TunerTime.MIX_SEMIS */
 #define CORR_AFTER	1.5	/* the user corrects a wrong note this long
 				 * into the key */
@@ -876,7 +878,7 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	int shift = 0, cont = 0, det_stable = -999;
 	/* -f new: the note the user overruled (TunerTime.overruled) */
 	int overruled = -999;
-	double det_stable_t = -1e9, last_heard = 0.0;
+	double det_stable_t = -1e9, last_heard = 0.0, last_loud = 0.0;
 	double hz, conf;
 	double lat[MAXK];
 	int nl = 0;
@@ -965,7 +967,11 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			int g = (hz > 0.0) ? semis(hz) : -999;
 			if (hz > 0.0) {
 				last_heard = t;
-			} else if (t - last_heard > HOLD_QUIET) {
+			}
+			if ((pitch_level() >= KEY_QUIET*pitch_floor()) &&
+			    (pitch_level() >= KEY_MIN)) {
+				last_loud = t;
+			} else if (t - last_loud > HOLD_QUIET) {
 				overruled = -999;	/* key released */
 			}
 			if ((hz <= 0.0) && (t - last_heard > NEAR_SILENCE)) {

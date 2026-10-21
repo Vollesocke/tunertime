@@ -41,8 +41,9 @@ last estimate:
           only within NEAR_SEMIS); a wrong note is corrected by hand at
           the next tap, and the note last agreed then (within
           CORR_RECENT) is not followed again until another one is
-          agreed or nothing is heard for HOLD_QUIET
-          (TunerTime.hold_correction).
+          agreed or the input stays at its noise floor for HOLD_QUIET
+          (TunerTime.hold_correction; the level as pitch.c sees it,
+          from the WAV).
 A table per source, one line per run; -v adds the keys.
 """
 import array
@@ -62,6 +63,9 @@ NEAR_SEMIS = 5
 NEAR_SILENCE = 10.0
 CORR_RECENT = 4.0
 HOLD_QUIET = 0.3
+KEY_QUIET = 1.4		# TunerTime.KEY_QUIET
+KEY_MIN = 20.0		# TunerTime.KEY_MIN: digital silence is quiet
+FLOOR_RISE = 1.0005	# pitch.c, per analysis
 FRAME = 0.01		# envelope frames, seconds
 HARMONICS = 4		# a key's level: at its harmonics 1..HARMONICS
 PERIODS = 17		# over this many periods: a semitone away in its first null
@@ -257,6 +261,28 @@ class Run:
             a.byteswap()
         self.x = a[::ch] if ch > 1 else a
 
+    def loud(self, times):
+        """per time: the input at least KEY_QUIET over its noise floor,
+        as pitch.c's level and floor see them (the rms of the 8192
+        samples 2:1 decimated, ending there; the floor a minimum rising
+        FLOOR_RISE per analysis); all True without the WAV"""
+        if self.x is None:
+            return [True]*len(times)
+        x = self.x
+        d = [0.5*(x[i] + x[i + 1]) for i in range(0, len(x) - 1, 2)]
+        s1 = [0.0] + list(itertools.accumulate(d))
+        s2 = [0.0] + list(itertools.accumulate(v*v for v in d))
+        out, fl, n = [], 0.0, 8192
+        for t in times:
+            e = min(len(d), int(t*self.rate/2.0))
+            b = max(0, e - n)
+            m = max(e - b, 1)
+            mean = (s1[e] - s1[b])/m
+            lv = math.sqrt(max((s2[e] - s2[b])/m - mean*mean, 0.0))
+            fl = lv if (fl <= 0.0 or lv < fl) else fl*FLOOR_RISE
+            out.append(lv >= KEY_QUIET*fl and lv >= KEY_MIN)
+        return out
+
     def level(self, hz, t0, t1):
         """the level at the harmonics of hz in dB, every FRAME from about
         t0 to t1, the time its first frame is centred on and half its
@@ -363,6 +389,7 @@ def score(run, est):
     sem, n = None, 0
     shown, near, heard = None, False, 0.0
     stable, stable_t, overruled = None, -1e9, None
+    loud, last_loud = run.loud([t for t, _ in est]), 0.0
 
     def close(i):
         """at the tap ending key i: judge follow, correct by hand"""
@@ -377,7 +404,11 @@ def score(run, est):
         shown = k['semi']
         near = True
 
-    for t, hz in est:
+    for e, (t, hz) in enumerate(est):
+        if loud[e]:
+            last_loud = t
+        elif t - last_loud > HOLD_QUIET:
+            overruled = None	# the key released
         while seg < len(run.keys) and t >= run.keys[seg]['end']:
             close(seg)
             seg += 1
@@ -396,8 +427,6 @@ def score(run, est):
             n = 0
             if near and t - heard > NEAR_SILENCE:
                 near = False
-            if t - heard > HOLD_QUIET:
-                overruled = None
             continue
         heard = t
         s = run.semi(hz)

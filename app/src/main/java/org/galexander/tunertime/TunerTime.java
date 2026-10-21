@@ -523,9 +523,11 @@ public class TunerTime extends Activity
 	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it.
 	 * The correction holds while the key sounds: the note the detector
 	 * agreed on when the user overruled it is not followed again until
-	 * it agrees on another one, or nothing is heard for HOLD_QUIET ms
-	 * (the key released: the next one may be the note it heard, a
-	 * semitone up in a chromatic run).  Before, the next estimates
+	 * it agrees on another one, or the input stays down at its noise
+	 * floor for HOLD_QUIET ms (the key released: the next one may be the
+	 * note it heard, a semitone up in a chromatic run; v18.5 took
+	 * HOLD_QUIET ms of empty estimates, which a soft pipe gives now and
+	 * then while it sounds in a noisy place).  Before, the next estimates
 	 * undid it within half a second wherever the detector kept hearing
 	 * the wrong note, and always a Dis/Es picked by hand (sim_organ -f
 	 * new: 28 of 55 corrections undone with the key still held, none
@@ -551,6 +553,10 @@ public class TunerTime extends Activity
 	private static final long CORR_RECENT = 4000;
 	private static final long NEAR_SILENCE = 10000;
 	private static final long HOLD_QUIET = 300;
+	private static final double KEY_QUIET = 1.4;	/* pitch.c QUIET */
+	private static final double KEY_MIN = 20.0;	/* pitch.c LOW_RMS:
+							 * digital silence */
+	private long last_loud = 0;
 	private Toast near_toast = null;
 
 	public void do_auto(View v) {
@@ -594,19 +600,26 @@ public class TunerTime extends Activity
 			!parms.run_active;	/* the note shown is the truth */
 	}
 
-	/* from the strobe thread */
-	public void pitch_detected(final double hz) {
+	/* from the strobe thread: the estimate, and the input level and its
+	 * noise floor (pitch.h) */
+	public void pitch_detected(final double hz, final double level,
+				   final double floor) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				on_pitch(hz);
+				on_pitch(hz, level, floor);
 			} });
+	}
+	/* the same without levels (tests): a note heard is loud, nothing
+	 * heard is quiet */
+	public void pitch_detected(double hz) {
+		pitch_detected(hz, (hz > 0.0) ? 1000.0 : 0.0, 1.0);
 	}
 
 	/* moves the target to the nearest note once DET_AGREE estimates in a
 	 * row agree; silence holds the current note.  the cents offset set
 	 * by hand carries over to the new note.  after a correction, only
 	 * near the current note (continuity, above). */
-	private void on_pitch(double hz) {
+	private void on_pitch(double hz, double level, double floor) {
 		if (parms.mixture_mode && (hz > 0.0d)) {
 			/* Dis or Es by the nearer, where both were picked */
 			int[] hn = parms.nearest_note(freq_to_cents(hz));
@@ -634,7 +647,13 @@ public class TunerTime extends Activity
 			cause = "10 s silence";
 			log_changes();
 		}
-		if ((hz <= 0.0) && (now - last_heard > HOLD_QUIET)) {
+		if ((level >= KEY_QUIET*floor) && (level >= KEY_MIN)) {
+			last_loud = now;
+		} else if (now - last_loud > HOLD_QUIET) {
+			/* the key released: down to the noise floor, not
+			 * just the detector hearing nothing clear, which a
+			 * soft pipe in a noisy place does now and then
+			 * while it sounds (Onno: the hand always wins) */
 			overruled = Integer.MIN_VALUE;
 		}
 		if (!parms.auto_note || !auto_applies() ||
@@ -782,6 +801,9 @@ public class TunerTime extends Activity
 			 CORR_RECENT);
 		overruled = recent ? det_stable : Integer.MIN_VALUE;
 		overruled_alt = det_stable_alt;
+		/* corrected while the key sounds: the release counts from
+		 * here */
+		last_loud = SystemClock.uptimeMillis();
 	}
 
 	private void show_near() {
@@ -1388,9 +1410,9 @@ public class TunerTime extends Activity
 			mixture_status.setText(getString(
 				R.string.mixture_measuring, f,
 				(int)Math.round(mix.progress()*100.0d)));
-		} else if (mix.released()) {
-			mixture_status.setText(R.string.mixture_released);
 		} else if (parms.mixture_ref > 0.0d) {
+			/* a key released before the measurement was done
+			 * says nothing: the organ builder knows (Onno) */
 			/* the rank the target was taken from, which need not
 			 * be the row focused now (the rank being tuned) */
 			String s = getString(R.string.mixture_measured,

@@ -23,6 +23,16 @@
  * winner (up to MAX_EXPL), so reeds with 20 partials and mixtures count as
  * clear tones, while noise, whose peaks fall anywhere, does not.
  *
+ * The place's steady noise lines (a blower motor in the organ case, mains
+ * hum) are learnt from the quiet windows between keys and taken off the
+ * spectrum below NOISE_HZ before the peaks are found; the gate on the
+ * input level drops in a quiet place (LOW_RMS).  Measured on Onno's runs
+ * of 21 Oct (tools/field/eval.sh): keys agreed 186 -> 191 of 206 (the
+ * Gedackt in the Becker organ, its motor 12 dB under the soft pipes, 44 ->
+ * 48 of 56), warped runs 367 -> 398 of 465, the 19 Oct recordings 40 -> 44
+ * of 81, sim_organ's Field scenarios 16% and 2% empty instead of 33% and
+ * 16%; the synthetic bench unchanged.
+ *
  * pitch_hint() passes the partial the user focused on (organ mode): then
  * the note is that partial's peak / focus ratio, the peak being looked for
  * within half an octave of where the shown note puts it (see focus() for
@@ -46,7 +56,26 @@
 #define MAX_F0		4300.0	/* a bit over C8 */
 #define MAX_SINE_F0	8000.0	/* a lone partial: the top of a 1' rank */
 #define MAX_PARTIAL	9000.0
-#define MIN_RMS		60.0	/* 16-bit units; quieter input is ignored */
+#define MIN_RMS		60.0	/* 16-bit units; quieter input is ignored.. */
+#define LOW_RMS		20.0	/* ..unless the place is quiet: then down
+				 * to FLOOR_GAIN over its noise floor, but
+				 * not under this.  Onno's runs of 21 Oct:
+				 * at Hmth 204 (floor 18) B4 and Cs5 came
+				 * in at 47 and 30 and were never read; at
+				 * Hmth 202 (blower hum, floor 42) a lower
+				 * fixed gate let the hum through as notes
+				 * (sim_organ Field: 18 more wrong) */
+#define FLOOR_GAIN	1.6
+#define NOISE_HZ	1000.0	/* the steady lines of the place (blower motor,
+				 * mains hum), learnt below this.. */
+#define QUIET		1.4	/* ..from windows this close to the floor,
+				 * under MIN_RMS (no pipe heard from the
+				 * start is taken for noise), with nothing
+				 * detected: between keys... */
+#define NOISE_AVG	0.1	/* ...averaged so.. */
+#define NOISE_OVER	1.5	/* ..and taken off the spectrum this many
+				 * times over before the peaks are found */
+#define FLOOR_RISE	1.0005	/* per analysis: ~2%/s */
 #define MIN_CONF	0.7	/* share of peak energy on the winner's
 				 * harmonics; the synthetic tones of
 				 * tools/test_pitch.c score 0.84-1,
@@ -88,6 +117,10 @@ static int hb_pos;
 static int odd;			/* the next input sample makes no output */
 static double focus_ratio, expect_hz;	/* pitch_hint() */
 static int last_at;		/* pitch_last_at() */
+static double nmag[N/2];	/* the learnt noise lines, by bin */
+static int nbins;
+static double level, floor_rms;	/* pitch_level(): the last window's rms,
+				 * and its slowly rising minimum */
 static double weak_hz, weak_conf;
 static int weak_count;
 #if 2*HOP != PITCH_STEP
@@ -122,6 +155,9 @@ pitch_init(int sample_rate)
 	ring_pos = fresh = odd = hb_pos = 0;
 	weak_hz = weak_conf = 0.0;
 	weak_count = 0;
+	level = floor_rms = 0.0;
+	memset(nmag, 0, sizeof nmag);
+	nbins = (int)(NOISE_HZ*N/fs);
 	{
 		double sum = 0.0;
 		for (i = 0; i <= HB_M; i++) {
@@ -190,6 +226,16 @@ fft(void)
 
 struct peak { double f, m; };
 
+/* the magnitude with the place's noise lines taken off */
+static double
+clean(int k)
+{
+	double m;
+	if (k >= nbins) return mag[k];
+	m = mag[k] - NOISE_OVER*nmag[k];
+	return (m > 0.0) ? m : 0.0;
+}
+
 /* collects the MAX_PK strongest local maxima that stand well above the
  * average level, with parabolic interpolation of the frequency */
 static int
@@ -206,7 +252,7 @@ find_peaks(struct peak *pk)
 	level = 4.0 * level / (kmax-kmin+1);
 
 	for (k = kmin; k <= kmax; k++) {
-		double a = mag[k-1], b = mag[k], c = mag[k+1];
+		double a = clean(k-1), b = clean(k), c = clean(k+1);
 		if ((b <= level) || (b <= a) || (b < c)) {
 			continue;
 		}
@@ -381,12 +427,19 @@ analyse(double *conf)
 		im[i] = 0.0;
 	}
 	*conf = 0.0;
-	if (sqrt(rms/N) < MIN_RMS) {
-		return 0.0;
+	level = sqrt(rms/N);
+	if ((floor_rms <= 0.0) || (level < floor_rms)) {
+		floor_rms = level;
+	} else {
+		floor_rms *= FLOOR_RISE;
 	}
 	fft();
 	for (i = 0; i < N/2; i++) {
 		mag[i] = sqrt(re[i]*re[i] + im[i]*im[i]);
+	}
+	/* under the gate too: the quiet windows teach the noise lines */
+	if (level < pitch_gate()) {
+		return 0.0;
 	}
 	n = find_peaks(pk);
 	for (i = 0; i < n; i++) {
@@ -511,11 +564,35 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 				weak_count = 0;
 				weak_hz = weak_conf = 0.0;
 			}
+			if ((*hz <= 0.0) && (level < QUIET*floor_rms) &&
+			    (level < MIN_RMS)) {
+				for (k = 0; k < nbins; k++)
+					nmag[k] += NOISE_AVG*(mag[k] - nmag[k]);
+			}
 			last_at = i+1;
 			ret = 1;
 		}
 	}
 	return ret;
+}
+
+double
+pitch_level(void)
+{
+	return level;
+}
+
+double
+pitch_floor(void)
+{
+	return floor_rms;
+}
+
+double
+pitch_gate(void)
+{
+	double g = FLOOR_GAIN*floor_rms;
+	return (g > MIN_RMS) ? MIN_RMS : (g < LOW_RMS) ? LOW_RMS : g;
 }
 
 int

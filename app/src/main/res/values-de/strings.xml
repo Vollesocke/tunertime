@@ -85,7 +85,6 @@
 	<string name="mixture_measured">gemessen an %1$s</string>
 	<string name="mixture_tap_measure">Messen antippen</string>
 	<string name="mixture_tap_row">Strobe-Zeile antippen</string>
-	<string name="mixture_released">Taste zu fr&#252;h losgelassen: halten und neu messen</string>
 	<string name="mixture_far">Ton &#252;ber einen Halbton neben den Zeilen: Taste pr&#252;fen</string>
 
 	<!-- Orgelmodus: L&#228;nge (Pfeife zu lang / zu kurz) -->
