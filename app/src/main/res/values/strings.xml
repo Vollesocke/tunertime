@@ -112,10 +112,6 @@
 	<string name="ordinal_suffix"></string>
 
 	<!-- toasts and dialogs on the main screen -->
-	<string name="toast_auto">auto: tap to lock, hold to turn off</string>
-	<string name="toast_row_too_high">This row is too high for the sample rate</string>
-	<string name="follow_as_detected">follow: notes as detected</string>
-	<string name="follow_near">follow: only within a fourth of this note (hold auto to clear)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="about_title">About</string>
@@ -151,21 +147,7 @@
 	<string name="rename">Rename</string>
 	<string name="rename_title">Rename preset</string>
 	<string name="add_temperament_title">Add temperament (A = 0)</string>
-	<string name="added">Added &#8220;%1$s&#8221;</string>
-	<string name="no_file_picker">No file picker available</string>
 	<string name="export_file_name">TunerTime presets.txt</string>
-	<plurals name="exported">
-		<item quantity="one">Exported %d preset</item>
-		<item quantity="other">Exported %d presets</item>
-	</plurals>
-	<plurals name="imported">
-		<item quantity="one">Imported %d preset</item>
-		<item quantity="other">Imported %d presets</item>
-	</plurals>
-	<plurals name="imported_renamed">
-		<item quantity="one">, %d renamed to avoid a name clash</item>
-		<item quantity="other">, %d renamed to avoid a name clash</item>
-	</plurals>
 	<string name="export_failed">Export failed</string>
 	<string name="import_failed">Import failed</string>
 	<string name="nothing_imported">Nothing was imported.</string>
@@ -283,6 +265,8 @@
 	<string name="footages">Footages shown</string>
 	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
 	<string name="cat_debug">Debug</string>
+	<string name="level_bar">Input level bar</string>
+	<string name="level_bar_summary">Along the strobe\'s right edge: red too quiet to be read, amber marginal, green good; the white tick is where detection starts.</string>
 	<string name="mixture_focus_follow">Mixture: follow the reference rank</string>
 	<string name="mixture_focus_follow_on">The key is detected from the focused (reference) rank and moves by a whole tone at most; octaves and other ranks sounding alone do not move it. Bigger steps by hand.</string>
 	<string name="mixture_focus_follow_off">The key is detected from whatever sounds, independent of the focused rank.</string>
@@ -314,22 +298,13 @@
 	<string name="run_ok">OK</string>
 	<string name="run_stop_status">&#9632; Stop %1$d:%2$02d &#183; %3$d</string>
 	<string name="afreq_enter">Pitch of A (Hz)</string>
-	<string name="afreq_range">A between 220 and 880 Hz</string>
 	<string name="menu_share">Recordings to GitHub</string>
-	<string name="share_none">No recordings yet</string>
 	<string name="share_packing">Packing the recordings&#8230;</string>
-	<string name="share_failed">Could not pack the recordings: %1$s</string>
-	<string name="share_ready">%1$d zip(s) in %2$s. Attach them to the issue that opens now.</string>
 	<string name="share_issue_title">Recordings %1$s</string>
 	<string name="share_issue_body">%1$d zip(s) from %2$s, attached below (drag them here, or tap &#8220;Paste, drop, or click to add files&#8221;):</string>
 	<string name="share_issue_runs">Chromatic runs:</string>
 	<string name="share_issue_recs">Debug recordings: %1$d</string>
-	<string name="run_tab_blocked">Not during a chromatic run</string>
 	<string name="run_mark">Mark</string>
-	<string name="run_started">Recording. Play the key shown, then semi+.</string>
-	<string name="run_saved">Run saved: %1$s in %2$s</string>
-	<string name="run_failed">Could not record the run</string>
-	<string name="run_need_strobe">Runs record in note or mixture mode</string>
 	<string-array name="run_kinds">
 		<item>Open flue</item>
 		<item>Stopped (Gedackt)</item>

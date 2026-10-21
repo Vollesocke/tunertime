@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -258,9 +257,6 @@ public class PresetSelectActivity extends Activity {
 							temperaments.make_notes(temperament));
 					parms.preset_id = n.id;
 					changed();
-					Toast.makeText(PresetSelectActivity.this,
-						getString(R.string.added, n.name),
-						Toast.LENGTH_SHORT).show();
 				} })
 			.setNegativeButton(R.string.cancel, null)
 			.show();
@@ -336,8 +332,7 @@ public class PresetSelectActivity extends Activity {
 		try {
 			startActivityForResult(i, req);
 		} catch (android.content.ActivityNotFoundException ex) {
-			Toast.makeText(this, R.string.no_file_picker,
-					Toast.LENGTH_LONG).show();
+			/* no file picker on this phone: nothing happens */
 		}
 	}
 
@@ -394,9 +389,6 @@ public class PresetSelectActivity extends Activity {
 			} finally {
 				os.close();
 			}
-			Toast.makeText(this, getResources().getQuantityString(
-				R.plurals.exported, l.size(), l.size()),
-				Toast.LENGTH_SHORT).show();
 		} catch (Exception ex) {
 			error_dialog(getString(R.string.export_failed),
 					ex.toString());
@@ -466,12 +458,6 @@ public class PresetSelectActivity extends Activity {
 			p.notes.addAll(e.notes);
 		}
 		changed();
-		int k = r.presets.size();
-		Toast.makeText(this, getResources().getQuantityString(
-				R.plurals.imported, k, k) +
-			((renamed > 0) ? getResources().getQuantityString(
-				R.plurals.imported_renamed, renamed, renamed) : ""),
-			Toast.LENGTH_LONG).show();
 	}
 
 	private void error_dialog(String title, String msg) {

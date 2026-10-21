@@ -28,7 +28,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewConfiguration;
 import android.widget.Button;
-import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -324,8 +323,6 @@ public class TunerTime extends Activity
 			/* the detector stops in FFT mode, and the Preset tab
 			 * steps its own notes: not during a chromatic run */
 			cause = null;
-			Toast.makeText(this, R.string.run_tab_blocked,
-					Toast.LENGTH_SHORT).show();
 			return;
 		}
 		String title = null, subtitle = null;
@@ -557,7 +554,6 @@ public class TunerTime extends Activity
 	private static final double KEY_MIN = 20.0;	/* pitch.c LOW_RMS:
 							 * digital silence */
 	private long last_loud = 0;
-	private Toast near_toast = null;
 
 	public void do_auto(View v) {
 		if (!auto_applies()) {
@@ -569,8 +565,6 @@ public class TunerTime extends Activity
 			near = false;
 			det_stable = Integer.MIN_VALUE;
 			overruled = Integer.MIN_VALUE;
-			Toast.makeText(this, R.string.toast_auto,
-					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
 			parms.auto_note = false;	/* lock */
 			parms.auto_locked = true;
@@ -643,7 +637,6 @@ public class TunerTime extends Activity
 		} else if (near && (now - last_heard > NEAR_SILENCE)) {
 			near = false;
 			overruled = Integer.MIN_VALUE;
-			show_near();
 			cause = "10 s silence";
 			log_changes();
 		}
@@ -780,10 +773,7 @@ public class TunerTime extends Activity
 		long now = SystemClock.uptimeMillis();
 		boolean recent = (det_stable != Integer.MIN_VALUE) &&
 				 (now - det_stable_time < CORR_RECENT);
-		if (!near) {
-			near = true;
-			show_near();
-		}
+		near = true;
 		hold_correction();
 		/* the silence that ends continuity counts from here */
 		last_heard = now;
@@ -804,16 +794,6 @@ public class TunerTime extends Activity
 		/* corrected while the key sounds: the release counts from
 		 * here */
 		last_loud = SystemClock.uptimeMillis();
-	}
-
-	private void show_near() {
-		if (near_toast != null) {
-			near_toast.cancel();
-		}
-		near_toast = Toast.makeText(this, near ? R.string.follow_near
-						: R.string.follow_as_detected,
-					Toast.LENGTH_SHORT);
-		near_toast.show();
 	}
 
 	/* inverse of cents_to_freq() for the fundamental */
@@ -922,10 +902,7 @@ public class TunerTime extends Activity
 						return;
 					}
 					if ((hz < 220.0) || (hz > 880.0)) {
-						Toast.makeText(TunerTime.this,
-							R.string.afreq_range,
-							Toast.LENGTH_SHORT).show();
-						return;
+						return;		/* 220-880 Hz */
 					}
 					cause = "A keypad";
 					parms.A_freq = (int)Math.round(hz*10.0);
@@ -1074,10 +1051,11 @@ public class TunerTime extends Activity
 							}
 						}
 						if (!missing.isEmpty()) {
-							Toast.makeText(TunerTime.this,
-								getString(R.string.pick_notes_missing,
-									missing),
-								Toast.LENGTH_LONG).show();
+							/* said in the dialog itself:
+							 * no popups (Onno) */
+							dlg.setTitle(getString(
+								R.string.pick_notes_missing,
+								missing));
 							return;
 						}
 						preset.set_temporary_chain(p.id, m);
@@ -1190,9 +1168,6 @@ public class TunerTime extends Activity
 			/* the target moved up since it was focused: not
 			 * measured, but the row stays focused until the
 			 * user taps another (Onno, 21 Oct) */
-			if (settle == 0.0d) {
-				too_high_toast();
-			}
 			mix.stop();
 			update_status();
 			return;
@@ -1369,7 +1344,6 @@ public class TunerTime extends Activity
 		double r = parms.row_ratio(row);
 		if ((parms.focus_ratio != r) && Strobe.row_too_high(this, row)) {
 			/* a blank row: no drift to show or measure */
-			too_high_toast();
 			return;
 		}
 		cause = "tap row " + parms.footage_str(r);
@@ -1380,11 +1354,6 @@ public class TunerTime extends Activity
 			mix.start();		/* measure the new row */
 		}
 		update_status();
-	}
-
-	private void too_high_toast() {
-		Toast.makeText(this, R.string.toast_row_too_high,
-				Toast.LENGTH_SHORT).show();
 	}
 
 	/* the measured pitch, rounded to the nearest step of note mode
@@ -2105,7 +2074,8 @@ public class TunerTime extends Activity
 
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		boolean on = RunRecorder.active();
-		menu.findItem(R.id.action_run).setVisible(!on);
+		menu.findItem(R.id.action_run).setVisible(!on &&
+			!parms.fft_mode && !parms.preset_mode);
 		menu.findItem(R.id.action_share).setVisible(!on);
 		/* each would leave the screen, which ends the run */
 		menu.findItem(R.id.action_settings).setVisible(!on);
@@ -2167,8 +2137,6 @@ public class TunerTime extends Activity
 			}
 			if (RunRecorder.failed()) {
 				run_stop("write error");
-				Toast.makeText(TunerTime.this, R.string.run_failed,
-						Toast.LENGTH_LONG).show();
 				return;
 			}
 			invalidateOptionsMenu();
@@ -2241,9 +2209,7 @@ public class TunerTime extends Activity
 
 	private void run_start(RunRecorder.Meta m) {
 		if ((strobe == null) || parms.fft_mode || parms.preset_mode) {
-			Toast.makeText(this, R.string.run_need_strobe,
-					Toast.LENGTH_LONG).show();
-			return;
+			return;		/* the menu offers it only in strobe mode */
 		}
 		String before = auto_str(parms.auto_note ? 1 :
 				(parms.auto_locked ? 2 : 0), near);
@@ -2291,16 +2257,14 @@ public class TunerTime extends Activity
 		setRequestedOrientation(
 			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		if (!RunRecorder.start(this, m, h)) {
-			Toast.makeText(this, R.string.run_failed,
-					Toast.LENGTH_LONG).show();
+			setRequestedOrientation(android.content.pm.ActivityInfo
+				.SCREEN_ORIENTATION_UNSPECIFIED);
 			return;
 		}
 		cause = "run start";
 		update_status();
 		invalidateOptionsMenu();
 		run_handler.postDelayed(run_tick, 1000);
-		Toast.makeText(this, R.string.run_started,
-				Toast.LENGTH_LONG).show();
 	}
 
 	/* the key shown, for the run's truth (update_status()) */
@@ -2337,9 +2301,6 @@ public class TunerTime extends Activity
 		if (f != null) {
 			cause = "run end";
 			update_status();
-			Toast.makeText(this, getString(R.string.run_saved,
-				f.getName().replace(".txt", ""), f.getParent()),
-				Toast.LENGTH_LONG).show();
 		}
 	}
 

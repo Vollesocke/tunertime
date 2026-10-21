@@ -1,5 +1,10 @@
 # Handoff: TunerTime Organ
 
+**UI rule: no popups, ever** (Onno, 21 Oct). No Toasts, not for hints,
+results or errors (v18.7 removed all of them): a refused action does
+nothing or is not offered, what must be said goes into the screen or the
+dialog itself. Dialogs the user opens are fine.
+
 **What it is for (Onno, 21 Oct):** a tuning aid. The organ builder always
 decides by ear what he tunes and what not. Its main use is to keep the
 strobe following so that, with as little input as possible, he sees

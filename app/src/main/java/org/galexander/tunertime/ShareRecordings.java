@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,9 +54,7 @@ public class ShareRecordings {
 	public static void start(final Activity a) {
 		final ArrayList<File> files = collect(a);
 		if (files.isEmpty()) {
-			Toast.makeText(a, R.string.share_none,
-					Toast.LENGTH_LONG).show();
-			return;
+			return;		/* nothing new to send */
 		}
 		final ProgressDialog pd = new ProgressDialog(a);
 		pd.setMessage(a.getString(R.string.share_packing));
@@ -256,8 +253,6 @@ public class ShareRecordings {
 	private static void done(Activity a, ArrayList<File> files,
 			ArrayList<String> parts, String err) {
 		if (err != null) {
-			Toast.makeText(a, a.getString(R.string.share_failed, err),
-					Toast.LENGTH_LONG).show();
 			return;
 		}
 		SharedPreferences prefs =
@@ -308,16 +303,13 @@ public class ShareRecordings {
 			"TunerTime Organ " + version + ", " + Build.MANUFACTURER +
 			" " + Build.MODEL + " (Android " +
 			Build.VERSION.RELEASE + ")\n";
-		Toast.makeText(a, a.getString(R.string.share_ready,
-				parts.size(), where), Toast.LENGTH_LONG).show();
 		try {
 			Uri u = Uri.parse(ISSUES + "?title=" +
 				URLEncoder.encode(title, "UTF-8") + "&body=" +
 				URLEncoder.encode(body, "UTF-8"));
 			a.startActivity(new Intent(Intent.ACTION_VIEW, u));
 		} catch (Exception e) {
-			Toast.makeText(a, a.getString(R.string.share_failed,
-				e.toString()), Toast.LENGTH_LONG).show();
+			/* no browser: the zips are in Downloads/TunerTime */
 		}
 	}
 

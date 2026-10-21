@@ -74,6 +74,8 @@ public class parms {
 		 * (reference) rank and keeps to the key (TunerTime.MIX_SEMIS);
 		 * off (Onno's, the default): the detector ignores the focus */
 	static public volatile boolean mixture_focus_follow = false;
+		/* Settings: the input level bar on the strobe (off) */
+	static public volatile boolean level_bar = false;
 	static public int mixture_cents = 48000;
 		/* the footage (row ratio, like focus_ratio) mixture_cents was
 		 * last measured on; 0 = not measured since the last reset or
@@ -279,6 +281,7 @@ public class parms {
 					.equals("english")).apply();
 		}
 		german_names = prefs.getBoolean("german_names", false);
+		level_bar = prefs.getBoolean("level_bar", false);
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);

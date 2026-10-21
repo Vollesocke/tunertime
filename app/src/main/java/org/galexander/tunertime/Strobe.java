@@ -368,8 +368,8 @@ public class Strobe extends Thread {
 		return (float)(h*(1.0 - x));
 	}
 	private void draw_level(Canvas c, int w, int h) {
-		if (parms.fft_mode) {
-			return;
+		if (parms.fft_mode || !parms.level_bar) {
+			return;		/* Settings, off by default (Onno) */
 		}
 		float bw = 5.0f*ui.getResources().getDisplayMetrics().density;
 		double lv = in_level, g = in_gate;

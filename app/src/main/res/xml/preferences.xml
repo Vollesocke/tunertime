@@ -39,6 +39,11 @@
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
 		android:defaultValue="batlow" />
+	<CheckBoxPreference
+		android:key="level_bar"
+		android:title="@string/level_bar"
+		android:summary="@string/level_bar_summary"
+		android:defaultValue="false" />
 	<!-- summaries: the rows chosen (Settings.java) -->
 	<org.galexander.tunertime.DirectMultiSelectListPreference
 		android:key="harmonics"
