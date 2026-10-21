@@ -55,7 +55,8 @@ with 15 wrong jumps and lets speech through in `sim_organ`.
 The app's chromatic run mode records a whole stop: every key in turn,
 the shown note stepped with Ton+, so each key's note is known. Its .txt
 lists the keys (`key i start end name semi target_hz [redo]`, 48 = A4;
-a segment runs from one tap to the next, the last one of a note counts)
+a segment runs from one tap to the next, the last one of a note that
+sounds counts: stepping back with Ton- passes notes without playing them)
 before the usual timeline. After a crash there is only the .wav and a
 .timeline; the keys then come from its `ui run key` lines.
 
@@ -66,7 +67,18 @@ python tools/field/run_score.py --hints none,keys,log \
 sh tools/field/run.sh synth            # fake runs (make_run.py), scored
 ```
 
-Per key, from its onset (RMS envelope of the WAV) to the next tap:
+Per key, from its onset to the next tap. Onset and release come from
+the key's level in the WAV: at its harmonics 1-4 (its target Hz), each
+averaged over 17 periods, so the neighbouring semitones fall in the
+first null. A plain RMS envelope does not work in a church: mains hum,
+blower rumble (40-300 Hz) and the mic's hiss sit within 3-10 dB of a
+soft treble Gedackt, and with the organ sounding almost all the time a
+run-wide noise floor is organ sound. The onset is where the level
+starts to rise towards its peak (the window's end reaching the pipe),
+the release where it falls 15 dB below it; a key that never rises
+12 dB above its quiet (the 10th percentile within 5 s around it), or
+sounds less than 0.5 s (passed by with Ton+ or Ton-), is silent. In
+pure Python that takes 20-30 s per run of 3-4 minutes.
 
 - **ok**: the key's note agreed (4 in a row, as `on_pitch()`), and
   **first ok** the median time from the onset to it
