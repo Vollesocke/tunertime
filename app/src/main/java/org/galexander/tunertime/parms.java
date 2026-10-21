@@ -207,13 +207,18 @@ public class parms {
 		 * spelled from the chain of fifths (preset.spelled()), else
 		 * NO_CHAIN */
 	public static int note_chain() {
+		return chain_at(note_cents, note_alt);
+	}
+		/* the same for the pitch class of c, its note alt (mixture
+		 * mode's key) */
+	public static int chain_at(int c, int alt) {
 		preset p = preset.find(preset_id);
 		int[][] t = (p == null) ? null : p.temper_chain();
 		if (t == null) {
 			return NO_CHAIN;
 		}
-		int[] o = t[pitch_class(note_cents)];
-		return o[Math.min(Math.max(note_alt, 0), o.length-1)];
+		int[] o = t[pitch_class(c)];
+		return o[Math.min(Math.max(alt, 0), o.length-1)];
 	}
 
 

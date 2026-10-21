@@ -39,7 +39,10 @@ last estimate:
           first key is taken as heard, after it continuity is on
           (detections folded to the octave nearest the shown note, moving
           only within NEAR_SEMIS); a wrong note is corrected by hand at
-          the next tap.
+          the next tap, and the note last agreed then (within
+          CORR_RECENT) is not followed again until another one is
+          agreed or nothing is heard for HOLD_QUIET
+          (TunerTime.hold_correction).
 A table per source, one line per run; -v adds the keys.
 """
 import array
@@ -57,6 +60,8 @@ import wave
 DET_AGREE = 4
 NEAR_SEMIS = 5
 NEAR_SILENCE = 10.0
+CORR_RECENT = 4.0
+HOLD_QUIET = 0.3
 FRAME = 0.01		# envelope frames, seconds
 HARMONICS = 4		# a key's level: at its harmonics 1..HARMONICS
 PERIODS = 17		# over this many periods: a semitone away in its first null
@@ -327,14 +332,18 @@ def score(run, est):
     seg = 0
     sem, n = None, 0
     shown, near, heard = None, False, 0.0
+    stable, stable_t, overruled = None, -1e9, None
 
     def close(i):
         """at the tap ending key i: judge follow, correct by hand"""
-        nonlocal shown, near
+        nonlocal shown, near, overruled
         k, r = run.keys[i], res[i]
         if not k['valid'] or k['on'] is None:
             return
         r['follow'] = r.get('shown_at_off', shown) == k['semi']
+        if shown != k['semi']:
+            recent = k['end'] - stable_t < CORR_RECENT
+            overruled = stable if recent else None
         shown = k['semi']
         near = True
 
@@ -357,6 +366,8 @@ def score(run, est):
             n = 0
             if near and t - heard > NEAR_SILENCE:
                 near = False
+            if t - heard > HOLD_QUIET:
+                overruled = None
             continue
         heard = t
         s = run.semi(hz)
@@ -372,6 +383,10 @@ def score(run, est):
             else:
                 r['wrong'].append(s - k['semi'])
         if n >= DET_AGREE:
+            stable, stable_t = s, t
+            if s == overruled:
+                continue
+            overruled = None
             to = s
             if near and shown is not None:
                 to = s + 12*math.floor((shown - s)/12.0 + 0.5)

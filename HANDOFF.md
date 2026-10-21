@@ -8,6 +8,46 @@ tt_galaxy_s25 still not run. It adds to v18.3: chromatic run recordings, meanton
 than 12 notes, the mixture measurement ending on key release, a warning when
 the mixture is heard more than a semitone off, and tapping a workbench note.
 
+## 21 Oct evening: Onno's runs scored, his feedback (branch `onno-22oct`)
+
+**Runs** (issue #4, four zips, recorded with v18.4-organ-pre2; the release
+only adds the GitHub menu item, so nothing is missing from them): Rohrflöte
+8' and Gedackt (Hmth 202, A 439.5), Gedackt and Plenum in mixture mode
+(Hmth 204, 1/4 comma meantone with Dis/Es and Gis/As, A 443.7). Unpacked
+in `tools/field/data/runs-2026-10-21` (not committed).
+
+- `run_score.py` called 131 of 210 keys silent: its broadband RMS floor was
+  the organ itself (keys held nearly back to back) and 50 Hz hum. Now the
+  key's level at its own harmonics 1-4; 208 keys scored (the other two are
+  0.04 s taps). App: 186 ok, follow 187, 12 wrong (10 octaves, all Plenum).
+- Plenum in run mode sends no hints (mixture mode, unfocused detector):
+  C2 an octave high 7 times. Replayed with the key hints: 47/47.
+- Gedackt (Hmth 202): 12 middle/treble keys 100% empty in the app though
+  the pipes sound and are in tune (drift -0.2..-2.6 c); without hints the
+  detector drops 2.5-4 octaves to the 50 Hz hum. A detector task.
+- Rohrflöte F5 Gs5 A5 F6 90-100% empty, in tune. Gedackt (204): the Cs2
+  key sounds as D2 and Ds2 as E2 (short octave, or stepped late? ask Onno).
+- Pipes off: Rohrflöte A2 -26 c; Gedackt (202) bass Cs2 +15.7, Ds2 +15.3,
+  G2 +12.7 c.
+
+**Onno's feedback** (relayed by Volker), and what was done:
+1. "Correcting the detection by hand was much better before": the follow
+   logic is unchanged since his fork except that a correction did not hold.
+   The detector kept agreeing on the wrong note and undid it within 0.4 s
+   (sim_organ -f new: 28 of 55 corrections undone with the key held), and a
+   Dis/Es picked by hand always went back. Now the overruled note is not
+   followed until another note is agreed or 0.3 s of nothing (release).
+   sim: 0 undone, wrong shown 58 -> 30; runs: follow unchanged (187).
+   Whether that is what he meant is open: ask him what was better.
+2. A tab: shows the note set next to the Hz.
+3. Mixture mode and Dis/Es: key+/- skipped Es (D Dis E); follow rejected Es
+   (41 c from Dis), and an Es measured at Dis carried +41 c as the organ's
+   pitch to every key after it, all rejected: "detection crashes". Now
+   both notes, as in note mode (parms.note_alt shared), named apart.
+   No real crash found in the code; if it still happens, a debug recording.
+- Tests: `FollowTest` (androidTest, 5 tests, fail on v18.4); UiLayoutTest
+  main_normal/main_organ clean on tt_fairphone4.
+
 ## Onno's church day (21 Oct): chromatic runs
 
 The point: real truth for the detector. Menu → "Chromatischen Lauf

@@ -29,7 +29,11 @@ this fork.
   key. So a 4' stop corrected down an octave once follows in the 8' octave.
   It ends when auto is turned off or on afresh, or after 10 s of silence.
   Mutations (Quinte, Terz) are followed by focusing their row instead.
-  `tools/sim_organ -f old|new` compares the v18.1 rule with this one.
+  The correction holds while the key sounds: the note the detector heard
+  is not followed again until it hears another one or nothing for 0.3 s
+  (the key released); also Dis or Es picked by hand, and a key set by hand
+  in mixture mode. `tools/sim_organ -f old|new` compares the v18.1 rule
+  with this one.
 - **Debug recordings** (`DebugRecorder.java`, `jni/record.c`; Settings →
   "Debug recordings", on in the dev build): each hand correction while
   following saves 5 s before and 2 s after as a 16-bit mono WAV plus a .txt
@@ -99,7 +103,8 @@ this fork.
   always affects note mode. For Pythagorean and meantone tunings, tap the
   temperament name to choose a temporary wolf fifth; that choice resets when
   another temperament is selected. Tapping a note in the table makes it the
-  current note, in the octave of the one before.
+  current note, in the octave of the one before. The A tab shows the note
+  set next to the A frequency, as it hides the note buttons.
 - **Historical temperaments** (`temperaments.java`): equal, Pythagorean, ¼-
   and ⅙-comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II
   and Kellner, and all charts of
@@ -112,8 +117,10 @@ this fork.
   the usual III, his III the usual IV). Tables are normalized to A = 0 so the
   A-frequency setting still means the A you hear.
 - **Mixture mode follows detected notes** like tone mode, displays the detected
-  pitch and has key and octave buttons. A key the follow moves to is measured
-  again from 0.5 s after the onset, as a trailing average (0.65 s from 500 Hz
+  pitch and has key and octave buttons. Where the workbench picked two notes
+  on a pitch class (Dis and Es), the key buttons go through both (D Dis Es
+  E) and follow tells them apart, as in note mode. A key the follow moves
+  to is measured again from 0.5 s after the onset, as a trailing average (0.65 s from 500 Hz
   up, 1 s from 250 Hz, else 2 s / 3 s) that ends once it is steady.
   Detections more than 20 cents from the mixture's measured pitch are
   rejected. Key detection ignores the focused rank. Settings → "Mixture:

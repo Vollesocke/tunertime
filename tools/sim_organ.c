@@ -139,6 +139,7 @@ static double mix_window(double f_row, double r)
 #define CORR_RECENT	4.0	/* TunerTime.CORR_RECENT */
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
+#define HOLD_QUIET	0.3	/* TunerTime.HOLD_QUIET */
 #define MIX_SEMIS	2	/* TunerTime.MIX_SEMIS */
 #define CORR_AFTER	1.5	/* the user corrects a wrong note this long
 				 * into the key */
@@ -713,6 +714,7 @@ struct scenres {
 	int est_n, est_bad, est_oct, est_none;
 	int false_trig;		/* noise-only: notes shown */
 	int corrections;	/* -f: by hand */
+	int undone;		/* -f: ... moved away again, key still held */
 	double false_est;	/* noise-only: share of estimates */
 	struct lensum {
 		double frac, bad, unclear;	/* mean shares */
@@ -814,6 +816,8 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 	int det_semi = -999, det_count = 0, shown = -999;
 	/* -f: follow_shift (old), continuity (new), the last agreed note */
 	int shift = 0, cont = 0, det_stable = -999;
+	/* -f new: the note the user overruled (TunerTime.overruled) */
+	int overruled = -999;
 	double det_stable_t = -1e9, last_heard = 0.0;
 	double hz, conf;
 	double lat[MAXK];
@@ -903,9 +907,13 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			int g = (hz > 0.0) ? semis(hz) : -999;
 			if (hz > 0.0) {
 				last_heard = t;
-			} else if (t - last_heard > NEAR_SILENCE) {
+			} else if (t - last_heard > HOLD_QUIET) {
+				overruled = -999;	/* key released */
+			}
+			if ((hz <= 0.0) && (t - last_heard > NEAR_SILENCE)) {
 				shift = 0;
 				cont = 0;
+				overruled = -999;
 			}
 			if (hz > 0.0) {
 				if (g == det_semi) det_count++;
@@ -918,7 +926,15 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 				int to = g;
 				det_stable = g;
 				det_stable_t = t;
-				if (S->mixmode && mix_focus && (shown != -999)) {
+				if (g == overruled) {
+					/* not followed again */
+					to = shown;
+				} else {
+					overruled = -999;
+				}
+				if (to == shown) {
+					/* held */
+				} else if (S->mixmode && mix_focus && (shown != -999)) {
 					to = g + 12*(int)floor((shown - g)/12.0
 								+ 0.5);
 					if (abs(to - shown) > MIX_SEMIS)
@@ -955,6 +971,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 								kr[ki].wrong_oct++;
 							else
 								kr[ki].wrong_other++;
+							if (kr[ki].corrected &&
+							    (t <= k->off))
+								R->undone++;
 						}
 					}
 				}
@@ -982,6 +1001,9 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 						shift = to - det_stable;
 				} else {
 					cont = 1;
+					if ((det_stable != -999) &&
+					    (t - det_stable_t < CORR_RECENT))
+						overruled = det_stable;
 				}
 				shown = to;
 				if (S->hint)
@@ -1716,7 +1738,7 @@ int main(int argc, char **argv) {
 	int a, c, nb = sizeof builders / sizeof builders[0];
 	int t_keys = 0, t_shown = 0, t_woct = 0, t_woth = 0, t_false = 0;
 	int t_est = 0, t_bad = 0, t_mxn = 0, t_mxfail = 0, t_lk = 0;
-	int t_corr = 0, t_mxcut = 0, t_mxdisc = 0;
+	int t_corr = 0, t_undone = 0, t_mxcut = 0, t_mxdisc = 0;
 	double t_ldst = 0, t_ldbad = 0, t_lrst = 0, t_lrbad = 0, t_mxsum = 0;
 
 	for (a = 1; a < argc; a++) {
@@ -1797,9 +1819,11 @@ int main(int argc, char **argv) {
 			if (R.mx_cut || R.mx_disc)
 				printf(" released: %d cut, %d discarded",
 					R.mx_cut, R.mx_disc);
-			if (follow_mode) printf(" | corrected %d", R.corrections);
+			if (follow_mode) printf(" | corrected %d, undone %d",
+						R.corrections, R.undone);
 			printf("\n");
 			t_corr += R.corrections;
+			t_undone += R.undone;
 			t_keys += R.keys; t_shown += R.shown;
 			t_woct += R.wrong_oct; t_woth += R.wrong_other;
 			t_est += R.est_n; t_bad += R.est_bad;
@@ -1827,9 +1851,10 @@ int main(int argc, char **argv) {
 		t_mxn + t_mxfail + t_mxdisc, t_mxcut, t_mxdisc);
 	if (follow_mode) {
 		printf("FOLLOW %s: corrected by hand %d of %d keys (shown "
-			"counts keys shown right before any correction)\n",
+			"counts keys shown right before any correction), "
+			"undone while the key was held %d\n",
 			(follow_mode == FOLLOW_OLD) ? "old (follow_shift)" :
-			"new (continuity)", t_corr, t_keys);
+			"new (continuity)", t_corr, t_keys, t_undone);
 	}
 	return 0;
 }
