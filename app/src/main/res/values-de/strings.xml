@@ -101,10 +101,6 @@
 	<string name="ordinal_suffix">.</string>
 
 	<!-- Meldungen und Dialoge -->
-	<string name="toast_auto">Auto: Tippen fixiert, Halten schaltet aus</string>
-	<string name="toast_row_too_high">Diese Zeile ist f&#252;r die Abtastrate zu hoch</string>
-	<string name="follow_as_detected">Folgen: T&#246;ne wie erkannt</string>
-	<string name="follow_near">Folgen: nur innerhalb einer Quarte um diesen Ton (Auto halten hebt es auf)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Abbrechen</string>
 	<string name="about_title">&#220;ber TunerTime Organ</string>
@@ -140,21 +136,7 @@
 	<string name="rename">Umbenennen</string>
 	<string name="rename_title">Preset umbenennen</string>
 	<string name="add_temperament_title">Stimmung hinzuf&#252;gen (A = 0 Cent)</string>
-	<string name="added">&#8222;%1$s&#8220; hinzugef&#252;gt</string>
-	<string name="no_file_picker">Keine Dateiauswahl verf&#252;gbar</string>
 	<string name="export_file_name">TunerTime-Presets.txt</string>
-	<plurals name="exported">
-		<item quantity="one">%d Preset exportiert</item>
-		<item quantity="other">%d Presets exportiert</item>
-	</plurals>
-	<plurals name="imported">
-		<item quantity="one">%d Preset importiert</item>
-		<item quantity="other">%d Presets importiert</item>
-	</plurals>
-	<plurals name="imported_renamed">
-		<item quantity="one">, %d wegen gleichen Namens umbenannt</item>
-		<item quantity="other">, %d wegen gleicher Namen umbenannt</item>
-	</plurals>
 	<string name="export_failed">Export fehlgeschlagen</string>
 	<string name="import_failed">Import fehlgeschlagen</string>
 	<string name="nothing_imported">Es wurde nichts importiert.</string>
@@ -268,6 +250,8 @@
 	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
 	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
 	<string name="cat_debug">Debug</string>
+	<string name="level_bar">Pegelanzeige</string>
+	<string name="level_bar_summary">Am rechten Rand des Strobe: rot zu leise zum Erkennen, gelb knapp, gr&#252;n gut; der wei&#223;e Strich ist die Erkennungsschwelle.</string>
 	<string name="mixture_focus_follow">Mixtur: dem Bezugschor folgen</string>
 	<string name="mixture_focus_follow_on">Die Taste wird am fokussierten Chor (Bezug) erkannt und bewegt sich h&#246;chstens um einen Ganzton; Oktaven und andere allein klingende Ch&#246;re verschieben sie nicht. Gr&#246;&#223;ere Schritte von Hand.</string>
 	<string name="mixture_focus_follow_off">Die Taste wird an dem erkannt, was klingt, unabh&#228;ngig vom fokussierten Chor.</string>
@@ -297,22 +281,13 @@
 	<string name="run_ok">OK</string>
 	<string name="run_stop_status">&#9632; Ende %1$d:%2$02d &#183; %3$d</string>
 	<string name="afreq_enter">Kammerton a (Hz)</string>
-	<string name="afreq_range">a zwischen 220 und 880 Hz</string>
 	<string name="menu_share">Aufnahmen an GitHub</string>
-	<string name="share_none">Noch keine Aufnahmen</string>
 	<string name="share_packing">Aufnahmen werden gepackt&#8230;</string>
-	<string name="share_failed">Aufnahmen konnten nicht gepackt werden: %1$s</string>
-	<string name="share_ready">%1$d Zip-Datei(en) in %2$s. Bitte an das Issue anh&#228;ngen, das sich jetzt &#246;ffnet.</string>
 	<string name="share_issue_title">Aufnahmen %1$s</string>
 	<string name="share_issue_body">%1$d Zip-Datei(en) aus %2$s, unten angeh&#228;ngt (hierher ziehen oder &#8222;Paste, drop, or click to add files&#8220; antippen):</string>
 	<string name="share_issue_runs">Chromatische L&#228;ufe:</string>
 	<string name="share_issue_recs">Debug-Aufnahmen: %1$d</string>
-	<string name="run_tab_blocked">Nicht w&#228;hrend eines chromatischen Laufs</string>
 	<string name="run_mark">Markieren</string>
-	<string name="run_started">Aufnahme l&#228;uft. Angezeigte Taste spielen, dann Ton+.</string>
-	<string name="run_saved">Lauf gespeichert: %1$s in %2$s</string>
-	<string name="run_failed">Lauf konnte nicht aufgenommen werden</string>
-	<string name="run_need_strobe">L&#228;ufe werden im Ton- oder Mixturmodus aufgenommen</string>
 	<string-array name="run_kinds">
 		<item>Offen (Labial)</item>
 		<item>Gedackt</item>

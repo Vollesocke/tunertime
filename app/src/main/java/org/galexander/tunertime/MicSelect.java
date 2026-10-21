@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Pair;
-import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +54,7 @@ import java.util.List;
  * switch.  While the current mic has a good signal nothing changes, so a
  * strobe that is being read stays put, and nothing changes either while a
  * mixture measurement is collecting (mixture.busy), whose phase would
- * jump.  The new mic is shown in a Toast.
+ * jump.  Nothing is shown (no popups); the debug log has it.
  */
 public class MicSelect {
 	public static final int RATE = 44100;
@@ -137,20 +136,7 @@ public class MicSelect {
 	/* only logged: the microphone is not shown to the user (Onno) */
 	private static void toast(final String msg) {
 		EventLog.ui("mic: " + msg);
-		if (SHOW_MIC) {
-			show(msg);
-		}
-	}
-	private static final boolean SHOW_MIC = false;
-	private static void show(final String msg) {
-		if (ui == null) {
-			return;
-		}
-		ui.post(new Runnable() {
-			public void run() {
-				Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show();
-			}
-		});
+
 	}
 
 

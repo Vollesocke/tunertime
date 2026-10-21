@@ -141,7 +141,8 @@ this fork.
   edit/rename/duplicate/move/export/delete, sort, import and export all.
   Plain-text, hand-editable format, described in the header of every
   exported file.
-- **Input level bar** (`Strobe.draw_level`): along the strobe's right
+- **Input level bar** (`Strobe.draw_level`; Settings, off by default):
+  along the strobe's right
   edge, the input as the detector sees it, on a dB scale, with the level
   it needs as a white tick: red under it (too quiet to be read: move the
   phone nearer the pipes), amber up to twice it, green above.
