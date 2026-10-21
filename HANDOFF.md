@@ -11,9 +11,14 @@ strobe following so that, with as little input as possible, he sees
 exactly what he hears. So the hand always wins over the detector, and the
 app does not explain or warn where he already knows.
 
-Status as of 21 Oct 2026, late: release
+Status as of 21 Oct 2026, night: release
+[**v18.7-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.7-organ)
+(code 27) is on `main`: no popups at all (17 Toasts gone), the level bar
+a setting, off by default. **Start with "Pick up here" below.**
+
+Before it, 21 Oct, late: release
 [**v18.6-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.6-organ)
-is on `main` (below, "21 Oct late"): the detector against blower hum,
+(below, "21 Oct late"): the detector against blower hum,
 an input level bar, the hold ended by the input level, the temperament
 list a display only, no "key released" text in mixture mode, the sim
 calibrated on the church runs, warped runs. FollowTest and the main-screen
@@ -32,6 +37,77 @@ tt_fairphone4 (full suite on pre2, the menu tests again on the release);
 tt_galaxy_s25 still not run. It adds to v18.3: chromatic run recordings, meantone with more
 than 12 notes, the mixture measurement ending on key release, a warning when
 the mixture is heard more than a semitone off, and tapping a workbench note.
+
+## Pick up here (21 Oct, night)
+
+**Releases of 21 Oct** (all dev builds, `org.galexander.tunertime.dev`,
+signed with the debug key; APKs attached to the GitHub releases; the
+native libs of all four ABIs checked for the new code in 18.6 and 18.7):
+v18.5 (hand corrections hold, mixture Dis/Es), v18.6 (detector against
+blower hum, level bar, hold ended by the level), v18.7 (no popups, level
+bar off by default). Onno has not tried 18.5-18.7 in a church yet.
+
+**Ask Onno:**
+1. Two popups are left that are not Toasts, both after an explicit
+   action: the error dialog when a preset file import/export fails
+   (`PresetSelectActivity.error_dialog`), and the progress dialog while
+   recordings are zipped (`ShareRecordings`). Do they go too ("no popups
+   ever")?
+2. His answer to question 4 (mixture warning), "follow in mixture mode as
+   in tone mode without a focused row", is what the default already does.
+   Did he mean more, e.g. the far warning ("more than a semitone off")
+   gone too? It is a status line, not a popup.
+3. Aliquots "always shown as such" (they are tuned pure): needs a design.
+   Proposal to put to him: with continuity on, a detection a twelfth (or a
+   seventeenth) over the note shown, held steadily, is taken as the
+   2 2/3' (1 3/5') partial of that key: the key stays, its row is focused
+   if shown. Today only tapping the row does that.
+4. The level bar (Settings, off): width and place fine? He has not seen
+   it on a phone.
+
+**Detector, next** (measure everything with `sh tools/field/eval.sh`;
+the baseline numbers are in "21 Oct late" below):
+- B4 and Cs5 at Hmth 204 are still never read: they pass the level gate
+  now, but beat with a second tone (5-9 c wobble at 10-20 Hz) and score
+  0.4-0.5 confidence. Ideas: merge two peaks closer than ~25 Hz into one
+  before the harmonic search, or a longer window for a lone partial.
+- The noise lines are not learnt where the hum is over MIN_RMS (60): a
+  phone right next to a blower falls back to the old behaviour. The
+  extreme warped run (`--noise-from` at 0 dB, noise rms 169) shows it.
+- The Plenum in run mode gets no hints (mixture mode, unfocused): its
+  octave errors in the run's own estimates are an artefact of that; with
+  the key hints the replay is 47/47. In run mode the detector could be
+  hinted with the key shown, as the truth is known there.
+- The hold of a correction: `sim_organ -f new` Field Gedackt 202 still
+  undoes 2 corrections; look at which detections do it.
+
+**Tools of 21 Oct:**
+- `tools/field/eval.sh [OUT]` (or `PITCH=variant.c sh ...`): one
+  detector build against the synthetic bench, `sim_organ -f new`, the 19
+  Oct recordings, the 21 Oct runs and the warped runs, in one summary
+  (~5 min; numpy needed). Variants side by side in different OUT dirs.
+- The warped evaluation set (`tools/field/runs/eval`, git-ignored) is not
+  in git; make it again with `warp_run.py -o tools/field/runs/eval`:
+  `--tag noise202 --noise-from <run_gedackt1> --noise 0` on
+  run_Gedackt2; `--tag quiet --gain 0.5` on run_Gedackt2 and
+  run_Rohrflote; `--tag up2 --semis 2` on run_Rohrflote and run_gedackt1;
+  `--tag detune --seed 7 --cents-random 15` on all four (dirs under
+  `tools/field/data/runs-2026-10-21`, unpacked from issue #4's zips).
+- `tools/field/fixes/*.fix`: corrections to runs after the fact (the
+  short octave of Hmth 204, the Plenum's kind).
+- C compiler: `python -m venv <dir>; <dir>/Scripts/pip install ziglang`
+  (retry, the network drops), then `CC="<dir>/Scripts/python.exe -m
+  ziglang cc"`. The venv of 21 Oct was in a session scratch dir and is
+  gone.
+
+**Tests:** FollowTest (androidTest, 7 tests: corrections hold, Dis/Es,
+mixture keys, focus kept) and the main-screen, Settings and preset-list
+layout tests are clean on tt_fairphone4 for 18.7. Not run since 18.4:
+the full UI suite, and tt_galaxy_s25 at all. **The emulator stops
+rotating after a few hours of tests** (WRONG_ORIENTATION in the report,
+and CLIPPED menu items that follow from it): cold-boot it (`adb emu
+kill`, then `emulator -avd tt_fairphone4 -no-snapshot-load`) and set
+`settings put system accelerometer_rotation 0`; the tests then pass.
 
 ## 21 Oct late: v18.6, the detector on the church runs
 
@@ -391,7 +467,7 @@ wanted.
   important step. Follow-mode corrections save WAV recordings (dev build) for
   tuning the detector; each recording now has a timeline of what the app did.
 
-## Next steps
+## Next steps (of 20 Oct; superseded by "Pick up here" above)
 
 1. **Onno retests v18.3**, above all the ">90 cent" case, and mixture
    follow with the setting off and on. His `.local` app updates with
