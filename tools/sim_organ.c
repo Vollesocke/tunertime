@@ -37,6 +37,17 @@
  * high-pass microphone (2nd or 4th order, 100-200 Hz), optional AGC with
  * attack/release, gain and hard clipping, 16 bits.
  *
+ * The "Field" scenarios are calibrated on Onno's chromatic runs of
+ * 21 Oct 2026 (field_run(): two churches, Fairphone 4): pipe over hum
+ * per octave, the hum's lines, the blower motor's lines, the phone's
+ * input level, the key-to-key spread, small flue pipes nearly sines,
+ * and a quarter of the keys beating with a second tone.  Their empty
+ * estimates per octave come out as in the church (Gedackt Hmth 202:
+ * church 0/33/36/40%, sim 1/40/33/50%; Rohrfloete 2/4/12/28, sim
+ * 0/1/20/33; Gedackt Hmth 204 4/2/15/19, sim 8/0/0/17).  The others
+ * were far too easy: the church's soft pipes stand 10-12 dB over the
+ * hum, the old scenarios' 57 dB.
+ *
  * What is measured, per scenario and per key held:
  *  - detection, emulating TunerTime.on_pitch (DET_AGREE estimates in a row
  *    move the shown note): latency from the key to the right note, keys
@@ -137,6 +148,25 @@ static double mix_window(double f_row, double r)
 		((r < 1.0 - 1e-6) ? MEASURE_SECONDS_LOW : MEASURE_SECONDS);
 }
 #define CORR_RECENT	4.0	/* TunerTime.CORR_RECENT */
+/* field runs (field_run): calibrated by tools/field/... see there */
+#define FIELD_LEVEL	3000.0
+#define FIELD_SPREAD	10.0	/* uniform: std 5.8 dB, measured 5-7 in the middle and treble */
+#define FIELD_HUM	300.0
+#define FIELD_MOTOR202	0.15	/* each line, to the 50 Hz line */
+#define FIELD_MOTOR204	0.5	/* ... to the 100 Hz line */
+#define FIELD_BRIGHT	900.0
+#define FIELD_BEATING	25	/* % of the keys from C3 up */
+/* the phone's input level: the keys' rms as the detector sees it (2:1
+ * decimated, the 8192 window) as recorded, median per octave, Hmth 202
+ * 110-670, Hmth 204 150-300; the detector ignores input under MIN_RMS
+ * (60), which the two keys never read at Hmth 204 were (47, 30) */
+#define FIELD_GAIN202	0.14
+#define FIELD_GAIN204	0.12
+#ifndef GED202
+#define GED202	6, -11, -8, -10, -10, -10
+#define ROHR202	7, 2, -3, -8, -8, -8
+#define GED204	-5, -1, -3, -6, -6, -6
+#endif
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
 #define HOLD_QUIET	0.3	/* TunerTime.HOLD_QUIET */
@@ -186,8 +216,8 @@ enum { OPEN, STOPPED, FLUTE, STRING, REED, KRUMM };
 static const char *kind_name[] = { "open", "stopped", "flute", "string",
 					"reed", "krumm" };
 #define MAXH	40
-#define MAXK	16
-#define MAXP	48
+#define MAXK	64
+#define MAXP	160
 
 struct pipe {
 	int key;		/* keys[] index */
@@ -230,6 +260,12 @@ struct scen {
 	int agc;
 	double gain;		/* before AGC and clipping */
 	double hum, rumble, wind;	/* blower: 50 Hz, < 100 Hz, hiss */
+	double hum_h[5];	/* the hum's 50..250 Hz lines, relative */
+	int hum_post;		/* hum after the mic's high-pass, as the
+				 * field recordings show it (field_run) */
+	double motor;		/* the blower motor's lines between 50 and
+				 * 200 Hz, off the 50 Hz series */
+	double bright_fc;	/* flue partials fade above it, 0 = off */
 	double trem_rate, trem_am, trem_fm;	/* Hz, depth, cents */
 	double wobble;		/* wind: slow pitch wander, cents rms */
 	double speech, speech_on, speech_off;
@@ -297,6 +333,14 @@ static void pipe_setup(struct scen *S, struct pipe *p) {
 		if (fh > 0.45*S->sr) break;
 		/* +-20% per partial: no two pipes are voiced alike */
 		p->ha[h-1] = spectrum(p->kind, h) * (0.8 + 0.4*urand());
+		if ((S->bright_fc > 0.0) && (p->kind != REED) &&
+		    (p->kind != KRUMM)) {
+			/* small flue pipes are nearly sines: the
+			 * partials above about 1 kHz fade (field
+			 * runs: a Gedackt from G4 up, h3 at -34 dB) */
+			double a = fh/S->bright_fc, b = p->f/S->bright_fc;
+			p->ha[h-1] *= (1.0 + b*b)/(1.0 + a*a);
+		}
 		{
 			double ph = 2.0*M_PI*urand();
 			p->zr[h-1] = cos(ph);
@@ -497,7 +541,7 @@ static short *render(struct scen *S, int *n_out) {
 	bq_set(&st.hp, HP, 2500.0, 0.7, sr);
 
 	for (i = 0; i < n; i++) {
-		double t = (double)i/sr, dry = 0.0, x;
+		double t = (double)i/sr, dry = 0.0, x, hum;
 		double tr = 2.0*M_PI*S->trem_rate*t;
 		double am = 1.0 + S->trem_am*sin(tr);
 		double fm = S->trem_fm*sin(tr + 1.2);
@@ -573,17 +617,31 @@ static short *render(struct scen *S, int *n_out) {
 		if (S->rt60 > 0.0) {
 			x += S->wet*fdn_run(&room, dry);
 		}
-		x += S->hum*(sin(2.0*M_PI*50.0*t) +
-			0.6*sin(2.0*M_PI*100.0*t + 1.0) +
-			0.4*sin(2.0*M_PI*150.0*t + 2.0) +
-			0.2*sin(2.0*M_PI*200.0*t + 0.5) +
-			0.1*sin(2.0*M_PI*250.0*t + 1.7));
+		hum = S->hum*(S->hum_h[0]*sin(2.0*M_PI*50.0*t) +
+			S->hum_h[1]*sin(2.0*M_PI*100.0*t + 1.0) +
+			S->hum_h[2]*sin(2.0*M_PI*150.0*t + 2.0) +
+			S->hum_h[3]*sin(2.0*M_PI*200.0*t + 0.5) +
+			S->hum_h[4]*sin(2.0*M_PI*250.0*t + 1.7));
+		if (S->motor > 0.0) {
+			/* as found in both churches: 59 73 118 135 145
+			 * 153 159 164 175 Hz, each wandering a little */
+			static const double mf[9] = { 59, 73, 118, 135, 145,
+				153, 159, 164, 175 };
+			static const double ma[9] = { .5, .9, .8, .6, .7,
+				.7, .8, .9, .6 };
+			for (h = 0; h < 9; h++) {
+				hum += S->motor*ma[h]*sin(2.0*M_PI*mf[h]*t +
+					0.4*sin(2.0*M_PI*0.05*(h + 1)*t) + h);
+			}
+		}
+		if (!S->hum_post) x += hum;
 		x += S->rumble*5.0*bq_run(&rumb, grand());
 		x += S->wind*bq_run(&hiss, grand());
 		if (S->mic_hp > 0.0) {
 			x = bq_run(&mic[0], x);
 			if (S->mic_ord >= 4) x = bq_run(&mic[1], x);
 		}
+		if (S->hum_post) x += hum;
 		x *= S->gain;
 		if (S->agc) {
 			/* phone AGC: rms follower, 10 ms up, 1 s down, aims
@@ -1365,6 +1423,8 @@ static void church(const char *name) {
 	S->mic_hp = 150.0; S->mic_ord = 2;
 	S->gain = 1.0;
 	S->hum = 15.0; S->rumble = 15.0; S->wind = 20.0;
+	S->hum_h[0] = 1.0; S->hum_h[1] = 0.6; S->hum_h[2] = 0.4;
+	S->hum_h[3] = 0.2; S->hum_h[4] = 0.1;
 	S->wobble = 0.7;
 	S->mstart = MSTART;
 	{	/* from the name, so that each scenario stays the same
@@ -1660,6 +1720,90 @@ static void sc_steps_over(void) {
 	S->steps = 600.0; S->steps_on = 0.0; S->steps_off = 1e9;
 	run_keys(pedal, 7, 0.5, STOPPED, 4000, 0.3, PEDAL_HOLD, 0.8);
 }
+/* field runs, calibrated on Onno's chromatic runs of 21 Oct 2026
+ * (Fairphone 4 on the music desk, tools/field/runs-2026-10-21): the
+ * whole compass key by key, 3 s each, levels falling slope_db per octave
+ * up and varying spread_db from key to key (voicing), and the hum as the
+ * phone records it, after its high-pass.  Measured there in the
+ * detector's spectrum, the strongest partial of a key over the strongest
+ * hum line (median, bass / tenor / middle / treble): Gedackt (Hmth 202)
+ * 26 / 10 / 10 / 12 dB, down to -11; Rohrflöte (202) 26 / 23 / 18 / 13;
+ * a principal plenum (Hmth 204) 35-40.  The hum lines: Hmth 202 50 and
+ * 150 Hz near equal, 100 Hz 10 dB down; Hmth 204 100 Hz strongest,
+ * 50 Hz 10-20 dB down */
+static void field_run(const char *nm, int from, int to, double ratio,
+			int kind, const double *db, double chiff) {
+	int i, nk = to - from + 1;
+	double t = 0.5;
+	church(nm);
+	S->mic_hp = 40.0;
+	S->hum_post = 1;
+	for (i = 0; i < nk; i++) {
+		/* db[]: the level of the octaves from C2 up; the voicing
+		 * varies +-FIELD_SPREAD dB, the same every time: from
+		 * the key */
+		int o = (from + i - C2)/12;
+		double j = ((((from + i)*7919 + 13) % 41 + 41) % 41)/20.0 - 1.0;
+		double d;
+		if (o < 0) o = 0;
+		if (o > 5) o = 5;
+		int k = key(from + i, t, 3.0);
+		double c = ((i*37) % 11) - 5.0;
+		d = db[o] + FIELD_SPREAD*j;
+		pipe(k, ratio, c, kind, FIELD_LEVEL*pow(10.0, d/20.0), chiff);
+		if ((from + i >= C3) &&
+		    ((((from + i)*104729 + 7) % 100 + 100) % 100 <
+		     FIELD_BEATING)) {
+			/* a second tone 8-20 Hz off, 10-16 dB down: the
+			 * keys the phone missed at Hmth 204 beat so, 5-9 c
+			 * rms of pitch and 1.6-2.5 dB of level wobble at
+			 * 10-20 Hz, those it read about 1 c (a pipe that
+			 * speaks unsteadily, or wind leaking into its
+			 * neighbour) */
+			double hz = key_hz(from + i)*ratio;
+			double df = (8.0 + 12.0*(j + 1.0)/2.0)*((i % 2) ? 1 : -1);
+			pipe(k, ratio, c + 1200.0*log2(1.0 + df/hz), kind,
+				FIELD_LEVEL*pow(10.0, (d - 10.0 - 3.0*(j + 1.0))/20.0),
+				0.0);
+		}
+		t += 3.6;
+	}
+}
+static void hum202(void) {
+	S->hum = FIELD_HUM;
+	S->motor = FIELD_HUM*FIELD_MOTOR202;
+	S->bright_fc = FIELD_BRIGHT;
+	S->gain = FIELD_GAIN202;
+	S->hum_h[0] = 1.0; S->hum_h[1] = 0.3; S->hum_h[2] = 0.8;
+	S->hum_h[3] = 0.15; S->hum_h[4] = 0.1;
+}
+static void hum204(void) {
+	/* 19 dB under Hmth 202 */
+	S->hum = FIELD_HUM*0.11;
+	S->motor = FIELD_HUM*0.11*FIELD_MOTOR204;
+	S->bright_fc = FIELD_BRIGHT;
+	S->gain = FIELD_GAIN204;
+	S->hum_h[0] = 0.2; S->hum_h[1] = 1.0; S->hum_h[2] = 0.35;
+	S->hum_h[3] = 0.1; S->hum_h[4] = 0.05;
+}
+static void sc_field_ged202(void) {
+	static const double db[6] = { GED202 };
+	field_run("Field Gedackt 8', Hmth 202", C2, C2 + 54, 1.0, STOPPED,
+		db, 0.4);
+	hum202();
+}
+static void sc_field_rohr202(void) {
+	static const double db[6] = { ROHR202 };
+	field_run("Field Rohrfloete 8', Hmth 202", C2, C2 + 55, 1.0, FLUTE,
+		db, 0.3);
+	hum202();
+}
+static void sc_field_ged204(void) {
+	static const double db[6] = { GED204 };
+	field_run("Field Gedackt 8', Hmth 204", C2, C2 + 48, 1.0, STOPPED,
+		db, 0.4);
+	hum204();
+}
 /* chromatic runs, the way a stop is tuned key by key: what follow mode's
  * continuity (-f new) is for */
 static void chromatic(const char *nm, int from, int dir, double ratio,
@@ -1730,7 +1874,9 @@ static const builder builders[] = {
 	sc_fifths, sc_longtail, sc_speech_over, sc_steps_over,
 	sc_chr_prin, sc_chr_ged, sc_chr_flute4, sc_chr_quint,
 	sc_chr_quint_row, sc_chr_sub,
-	sc_chr_down, sc_chr_speech, sc_noise, sc_speech, sc_steps,
+	sc_chr_down, sc_chr_speech,
+	sc_field_ged202, sc_field_rohr202, sc_field_ged204,
+	sc_noise, sc_speech, sc_steps,
 };
 
 int main(int argc, char **argv) {
@@ -1821,6 +1967,8 @@ int main(int argc, char **argv) {
 					R.mx_cut, R.mx_disc);
 			if (follow_mode) printf(" | corrected %d, undone %d",
 						R.corrections, R.undone);
+			printf(" | empty %.0f%%", R.est_n ?
+				100.0*R.est_none/R.est_n : 0.0);
 			printf("\n");
 			t_corr += R.corrections;
 			t_undone += R.undone;
