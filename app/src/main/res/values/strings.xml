@@ -62,6 +62,7 @@
 	<string name="minus">-</string>
 	<string name="reset">reset</string>
 	<string name="hz">%1$s Hz</string>
+	<string name="afreq_note">%1$s Hz · %2$s</string>
 	<string name="stretch_plus">stretch+</string>
 	<string name="stretch_minus">stretch-</string>
 	<string name="cents_per_octave">cents/octave</string>

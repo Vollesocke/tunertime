@@ -500,7 +500,9 @@ public class TunerTime extends Activity
 	 * tuner: a correction by hand applies to the current note only, and
 	 * as a stop is tuned key by key, without big jumps, the notes heard
 	 * after it are looked for near the current note.  So once the user
-	 * moves the note by hand (semitone, octave or fifth buttons) while
+	 * moves the note by hand (semitone, octave or fifth buttons; in
+	 * mixture mode the key and octave buttons, which before did not
+	 * count as a correction: Onno, 21 Oct) while
 	 * follow is on, continuity is on: each detection is taken in the
 	 * octave that puts it nearest the note now shown, and only moves
 	 * the note if that is within NEAR_SEMIS (a fourth, 500 cents)
@@ -518,8 +520,19 @@ public class TunerTime extends Activity
 	 * Continuity ends, and detections are taken as heard again, when
 	 *  - auto is turned off (long press) or turned on afresh,
 	 *  - nothing clear was heard for NEAR_SILENCE ms (a new stop).
-	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it. */
+	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it.
+	 * The correction holds while the key sounds: the note the detector
+	 * agreed on when the user overruled it is not followed again until
+	 * it agrees on another one, or nothing is heard for HOLD_QUIET ms
+	 * (the key released: the next one may be the note it heard, a
+	 * semitone up in a chromatic run).  Before, the next estimates
+	 * undid it within half a second wherever the detector kept hearing
+	 * the wrong note, and always a Dis/Es picked by hand (sim_organ -f
+	 * new: 28 of 55 corrections undone with the key still held, none
+	 * now; Onno's runs of 21 Oct, run_score.py: follow unchanged, 187
+	 * of 208 keys, 185 with the hold kept over the release). */
 	private boolean near = false;		/* continuity on */
+	private int overruled = Integer.MIN_VALUE, overruled_alt = 0;
 	private static final int NEAR_SEMIS = 5;
 	/* Mixture mode following the reference rank (Settings,
 	 * parms.mixture_focus_follow) keeps to the key: a mixture is tuned
@@ -532,10 +545,12 @@ public class TunerTime extends Activity
 	 * instead of 4, "Mixture chromatic, ranks alone" 0 instead of 8 */
 	private static final int MIX_SEMIS = 2;
 	private int det_stable = Integer.MIN_VALUE;	/* last agreed note */
+	private int det_stable_alt = 0;
 	private double det_stable_hz = 0.0;
 	private long det_stable_time = 0, last_heard = 0;
 	private static final long CORR_RECENT = 4000;
 	private static final long NEAR_SILENCE = 10000;
+	private static final long HOLD_QUIET = 300;
 	private Toast near_toast = null;
 
 	public void do_auto(View v) {
@@ -547,6 +562,7 @@ public class TunerTime extends Activity
 			parms.auto_note = true;
 			near = false;
 			det_stable = Integer.MIN_VALUE;
+			overruled = Integer.MIN_VALUE;
 			Toast.makeText(this, R.string.toast_auto,
 					Toast.LENGTH_SHORT).show();
 		} else if (parms.auto_note) {
@@ -567,6 +583,7 @@ public class TunerTime extends Activity
 		det_count = 0;
 		near = false;
 		det_stable = Integer.MIN_VALUE;
+		overruled = Integer.MIN_VALUE;
 		update_status();
 	}
 
@@ -591,7 +608,12 @@ public class TunerTime extends Activity
 	 * near the current note (continuity, above). */
 	private void on_pitch(double hz) {
 		if (parms.mixture_mode && (hz > 0.0d)) {
-			mixture_pitch.setText(new note(freq_to_cents(hz)).organ_name());
+			/* Dis or Es by the nearer, where both were picked */
+			int[] hn = parms.nearest_note(freq_to_cents(hz));
+			int hc = parms.chain_at(hn[0]*100*U, hn[1]);
+			note h = new note(hn[0]*100*U);
+			mixture_pitch.setText((hc != parms.NO_CHAIN) ?
+				h.spelled(hc) : h.organ_name());
 			if (mix.heard(hz, cents_to_freq(parms.strobe_cents, 1),
 				      parms.strobe_cents,
 				      parms.mixture_focus_follow &&
@@ -607,9 +629,13 @@ public class TunerTime extends Activity
 			last_heard = now;
 		} else if (near && (now - last_heard > NEAR_SILENCE)) {
 			near = false;
+			overruled = Integer.MIN_VALUE;
 			show_near();
 			cause = "10 s silence";
 			log_changes();
+		}
+		if ((hz <= 0.0) && (now - last_heard > HOLD_QUIET)) {
+			overruled = Integer.MIN_VALUE;
 		}
 		if (!parms.auto_note || !auto_applies() ||
 		    ToneGenerator.playing || (hz <= 0.0)) {
@@ -628,6 +654,9 @@ public class TunerTime extends Activity
 			cur = (parms.note_cents + semi/2) / semi;
 			off = parms.note_cents - cur*semi;
 		}
+		/* Dis or Es, where the pitch class has both */
+		int cur_alt = Math.min(parms.note_alt,
+				       parms.temper_alts(cur*semi) - 1);
 		int heard_cents = freq_to_cents(hz);
 		int k = (int)Math.round((heard_cents - off) /
 							(double)semi);
@@ -641,16 +670,25 @@ public class TunerTime extends Activity
 		if (parms.mixture_mode) {
 			/* Mixture ranks on the same key should stay within 20 cents
 			 * of its tempered note.  Choose the nearest temperament step,
-			 * and reject outliers before they can move the target. */
+			 * and reject outliers before they can move the target.
+			 * Both notes where the pitch class has two: Es heard
+			 * on a mixture at Dis was rejected (41 cents in 1/4
+			 * comma meantone), and once measured there its 41
+			 * cents went to every key after it as the organ's
+			 * pitch, so that all of them were rejected */
 			int best = k;
 			int best_error = Integer.MAX_VALUE;
 			for (int candidate = Math.max(0, k-1);
 			     candidate <= Math.min(96, k+1); candidate++) {
-				int error = Math.abs(heard_cents -
-					(step_cents(candidate) + off));
-				if (error < best_error) {
-					best = candidate;
-					best_error = error;
+				for (int a = 0;
+				     a < parms.temper_alts(candidate*semi); a++) {
+					int error = Math.abs(heard_cents -
+						(step_cents(candidate, a) + off));
+					if (error < best_error) {
+						best = candidate;
+						alt = a;
+						best_error = error;
+					}
 				}
 			}
 			if (best_error > 20*U) {
@@ -672,8 +710,13 @@ public class TunerTime extends Activity
 		/* remembered even out of range (a 32' pipe heard below A0),
 		 * so that it can be corrected */
 		det_stable = k;
+		det_stable_alt = alt;
 		det_stable_hz = hz;
 		det_stable_time = now;
+		if ((k == overruled) && (alt == overruled_alt)) {
+			return;		/* still the note corrected by hand */
+		}
+		overruled = Integer.MIN_VALUE;
 		int t = k;
 		boolean keep_key = parms.mixture_mode &&
 				   parms.mixture_focus_follow;
@@ -685,7 +728,7 @@ public class TunerTime extends Activity
 				return;
 			}
 		}
-		boolean other_alt = !parms.mixture_mode && (alt != parms.note_alt) &&
+		boolean other_alt = (alt != cur_alt) &&
 				    (parms.temper_alts(t*semi) > 1);
 		if (((t != cur) || other_alt) &&
 		    (t >= 0) && (t*semi + off <= 9600*U)) {
@@ -695,7 +738,7 @@ public class TunerTime extends Activity
 				cause = String.format(Locale.US,
 					"follow (heard %.2f Hz%s)", hz,
 					near ? ", near" : "");
-				mixture_move(t - cur);
+				mixture_goto(t, alt);
 				mixture_measure(mixture.ONSET_SKIP);
 			} else {
 				parms.note_cents = t*semi + off;
@@ -722,12 +765,23 @@ public class TunerTime extends Activity
 			near = true;
 			show_near();
 		}
+		hold_correction();
 		/* the silence that ends continuity counts from here */
 		last_heard = now;
 		DebugRecorder.intervention(this,
 			recent ? det_stable*100*U : DebugRecorder.NONE,
 			recent ? det_stable_hz : 0.0,
 			from*100*U, to*100*U, near);
+	}
+
+	/* a correction by hand: the note the detector agreed on last stays
+	 * overruled (on_pitch) */
+	private void hold_correction() {
+		boolean recent = (det_stable != Integer.MIN_VALUE) &&
+			(SystemClock.uptimeMillis() - det_stable_time <
+			 CORR_RECENT);
+		overruled = recent ? det_stable : Integer.MIN_VALUE;
+		overruled_alt = det_stable_alt;
 	}
 
 	private void show_near() {
@@ -790,6 +844,8 @@ public class TunerTime extends Activity
 		if ((a >= 0) && (a < n)) {
 			cause = what;
 			parms.note_alt = a;
+			int k = (parms.note_cents + 50*U) / (100*U);
+			user_moved_note(k, k);
 			update_status();
 		} else {
 			incr_cents(d*100*U, what);
@@ -1109,11 +1165,17 @@ public class TunerTime extends Activity
 		}
 		int fr = parms.focus_row();
 		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
-			/* the target moved up since it was focused */
-			too_high_toast();
-			parms.focus_ratio = 0.0d;
+			/* the target moved up since it was focused: not
+			 * measured, but the row stays focused until the
+			 * user taps another (Onno, 21 Oct) */
+			if (settle == 0.0d) {
+				too_high_toast();
+			}
+			mix.stop();
+			update_status();
+			return;
 		}
-		if (parms.focus_row() < 0) {
+		if (fr < 0) {
 			/* nothing focused: the 8' row, else the lowest */
 			int i;
 			for (i = 0; i < parms.num_strobes; i++) {
@@ -1145,10 +1207,15 @@ public class TunerTime extends Activity
 		}
 		return best;
 	}
-	/* pitch of note-mode step k, with the temperament */
+	/* pitch of note-mode step k, with the temperament: of note alt
+	 * where its pitch class has two (Dis, Es; note mode moves along
+	 * with mixture mode, mixture_goto()) */
 	private static int step_cents(int k) {
+		return step_cents(k, parms.note_alt);
+	}
+	private static int step_cents(int k, int alt) {
 		int c = k*100*U;
-		return c + parms.temper_offset(c);
+		return c + parms.temper_offset(c, alt);
 	}
 
 	/* the next key, without leaving mixture mode: the target moves by
@@ -1156,63 +1223,61 @@ public class TunerTime extends Activity
 	 * organ's pitch is much the same from key to key), until measure
 	 * is tapped with the reference rank sounding.  note mode moves
 	 * along, so that it is at the same key when going back to it.
-	 * The reference row last measured is focused again (decided with
-	 * the organ tuner), so that each key takes just "Ton+", then
-	 * "measure" with the reference rank sounding */
+	 * The focused row stays as it is until the user taps another (Onno,
+	 * 21 Oct; v18.4 focused the row last measured on again) */
 	public void mixture_semi_incr(View v) {
 		cause = "mixture key+";
+		int from = nearest_step(parms.mixture_cents);
 		mixture_move(1);
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
 	public void mixture_semi_decr(View v) {
 		cause = "mixture key-";
+		int from = nearest_step(parms.mixture_cents);
 		mixture_move(-1);
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
 	public void mixture_oct_incr(View v) { mixture_octave(1); }
 	public void mixture_oct_decr(View v) { mixture_octave(-1); }
 	private void mixture_octave(int d) {
 		cause = (d > 0) ? "mixture octave+" : "mixture octave-";
+		int from = nearest_step(parms.mixture_cents);
 		parms.mixture_cents = range_limit(parms.mixture_cents + d*1200*U,
 				0, 9600*U);
 		parms.mixture_ref = 0.0d;
 		parms.note_cents = range_limit(parms.note_cents + d*1200*U,
 				0, 9600*U);
 		update_status();
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
-	private double mixture_last_ref = 0.0d;	/* row last measured on */
+	/* by d steps: where the temperament has two notes on the pitch
+	 * class, both, as semi_step() in note mode: D Dis Es E */
 	private void mixture_move(int d) {
 		int semi = 100*U;
 		int k = nearest_step(parms.mixture_cents);
-		if ((k+d < 0) || ((k+d)*semi > 9600*U)) {
+		int n = parms.temper_alts(k*semi);
+		int a = Math.min(parms.note_alt, n-1) + d;
+		if ((a >= 0) && (a < n)) {
+			mixture_goto(k, a);
+		} else {
+			mixture_goto(k+d, (d > 0) ? 0 :
+				     parms.temper_alts((k+d)*semi) - 1);
+		}
+	}
+	/* to step k, its note alt */
+	private void mixture_goto(int k, int alt) {
+		int semi = 100*U;
+		int cur = nearest_step(parms.mixture_cents);
+		if ((k < 0) || (k*semi > 9600*U)) {
 			return;
 		}
 		mix.stop();
-		if (parms.mixture_ref > 0.0d) {
-			mixture_last_ref = parms.mixture_ref;
-		}
-		parms.mixture_cents += step_cents(k+d) - step_cents(k);
+		parms.mixture_cents += step_cents(k, alt) - step_cents(cur);
 		parms.mixture_ref = 0.0d;
 		int nk = (parms.note_cents + semi/2) / semi;
-		parms.note_cents += (k+d-nk)*semi;
+		parms.note_cents += (k-nk)*semi;
+		parms.note_alt = alt;
 		update_status();
-		refocus(mixture_last_ref);
-	}
-
-	/* focuses the row of footage ratio r, if it is shown and not too
-	 * high for the new target; otherwise the focus is left as it is */
-	private void refocus(double r) {
-		if ((r <= 0.0d) || (r == parms.focus_ratio)) {
-			return;
-		}
-		for (int i = 0; i < parms.num_strobes; i++) {
-			if (parms.row_ratio(i) == r) {
-				if (!Strobe.row_too_high(this, i)) {
-					cause = "mixture: back to the reference";
-					parms.focus_ratio = r;
-					update_status();
-				}
-				return;
-			}
-		}
 	}
 
 	/* back to the nearest note (of the temperament, if one is in
@@ -1304,7 +1369,10 @@ public class TunerTime extends Activity
 	 * (with its temperament), and the offset from that step */
 	private String mixture_str() {
 		int k = nearest_step(parms.mixture_cents);
-		return new note(k*100*U).name_oct + " " +
+		note n = new note(k*100*U);
+		int chain = parms.chain_at(k*100*U, parms.note_alt);
+		return ((chain != parms.NO_CHAIN) ? n.spelled(chain) :
+							n.name_oct) + " " +
 			note.cents_str(parms.mixture_cents - step_cents(k));
 	}
 	private String mixture_offset_str() {
@@ -1479,7 +1547,12 @@ public class TunerTime extends Activity
 
 		String center_str = string_int10(parms.A_freq);
 		center_display.setText(getString(R.string.status_a, center_str));
-		afreq_center_display.setText(getString(R.string.hz, center_str));
+		/* with the note set, as the A tab hides the note's buttons
+		 * (Onno) */
+		afreq_center_display.setText(getString(R.string.afreq_note,
+			center_str, parms.mixture_mode ? mixture_str() :
+			parms.preset_mode ? preset_semi_display.getText() :
+			note_semi_display.getText() + " " + nn.cents_str));
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
 				string_int10(Math.abs(parms.cents_per_octave));
@@ -2250,14 +2323,14 @@ public class TunerTime extends Activity
 		} else {
 			k = (parms.note_cents + 50*U) / (100*U);
 			hz = cents_to_freq(parms.strobe_cents, 1);
-			int chain = parms.note_chain();
-			if ((chain != parms.NO_CHAIN) &&
-			    (parms.temper_alts(k*100*U) > 1)) {
-				/* Dis and Es: two keys on one semitone */
-				RunRecorder.key(k, parms.note_alt, new note(
-					k*100*U).spelled_english(chain), hz);
-				return;
-			}
+		}
+		int chain = parms.chain_at(k*100*U, parms.note_alt);
+		if ((chain != parms.NO_CHAIN) &&
+		    (parms.temper_alts(k*100*U) > 1)) {
+			/* Dis and Es: two keys on one semitone */
+			RunRecorder.key(k, parms.note_alt, new note(
+				k*100*U).spelled_english(chain), hz);
+			return;
 		}
 		RunRecorder.key(k, 0, DebugRecorder.name(k*100*U), hz);
 	}

@@ -8,7 +8,8 @@ RUN: run_*.txt files of the app's chromatic run mode, or directories
 holding them.  A run cut short by a crash has only its .wav and
 .timeline: the keys are then taken from the timeline's "run key" lines.  In a run every key's note is known: the tuner played the
 keys in turn and stepped the shown note with Ton+ (a key played again
-after Ton- is a "redo"; the last segment of a note is the valid one).
+after Ton- is a "redo"; the last segment of a note that sounds is the
+valid one: stepping back with Ton- passes notes without playing them).
 
 The estimates come from the run's timeline (the app's own, "app") and,
 with --test-pitch, from a replay of the WAV through each build, once per
@@ -18,8 +19,12 @@ hint mode in MODES (comma separated, default log):
          from each key's start (what the app hints during a run)
   log    the timeline's hint lines (keys if it has none)
 
-Per key, from its onset (the WAV's RMS envelope; without the WAV the
-first estimate) to the next tap:
+Per key, from its onset to the next tap.  Onset and release come from
+the WAV: the level at the key's harmonics 1-4 (its target Hz), so mains
+hum, blower rumble and the mic's hiss do not hide a soft treble pipe;
+a key that never rises 12 dB above that level's quiet (the 10th
+percentile around it) counts as silent.  Without the WAV, the first and
+last estimate:
   ok      the key's note agreed as TunerTime.on_pitch() agrees it
           (DET_AGREE estimates in a row on one semitone, an empty one
           starts over), and how long after the onset
@@ -34,11 +39,16 @@ first estimate) to the next tap:
           first key is taken as heard, after it continuity is on
           (detections folded to the octave nearest the shown note, moving
           only within NEAR_SEMIS); a wrong note is corrected by hand at
-          the next tap.
+          the next tap, and the note last agreed then (within
+          CORR_RECENT) is not followed again until another one is
+          agreed or nothing is heard for HOLD_QUIET
+          (TunerTime.hold_correction).
 A table per source, one line per run; -v adds the keys.
 """
 import array
+import cmath
 import glob
+import itertools
 import math
 import os
 import re
@@ -50,13 +60,20 @@ import wave
 DET_AGREE = 4
 NEAR_SEMIS = 5
 NEAR_SILENCE = 10.0
+CORR_RECENT = 4.0
+HOLD_QUIET = 0.3
 FRAME = 0.01		# envelope frames, seconds
+HARMONICS = 4		# a key's level: at its harmonics 1..HARMONICS
+PERIODS = 17		# over this many periods: a semitone away in its first null
+AROUND = 5.0		# its quiet: over the key's segment and this much around
+MIN_SOUND = 0.5		# seconds a key sounds at least (else a key passed by)
 KEY = re.compile(r'^key (\d+) (\S+) (\S+) (\S+) (-?\d+) (\S+)( redo)?\s*$')
 MARK = re.compile(r'^mark (\S+) (.*)$')
 EVENT = re.compile(r'^\s*([\d.]+)\s+(\d+)\s+(est|drift|hint|ui)\s+(.*)$')
 RUN_KEY = re.compile(r'run key (\d+) (\S+) ([\d.]+) Hz( redo)?')
 NAMES = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B']
 DRIFT = re.compile(r'(.+?)\s+([+-]?[\d.]+)c\s+([\d.]+)s')
+FIXES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixes')
 
 
 def semi_of(name):
@@ -148,6 +165,8 @@ class Run:
             if not body and not line.startswith('#'):
                 k, _, v = line.partition(' ')
                 self.head.setdefault(k, v.strip())
+        self.skips = {}
+        self.fixes()
         self.a_freq = float(self.head.get('A_freq', '440'))
         self.stretch = float((self.head.get('stretch') or '0').split()[0])
         if 'focus_ratio' in self.head or self.focus is None:
@@ -156,11 +175,11 @@ class Run:
         if self.t_align is None and self.est:
             # the replay's analyses at the app's samples
             self.t_align = '%.5f' % self.est[0][0]
-        self.envelope()
+        self.load()
         if not self.keys and run_keys:
             self.marks = self.marks or crash_marks
             ends = [t for t, _ in run_keys[1:]]
-            ends.append(run_end or (len(self.env)*FRAME if self.env
+            ends.append(run_end or (len(self.x)/self.rate if self.x
                                     else self.est[-1][0] if self.est
                                     else run_keys[-1][0]))
             for (t, u), end in zip(run_keys, ends):
@@ -168,16 +187,44 @@ class Run:
                     i=int(u.group(1)), start=t, end=end, name=u.group(2),
                     semi=semi_of(u.group(2)), hz=float(u.group(3)),
                     redo=bool(u.group(4))))
-        # the last segment of a note is the valid one
-        # (Dis and Es share a semitone, so by name too)
-        last = {}
+        # the last segment of a note that sounds is the valid one, else
+        # its last (Dis and Es share a semitone, so by name too)
+        notes = {}
         for k in self.keys:
-            last[(k['semi'], k['name'])] = k['i']
-        for k in self.keys:
-            k['valid'] = last[(k['semi'], k['name'])] == k['i']
+            notes.setdefault((k['semi'], k['name']), []).append(k)
+            k['valid'], k['on'], k['off'] = False, None, None
             k['marks'] = [m for t, m in self.marks
                           if k['start'] <= t < k['end']]
-        self.sounding()
+        for seg in notes.values():
+            v = next((k for k in reversed(seg) if self.sounding(k)), seg[-1])
+            v['valid'] = True
+        # not the key shown: marked so in the run, or skipped in a fix
+        for k in self.keys:
+            k['skip'] = self.skips.get(k['name']) or next(
+                (m for m in k['marks'] if m.endswith('key wrong')), None)
+            if k['skip']:
+                k['valid'] = False
+
+    def fixes(self):
+        """corrections after the run, in <run>.fix next to it or in
+        tools/field/fixes/: header lines as in the run ("kind open")
+        replace its own, "skip <key> <why>" leaves a key out (a short
+        octave's missing keys passed late with Ton+)"""
+        base = os.path.basename(self.path).rsplit('.', 1)[0] + '.fix'
+        for p in (self.path.rsplit('.', 1)[0] + '.fix',
+                  os.path.join(FIXES, base)):
+            if not os.path.exists(p):
+                continue
+            for line in open(p, encoding='utf-8'):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                k, _, v = line.partition(' ')
+                if k == 'skip':
+                    name, _, why = v.partition(' ')
+                    self.skips[name] = why.strip() or 'skipped'
+                else:
+                    self.head[k] = v.strip()
 
     def name(self):
         """run_<time>_<stop>.txt -> <time>_<stop>"""
@@ -196,9 +243,9 @@ class Run:
         return int(round(48 + 12*math.log2(hz/self.a_freq) /
                          (1.0 + self.stretch/1200.0)))
 
-    def envelope(self):
-        """RMS in FRAME seconds, in dB, smoothed over 3 frames"""
-        self.env = None
+    def load(self):
+        """the WAV's first channel, as self.x (None without the WAV)"""
+        self.x = None
         if not os.path.exists(self.wav):
             return
         with wave.open(self.wav, 'rb') as w:
@@ -208,46 +255,73 @@ class Run:
             a = array.array('h', w.readframes(w.getnframes()))
         if sys.byteorder == 'big':
             a.byteswap()
-        if ch > 1:
-            a = a[::ch]
-        n = int(FRAME*self.rate)
-        db = []
-        for i in range(0, len(a) - n + 1, n):
-            s = a[i:i + n]
-            db.append(10*math.log10(sum(x*x for x in s)/n + 1.0))
-        self.env = [sum(db[max(0, i - 1):i + 2])/len(db[max(0, i - 1):i + 2])
-                    for i in range(len(db))]
-        self.floor = pct(self.env, 0.1)
+        self.x = a[::ch] if ch > 1 else a
 
-    def sounding(self):
-        """onset and release per key: from the envelope, the trough
-        before it first comes within 6 dB of its level (the tail of the
-        key before may still ring at the tap) to where it falls 15 dB
-        below that level; without the WAV, the first and last estimate
-        with a note"""
-        for k in self.keys:
-            k['on'] = k['off'] = None
-            if self.env is None:
-                hz = [t for t, h in self.est
-                      if h and k['start'] <= t < k['end']]
-                if hz:
-                    k['on'], k['off'] = hz[0], hz[-1]
-                continue
-            a = int(k['start']/FRAME)
-            b = min(len(self.env), int(k['end']/FRAME))
-            seg = self.env[a:b]
-            peak = pct(seg, 0.9)
-            if peak is None or peak < self.floor + 12:
-                continue
-            thr = max(self.floor + 6, peak - 30)
-            i = next(i for i, v in enumerate(seg) if v >= peak - 6)
-            while i > 0 and seg[i - 1] >= thr and seg[i - 1] <= seg[i] + 0.5:
-                i -= 1
-            j = len(seg) - 1 - next(i for i, v in enumerate(reversed(seg))
-                                    if v >= peak - 6)
-            while j < len(seg) - 1 and seg[j] >= peak - 15:
-                j += 1
-            k['on'], k['off'] = (a + i)*FRAME, (a + j)*FRAME
+    def level(self, hz, t0, t1):
+        """the level at the harmonics of hz in dB, every FRAME from about
+        t0 to t1, the time its first frame is centred on and half its
+        window: per harmonic the samples turned down to 0 Hz (times a
+        phasor) and averaged over PERIODS periods"""
+        hop = int(FRAME*self.rate)
+        win = max(2*hop, int(round(PERIODS*self.rate/hz)))
+        a = max(0, int(t0*self.rate) - win//2)
+        b = min(len(self.x), int(t1*self.rate) + win//2)
+        x = self.x[a:b]
+        n = (len(x) - win)//hop + 1
+        half = 0.5*win/self.rate
+        if n <= 0:
+            return a/self.rate + half, half, []
+        power = [0.0]*n
+        for h in range(1, HARMONICS + 1):
+            if h*hz > self.rate/2.5:
+                break
+            w = cmath.exp(-2j*math.pi*h*hz/self.rate)
+            turn = itertools.accumulate(itertools.repeat(w, len(x) - 1),
+                                        lambda p, q: p*q, initial=1.0)
+            c = list(itertools.accumulate(map(lambda v, p: v*p, x, turn),
+                                          initial=0.0))
+            for j in range(n):
+                power[j] += abs((c[j*hop + win] - c[j*hop])/win)**2
+        return a/self.rate + half, half, [10*math.log10(p + 1.0)
+                                          for p in power]
+
+    def sounding(self, k):
+        """whether key k sounds, its onset and release as k['on'] and
+        k['off'] (None if silent): on its level (level()), the trough
+        before it first comes within 6 dB of its peak (the tail of the
+        key before may still ring at the tap; the rise starts when the
+        window's end reaches the onset, so the onset is taken there) to
+        where it falls 15 dB below that peak (at the window's centre);
+        silent if it never rises 12 dB above its quiet (the 10th
+        percentile around the key) or sounds less than MIN_SOUND (a key
+        passed by with Ton+ or Ton-).  Without the WAV, the first and last
+        estimate with a note"""
+        if self.x is None:
+            hz = [t for t, h in self.est if h and k['start'] <= t < k['end']]
+            if hz:
+                k['on'], k['off'] = hz[0], hz[-1]
+            return bool(hz)
+        t0, half, env = self.level(k['hz'], k['start'] - AROUND,
+                                   k['end'] + AROUND)
+        a = max(0, int(round((k['start'] - t0)/FRAME)))
+        b = min(len(env), int(round((k['end'] - t0)/FRAME)))
+        seg = env[a:b]
+        floor, peak = pct(env, 0.1), pct(seg, 0.9)
+        if peak is None or peak < floor + 12:
+            return False
+        thr = max(floor + 6, peak - 30)
+        i = next(i for i, v in enumerate(seg) if v >= peak - 6)
+        while i > 0 and seg[i - 1] >= thr and seg[i - 1] <= seg[i] + 0.5:
+            i -= 1
+        j = len(seg) - 1 - next(i for i, v in enumerate(reversed(seg))
+                                if v >= peak - 6)
+        while j < len(seg) - 1 and seg[j] >= peak - 15:
+            j += 1
+        on, off = t0 + (a + i)*FRAME + half, t0 + (a + j)*FRAME
+        if off - on < MIN_SOUND:
+            return False
+        k['on'], k['off'] = on, off
+        return True
 
 
 def replay(exe, run, mode, tmp):
@@ -288,14 +362,18 @@ def score(run, est):
     seg = 0
     sem, n = None, 0
     shown, near, heard = None, False, 0.0
+    stable, stable_t, overruled = None, -1e9, None
 
     def close(i):
         """at the tap ending key i: judge follow, correct by hand"""
-        nonlocal shown, near
+        nonlocal shown, near, overruled
         k, r = run.keys[i], res[i]
         if not k['valid'] or k['on'] is None:
             return
         r['follow'] = r.get('shown_at_off', shown) == k['semi']
+        if shown != k['semi']:
+            recent = k['end'] - stable_t < CORR_RECENT
+            overruled = stable if recent else None
         shown = k['semi']
         near = True
 
@@ -318,6 +396,8 @@ def score(run, est):
             n = 0
             if near and t - heard > NEAR_SILENCE:
                 near = False
+            if t - heard > HOLD_QUIET:
+                overruled = None
             continue
         heard = t
         s = run.semi(hz)
@@ -333,6 +413,10 @@ def score(run, est):
             else:
                 r['wrong'].append(s - k['semi'])
         if n >= DET_AGREE:
+            stable, stable_t = s, t
+            if s == overruled:
+                continue
+            overruled = None
             to = s
             if near and shown is not None:
                 to = s + 12*math.floor((shown - s)/12.0 + 0.5)
@@ -359,6 +443,10 @@ def show_cents(c):
 def detail(res):
     for r in res:
         k = r['key']
+        if k['skip']:
+            print('    %-4s %3d  left out: %s' % (k['name'], k['i'],
+                                                 k['skip']))
+            continue
         if not k['valid']:
             print('    %-4s %3d  superseded' % (k['name'], k['i']))
             continue
