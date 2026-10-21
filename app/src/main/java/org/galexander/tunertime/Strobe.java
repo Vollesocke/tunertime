@@ -58,9 +58,14 @@ public class Strobe extends Thread {
 
 	/* called from the native loop with each new pitch estimate, at
 	 * input sample pos (jni/record.c) */
-	public void pitch_detected(double hz, double conf, long pos) {
+	/* level, floor, gate: the input as the detector sees it (rms, 16-bit
+	 * units), its noise floor, and the level it needs (pitch.h) */
+	public void pitch_detected(double hz, double conf, long pos,
+				   double level, double floor, double gate) {
+		in_level = level;
+		in_gate = gate;
 		EventLog.estimate(pos, hz, conf);
-		ui.pitch_detected(hz);
+		ui.pitch_detected(hz, level, floor);
 	}
 
 	/* organ mode: the focused row's partial gained cycles on the row's
@@ -336,11 +341,41 @@ public class Strobe extends Thread {
 				/*x=*/0, /*y=*/0, /*wid=*/w, /*hght=*/h,
 				/*hasAlpha=*/true, /*paint=*/null);
 			draw_labels(c);
+			draw_level(c, w, h);
 			if (paused) {
 				draw_paused(c);
 			}
 			draw_pianoname(c);
 		}
+	}
+
+	/* the input level, a bar along the right edge: red under the
+	 * detector's gate (too quiet to be read: the phone nearer the pipes,
+	 * Volker for Onno), amber up to twice it, green above; the gate a
+	 * white tick.  dB over 1, from LEVEL_DB0 to LEVEL_DB1 */
+	private volatile double in_level = 0.0d, in_gate = 60.0d;
+	private static final double LEVEL_DB0 = 20.0, LEVEL_DB1 = 80.0;
+	private final Paint level_paint = new Paint();
+	private float level_y(double rms, int h) {
+		double db = 20.0*Math.log10(Math.max(rms, 1.0));
+		double x = (db - LEVEL_DB0)/(LEVEL_DB1 - LEVEL_DB0);
+		x = Math.max(0.0, Math.min(1.0, x));
+		return (float)(h*(1.0 - x));
+	}
+	private void draw_level(Canvas c, int w, int h) {
+		if (parms.fft_mode) {
+			return;
+		}
+		float bw = 5.0f*ui.getResources().getDisplayMetrics().density;
+		double lv = in_level, g = in_gate;
+		level_paint.setColor(0x30FFFFFF);	/* its track */
+		c.drawRect(w - bw, 0, w, h, level_paint);
+		level_paint.setColor((lv < g) ? 0xC0E05040 :
+				     (lv < 2.0*g) ? 0xC0E0B030 : 0xC040C060);
+		c.drawRect(w - bw, level_y(lv, h), w, h, level_paint);
+		level_paint.setColor(0xE0FFFFFF);
+		float gy = level_y(g, h);
+		c.drawRect(w - 2.0f*bw, gy - 1.5f, w, gy + 1.5f, level_paint);
 	}
 
 	/* Called from JNI to handle all of the Canvas interactions to draw the

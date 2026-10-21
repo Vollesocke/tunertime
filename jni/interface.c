@@ -295,7 +295,7 @@ jni_init(JNIEnv *env_)
 	METHOD(st_do_draw, strobe, "do_draw", "([III)Z")
 	METHOD(st_time_to_die, strobe, "time_to_die", "()Z")
 	METHOD(st_check_surface, strobe, "check_surface", "()[I")
-	METHOD(st_pitch_detected, strobe, "pitch_detected", "(DDJ)V")
+	METHOD(st_pitch_detected, strobe, "pitch_detected", "(DDJDDD)V")
 	METHOD(st_focus_drift, strobe, "focus_drift", "(DDDDDJ)V")
 	METHOD(tt_cents_to_freq, tunertime, "cents_to_freq", "(II)D")
 	STMETHOD(li_read, listener, "read", "([SI)I")
@@ -510,12 +510,10 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 
 		/* auto note detection (and length mode, which measures the
 		 * pitch): analysed here, outside the critical region below,
-		 * and handed to the UI as a plain call */
+		 * and handed to the UI as a plain call.  Always with the
+		 * strobe, for its input level (the level bar; 0.3% of a
+		 * core) */
 		if ((snd_buflen > 0) && !fft_mode &&
-		    ((*env)->GetStaticBooleanField(env, cl_parms, fid_p_auto_note) ||
-		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_mixture_mode) ||
-		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_length_mode) ||
-		     (*env)->GetStaticBooleanField(env, cl_parms, fid_p_run_active)) &&
 		    !(*env)->GetBooleanField(env, this, fid_st_paused)) {
 			double hz, conf;
 			/* the partial the user focused on (organ mode),
@@ -549,7 +547,8 @@ Java_org_galexander_tunertime_Strobe_runner(JNIEnv *env_, jobject this)
 				at += pitch_last_at();
 				(*env)->CallVoidMethod(env, this,
 					mid_st_pitch_detected, hz, conf,
-					(jlong)at);
+					(jlong)at, pitch_level(),
+					pitch_floor(), pitch_gate());
 			}
 		}
 

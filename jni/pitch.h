@@ -14,6 +14,13 @@ void pitch_hint(double focus_ratio, double expect_hz);
  * the estimate takes in (1..len), i.e. where in that buffer the analysed
  * window ended.  An estimate is made every PITCH_STEP samples fed */
 int pitch_last_at(void);
+/* the input level as the detector sees it (rms of the last window, 16-bit
+ * units, 2:1 decimated), its noise floor (a slowly rising minimum), and
+ * the level under which nothing is detected (between LOW_RMS and MIN_RMS,
+ * by the floor) */
+double pitch_level(void);
+double pitch_floor(void);
+double pitch_gate(void);
 #define PITCH_STEP	4096	/* input samples: 2:1 decimation, N/4 hop */
 
 #endif /* PITCH_H */

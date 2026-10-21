@@ -1,8 +1,21 @@
 # Handoff: TunerTime Organ
 
-Status as of 21 Oct 2026, evening: release
-[**v18.5-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.5-organ)
-is on `main`: Onno's feedback on v18.4 (below, "21 Oct evening"): hand
+**What it is for (Onno, 21 Oct):** a tuning aid. The organ builder always
+decides by ear what he tunes and what not. Its main use is to keep the
+strobe following so that, with as little input as possible, he sees
+exactly what he hears. So the hand always wins over the detector, and the
+app does not explain or warn where he already knows.
+
+Status as of 21 Oct 2026, late: release
+[**v18.6-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.6-organ)
+is on `main` (below, "21 Oct late"): the detector against blower hum,
+an input level bar, the hold ended by the input level, the temperament
+list a display only, no "key released" text in mixture mode, the sim
+calibrated on the church runs, warped runs. FollowTest and the main-screen
+layout tests clean on tt_fairphone4; the full UI suite was not run.
+
+Before it, 21 Oct, evening: release
+[**v18.5-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.5-organ): Onno's feedback on v18.4 (below, "21 Oct evening"): hand
 corrections hold, mixture mode with Dis/Es and its buttons as corrections,
 the A tab shows the note. FollowTest and the main-screen layout tests
 clean on tt_fairphone4; the full UI suite was not run for it.
@@ -14,6 +27,59 @@ tt_fairphone4 (full suite on pre2, the menu tests again on the release);
 tt_galaxy_s25 still not run. It adds to v18.3: chromatic run recordings, meantone with more
 than 12 notes, the mixture measurement ending on key release, a warning when
 the mixture is heard more than a semitone off, and tapping a workbench note.
+
+## 21 Oct late: v18.6, the detector on the church runs
+
+**Why the churches were hard** (`sim_organ` header, `warp_run.py`):
+- Hmth 202 is the Becker organ: the blower motor (single-phase
+  asynchronous, with a capacitor) hangs in the case, and the phone stood
+  on the music desk. Its lines: a 49.25 Hz series (the motor, not the
+  mains) and a line at 42.5-44.3 Hz, 12 dB under the soft Gedackt pipes.
+  Hmth 204 (meantone) has a new blower, built apart from the organ: weak
+  hum, but a quiet phone input; its two keys never read (B4, Cs5) were
+  the only ones under the detector's MIN_RMS of 60.
+- Small flue pipes are nearly sines, and a quarter of the keys beat with
+  a second tone (5-9 c wobble at 10-20 Hz) -- the sim had neither.
+
+**Detector** (`jni/pitch.c`, measured with `tools/field/eval.sh`):
+- Noise lines: learnt from windows near the noise floor, under MIN_RMS,
+  with nothing detected (between keys), below 1 kHz; taken off the
+  spectrum (1.5x) before the peaks are found; the peak threshold stays
+  on the spectrum as it was. Not learnt when the noise is over MIN_RMS
+  (then as before).
+- Level gate: MIN_RMS 60, down to 1.6x the noise floor in a quiet place,
+  not under 20. The floor rises 0.5%/s (2%/s forgot the gaps).
+- Results: runs 186 -> 191 of 206 agreed (Gedackt Hmth 202 44 -> 48);
+  warped 367 -> 398 of 465; 19 Oct recordings 40 -> 44 of 81 (wrong 13
+  -> 14); sim Field empty 33/16/7% -> 16/2/0%, shown 491 -> 514 of 568;
+  synthetic bench 537/537. B4/Cs5 at Hmth 204 still empty: confidence
+  0.4-0.5 (the beating); next to look at.
+- The detector runs whenever the strobe does (0.3% of a core) and passes
+  its level, floor and gate: the level bar, and the hold of a correction
+  now ends on the input dropping to its floor (KEY_QUIET 1.4, at least
+  20) instead of 0.3 s of empty estimates (Onno: the hand always wins).
+  sim_organ and run_score mirror it.
+
+**Onno's answers of 21 Oct** (to the questions of 20 Oct, numbered as in
+"Done on 20 Oct (evening)"):
+1. Taste+/- in mixture mode on Dis and Es: yes (v18.5). Exactly 12 notes
+   keep the organ names ("Ds"): leave so.
+2. Dis/Es by hand: the manual override always has priority (the hold;
+   now ended by the level, above).
+3. A measurement cut short by the release: no mark. "Taste zu frueh
+   losgelassen": show nothing, the organ builder knows (removed).
+4. Mixture warning: "follow in mixture mode as in tone mode without a
+   focused row" -- the default already (the detector ignores the
+   reference row; Settings "follow the reference rank" off). The far
+   warning is unchanged; ask if he meant more.
+5. Tapping in the temperament list: out entirely, as in his fork (done).
+- Octave held with a focused row: yes, as is.
+- Aliquots in follow mode: show them as such wherever possible, they are
+  tuned pure and would otherwise be tempered. Not built yet: today only by
+  tapping their row. A proposal is needed (e.g. with continuity, a
+  detection a twelfth or a seventeenth over the note shown taken as the
+  mutation's row of that key).
+- Preset tab: settled, a temperament menu only. Menus: benched.
 
 ## 21 Oct evening: Onno's runs scored, his feedback (branch `onno-22oct`)
 

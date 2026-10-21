@@ -90,7 +90,6 @@
 	<string name="mixture_tap_measure">tap measure</string>
 	<string name="mixture_tap_row">tap a strobe row</string>
 	<!-- the key was released before the measurement had enough -->
-	<string name="mixture_released">key released too soon: hold it and measure again</string>
 	<!-- the pitch heard is more than a semitone from every row, where
 	     the strobe drift wraps -->
 	<string name="mixture_far">heard over a semitone off the rows: check the key</string>
