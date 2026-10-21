@@ -71,7 +71,6 @@
 	<string name="preset_deviation_column">Abweichung</string>
 	<string name="preset_workbench_count_one">%1$d Ton pro Oktave</string>
 	<string name="preset_workbench_count_many">%1$d T&#246;ne pro Oktave</string>
-	<string name="preset_workbench_hint">Ton antippen, um ihn als aktuellen Bezugston zu w&#228;hlen</string>
 	<string name="temperament_select">Auswahl</string>
 	<string name="temperament_edit">Bearbeiten</string>
 	<string name="fft_n">N</string>

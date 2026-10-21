@@ -103,8 +103,8 @@ this fork.
   choices are alphabetized in the active language. A selected temperament
   always affects note mode. For Pythagorean and meantone tunings, tap the
   temperament name to choose a temporary wolf fifth; that choice resets when
-  another temperament is selected. Tapping a note in the table makes it the
-  current note, in the octave of the one before. The A tab shows the note
+  another temperament is selected. The table is a display only (Onno). The
+  A tab shows the note
   set next to the A frequency, as it hides the note buttons.
 - **Historical temperaments** (`temperaments.java`): equal, Pythagorean, ¼-
   and ⅙-comma meantone, Werckmeister III, Kirnberger III, Vallotti, Young II

@@ -1638,18 +1638,12 @@ public class TunerTime extends Activity
 		int count = tuning.size();
 		preset_workbench_summary.setText((count == 1 ?
 			getString(R.string.preset_workbench_count_one, count) :
-			getString(R.string.preset_workbench_count_many, count)) +
-			"\n" + getString(R.string.preset_workbench_hint));
+			getString(R.string.preset_workbench_count_many, count)));
 		for (int i = 0; i < count; i++) {
+			/* a display only, as in Onno's fork: no note is
+			 * tapped there (Onno, 22 Oct) */
 			final note n = new note(tuning.get(i));
-			final int index = i;
 			LinearLayout row = new LinearLayout(this);
-			row.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					workbench_note(index);
-				} });
-			row.setContentDescription((parms.organ_mode ?
-				n.organ_name() : n.name_oct) + " " + n.cents_str);
 			row.setOrientation(LinearLayout.HORIZONTAL);
 			row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 			row.setMinimumHeight((int)(48 * getResources()
@@ -1675,29 +1669,6 @@ public class TunerTime extends Activity
 				ViewGroup.LayoutParams.WRAP_CONTENT));
 			preset_workbench_notes.addView(row);
 		}
-	}
-
-	/* the workbench: the tapped note of the temperament becomes the
-	 * current note, in the octave of the one before; note mode takes
-	 * it over without the temperament's offset, as on leaving the
-	 * Preset tab */
-	private void workbench_note(int i) {
-		preset p = preset.find(parms.preset_id);
-		if ((p == null) || (i < 0) || (i >= p.tuning_notes().size())) {
-			return;
-		}
-		int v = p.tuning_notes().get(i);
-		cause = "workbench tap " + new note(v).full_str;
-		parms.preset_note = i;
-		parms.preset_oct = new note(parms.note_cents).octave -
-				   new note(v).octave;
-		int c = v + 1200*U*parms.preset_oct;
-		/* which of two notes on the semitone (Dis or Es), as on
-		 * leaving the Preset tab */
-		int[] nn = parms.nearest_note(c);
-		parms.note_alt = nn[1];
-		parms.note_cents = c - parms.note_offset(nn[0]*100*U);
-		update_status();
 	}
 
 	/* Debug recordings (EventLog): what changed since the last call and

@@ -75,7 +75,6 @@
 	<string name="preset_deviation_column">Deviation</string>
 	<string name="preset_workbench_count_one">%1$d note per octave</string>
 	<string name="preset_workbench_count_many">%1$d notes per octave</string>
-	<string name="preset_workbench_hint">Tap a note to set it as the current reference pitch</string>
 	<string name="temperament_select">Select</string>
 	<string name="temperament_edit">Edit</string>
 	<string name="fft_n">N</string>
