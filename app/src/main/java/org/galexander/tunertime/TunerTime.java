@@ -500,7 +500,9 @@ public class TunerTime extends Activity
 	 * tuner: a correction by hand applies to the current note only, and
 	 * as a stop is tuned key by key, without big jumps, the notes heard
 	 * after it are looked for near the current note.  So once the user
-	 * moves the note by hand (semitone, octave or fifth buttons) while
+	 * moves the note by hand (semitone, octave or fifth buttons; in
+	 * mixture mode the key and octave buttons, which before did not
+	 * count as a correction: Onno, 21 Oct) while
 	 * follow is on, continuity is on: each detection is taken in the
 	 * octave that puts it nearest the note now shown, and only moves
 	 * the note if that is within NEAR_SEMIS (a fourth, 500 cents)
@@ -1220,32 +1222,28 @@ public class TunerTime extends Activity
 	 * "measure" with the reference rank sounding */
 	public void mixture_semi_incr(View v) {
 		cause = "mixture key+";
+		int from = nearest_step(parms.mixture_cents);
 		mixture_move(1);
-		mixture_by_hand();
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
 	public void mixture_semi_decr(View v) {
 		cause = "mixture key-";
+		int from = nearest_step(parms.mixture_cents);
 		mixture_move(-1);
-		mixture_by_hand();
-	}
-	/* following, a key set by hand holds like a correction in note
-	 * mode (hold_correction()), without continuity */
-	private void mixture_by_hand() {
-		if (parms.auto_note && auto_applies()) {
-			hold_correction();
-		}
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
 	public void mixture_oct_incr(View v) { mixture_octave(1); }
 	public void mixture_oct_decr(View v) { mixture_octave(-1); }
 	private void mixture_octave(int d) {
 		cause = (d > 0) ? "mixture octave+" : "mixture octave-";
+		int from = nearest_step(parms.mixture_cents);
 		parms.mixture_cents = range_limit(parms.mixture_cents + d*1200*U,
 				0, 9600*U);
 		parms.mixture_ref = 0.0d;
 		parms.note_cents = range_limit(parms.note_cents + d*1200*U,
 				0, 9600*U);
 		update_status();
-		mixture_by_hand();
+		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
 	private double mixture_last_ref = 0.0d;	/* row last measured on */
 	/* by d steps: where the temperament has two notes on the pitch

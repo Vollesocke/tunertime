@@ -213,6 +213,23 @@ public class FollowTest {
 		assertEquals(D4, mix_key());
 	}
 
+	/* mixture mode: a key set by hand is a correction as in note mode
+	 * (Onno: "kept as the right note, the next one looked for within
+	 * 500 cents of it"): it holds, and an octave heard next is folded
+	 * to the key nearest it */
+	@Test
+	public void mixture_correction() {
+		tap("mixture");
+		hear(hz(E4, 0));
+		assertEquals(E4, mix_key());
+		tap("mix-");				/* E -> Es */
+		assertEquals(DS4, mix_key());
+		hear(hz(E4, 0));
+		assertEquals("correction holds", DS4, mix_key());
+		hear(2.0*hz(E4 + 1, 0));		/* F5, as an F4 rank */
+		assertEquals("continuity", E4 + 1, mix_key());
+	}
+
 	/* mixture mode follows to Es (rejected before: 41 cents from Dis)
 	 * and on to the next key, which an offset of 41 cents carried
 	 * over would reject */

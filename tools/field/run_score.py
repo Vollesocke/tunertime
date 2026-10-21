@@ -73,6 +73,7 @@ EVENT = re.compile(r'^\s*([\d.]+)\s+(\d+)\s+(est|drift|hint|ui)\s+(.*)$')
 RUN_KEY = re.compile(r'run key (\d+) (\S+) ([\d.]+) Hz( redo)?')
 NAMES = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B']
 DRIFT = re.compile(r'(.+?)\s+([+-]?[\d.]+)c\s+([\d.]+)s')
+FIXES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixes')
 
 
 def semi_of(name):
@@ -164,6 +165,8 @@ class Run:
             if not body and not line.startswith('#'):
                 k, _, v = line.partition(' ')
                 self.head.setdefault(k, v.strip())
+        self.skips = {}
+        self.fixes()
         self.a_freq = float(self.head.get('A_freq', '440'))
         self.stretch = float((self.head.get('stretch') or '0').split()[0])
         if 'focus_ratio' in self.head or self.focus is None:
@@ -195,6 +198,33 @@ class Run:
         for seg in notes.values():
             v = next((k for k in reversed(seg) if self.sounding(k)), seg[-1])
             v['valid'] = True
+        # not the key shown: marked so in the run, or skipped in a fix
+        for k in self.keys:
+            k['skip'] = self.skips.get(k['name']) or next(
+                (m for m in k['marks'] if m.endswith('key wrong')), None)
+            if k['skip']:
+                k['valid'] = False
+
+    def fixes(self):
+        """corrections after the run, in <run>.fix next to it or in
+        tools/field/fixes/: header lines as in the run ("kind open")
+        replace its own, "skip <key> <why>" leaves a key out (a short
+        octave's missing keys passed late with Ton+)"""
+        base = os.path.basename(self.path).rsplit('.', 1)[0] + '.fix'
+        for p in (self.path.rsplit('.', 1)[0] + '.fix',
+                  os.path.join(FIXES, base)):
+            if not os.path.exists(p):
+                continue
+            for line in open(p, encoding='utf-8'):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                k, _, v = line.partition(' ')
+                if k == 'skip':
+                    name, _, why = v.partition(' ')
+                    self.skips[name] = why.strip() or 'skipped'
+                else:
+                    self.head[k] = v.strip()
 
     def name(self):
         """run_<time>_<stop>.txt -> <time>_<stop>"""
@@ -413,6 +443,10 @@ def show_cents(c):
 def detail(res):
     for r in res:
         k = r['key']
+        if k['skip']:
+            print('    %-4s %3d  left out: %s' % (k['name'], k['i'],
+                                                 k['skip']))
+            continue
         if not k['valid']:
             print('    %-4s %3d  superseded' % (k['name'], k['i']))
             continue

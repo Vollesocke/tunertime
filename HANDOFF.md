@@ -26,7 +26,9 @@ in `tools/field/data/runs-2026-10-21` (not committed).
   the pipes sound and are in tune (drift -0.2..-2.6 c); without hints the
   detector drops 2.5-4 octaves to the 50 Hz hum. A detector task.
 - Rohrflöte F5 Gs5 A5 F6 90-100% empty, in tune. Gedackt (204): the Cs2
-  key sounds as D2 and Ds2 as E2 (short octave, or stepped late? ask Onno).
+  key sounds as D2 and Ds2 as E2: a short octave, Ton+ pressed a little
+  late (Onno). Left out with `tools/field/fixes/*.fix`, and the Plenum's
+  kind set to open (he left the dialog's "stopped"); 206 keys, 10 wrong.
 - Pipes off: Rohrflöte A2 -26 c; Gedackt (202) bass Cs2 +15.7, Ds2 +15.3,
   G2 +12.7 c.
 
@@ -38,7 +40,11 @@ in `tools/field/data/runs-2026-10-21` (not committed).
    Dis/Es picked by hand always went back. Now the overruled note is not
    followed until another note is agreed or 0.3 s of nothing (release).
    sim: 0 undone, wrong shown 58 -> 30; runs: follow unchanged (187).
-   Whether that is what he meant is open: ask him what was better.
+   Onno confirmed: before, the correction "was kept as the right note,
+   and the next one looked for within 500 cents of it; now a correction
+   was completely ignored". In mixture mode the key and octave buttons
+   did not count as corrections at all (in his fork neither): now they
+   do, with continuity, as in note mode (sim_organ already assumed so).
 2. A tab: shows the note set next to the Hz.
 3. Mixture mode and Dis/Es: key+/- skipped Es (D Dis E); follow rejected Es
    (41 c from Dis), and an Es measured at Dis carried +41 c as the organ's

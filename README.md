@@ -31,8 +31,9 @@ this fork.
   Mutations (Quinte, Terz) are followed by focusing their row instead.
   The correction holds while the key sounds: the note the detector heard
   is not followed again until it hears another one or nothing for 0.3 s
-  (the key released); also Dis or Es picked by hand, and a key set by hand
-  in mixture mode. `tools/sim_organ -f old|new` compares the v18.1 rule
+  (the key released); also Dis or Es picked by hand. In mixture mode the
+  key and octave buttons are corrections too, with continuity (they were
+  not before). `tools/sim_organ -f old|new` compares the v18.1 rule
   with this one.
 - **Debug recordings** (`DebugRecorder.java`, `jni/record.c`; Settings →
   "Debug recordings", on in the dev build): each hand correction while

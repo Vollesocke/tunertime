@@ -58,7 +58,12 @@ lists the keys (`key i start end name semi target_hz [redo]`, 48 = A4;
 a segment runs from one tap to the next, the last one of a note that
 sounds counts: stepping back with Ton- passes notes without playing them)
 before the usual timeline. After a crash there is only the .wav and a
-.timeline; the keys then come from its `ui run key` lines.
+.timeline; the keys then come from its `ui run key` lines. A key marked
+"Wrong key played" in the run is left out, and so is one named in a
+`<run>.fix` (next to the run, or in `tools/field/fixes/`, committed):
+`skip <key> <why>` lines and header lines that replace the run's own,
+e.g. `kind open`. Onno's of 21 Oct: the short octave of Hmth 204 (no
+Cs2, Ds2), and the Plenum's kind.
 
 ```sh
 python tools/field/run_score.py [-v] runs/              # the app's estimates
