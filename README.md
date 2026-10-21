@@ -120,7 +120,8 @@ this fork.
 - **Mixture mode follows detected notes** like tone mode, displays the detected
   pitch and has key and octave buttons. Where the workbench picked two notes
   on a pitch class (Dis and Es), the key buttons go through both (D Dis Es
-  E) and follow tells them apart, as in note mode. A key the follow moves
+  E) and follow tells them apart, as in note mode. The focused row stays
+  until another is tapped. A key the follow moves
   to is measured again from 0.5 s after the onset, as a trailing average (0.65 s from 500 Hz
   up, 1 s from 250 Hz, else 2 s / 3 s) that ends once it is steady.
   Detections more than 20 cents from the mixture's measured pitch are

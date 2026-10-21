@@ -230,6 +230,22 @@ public class FollowTest {
 		assertEquals("continuity", E4 + 1, mix_key());
 	}
 
+	/* mixture mode: the focused row stays until another is tapped (Onno;
+	 * v18.4 focused the row last measured on again at the next key) */
+	@Test
+	public void mixture_focus_stays() {
+		tap("mixture");
+		main(new Runnable() {
+			public void run() {
+				parms.mixture_ref = 1.0d;	/* measured on 8' */
+				parms.focus_ratio = 2.0d;	/* 4' tapped */
+			} });
+		tap("mix+");
+		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+		hear(hz(E4 + 1, 0));			/* followed */
+		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+	}
+
 	/* mixture mode follows to Es (rejected before: 41 cents from Dis)
 	 * and on to the next key, which an offset of 41 cents carried
 	 * over would reject */

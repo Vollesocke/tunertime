@@ -1,6 +1,13 @@
 # Handoff: TunerTime Organ
 
-Status as of 20 Oct 2026, late: release
+Status as of 21 Oct 2026, evening: release
+[**v18.5-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.5-organ)
+is on `main`: Onno's feedback on v18.4 (below, "21 Oct evening"): hand
+corrections hold, mixture mode with Dis/Es and its buttons as corrections,
+the A tab shows the note. FollowTest and the main-screen layout tests
+clean on tt_fairphone4; the full UI suite was not run for it.
+
+Before it, 20 Oct, late: release
 [**v18.4-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.4-organ)
 is on `main` (pre-release v18.4-organ-pre2 before it). UI tests clean on
 tt_fairphone4 (full suite on pre2, the menu tests again on the release);
@@ -57,7 +64,13 @@ in `tools/field/data/runs-2026-10-21` (not committed).
    pitch to every key after it, all rejected: "detection crashes". Now
    both notes, as in note mode (parms.note_alt shared), named apart.
    No real crash found in the code; if it still happens, a debug recording.
-- Tests: `FollowTest` (androidTest, 5 tests, fail on v18.4); UiLayoutTest
+4. Mixture mode: the focused row stays until he taps another (a
+   regression in v18.4 for him). It moved by itself in two places, both
+   older than his fork: Ton± focused the row last measured on again, and
+   a row whose partial went too high for the strobe was dropped for the
+   8'. Now a too-high row is just not measured (a toast when measure is
+   tapped); with nothing focused, measure still takes the 8' row.
+- Tests: `FollowTest` (androidTest, 7 tests, fail on v18.4); UiLayoutTest
   main_normal/main_organ clean on tt_fairphone4.
 
 ## Onno's church day (21 Oct): chromatic runs
@@ -361,7 +374,7 @@ are answered and implemented:
 | 3 | Cent readout top right in organ mode | Tapped row: its measured offset. Only in mixture mode (Onno, 19 Oct): there the focused row's measured offset; otherwise nothing, the target and its offset are in the title. |
 | 4 | Debug recordings | Same triggers; the .txt now has a timeline of estimates, strobe drift and UI events (`EventLog.java`), on the WAV's time base; `test_pitch -t` replays on the same base. |
 | 5 | Wording for stopped pipes | Unchanged. |
-| 6 | Mixture step by step | Ton± focuses the reference row last measured again. |
+| 6 | Mixture step by step | Ton± focused the reference row last measured again; since v18.5 the focused row stays until tapped (Onno, 21 Oct). |
 
 Settled by the user: 4/5' (not 2/5') and 3 1/5' in the footage list, no other
 extra footages. Mixture ranks are muted by hand (abstecken). 2 s mixture

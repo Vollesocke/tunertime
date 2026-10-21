@@ -1165,11 +1165,17 @@ public class TunerTime extends Activity
 		}
 		int fr = parms.focus_row();
 		if ((fr >= 0) && Strobe.row_too_high(this, fr)) {
-			/* the target moved up since it was focused */
-			too_high_toast();
-			parms.focus_ratio = 0.0d;
+			/* the target moved up since it was focused: not
+			 * measured, but the row stays focused until the
+			 * user taps another (Onno, 21 Oct) */
+			if (settle == 0.0d) {
+				too_high_toast();
+			}
+			mix.stop();
+			update_status();
+			return;
 		}
-		if (parms.focus_row() < 0) {
+		if (fr < 0) {
 			/* nothing focused: the 8' row, else the lowest */
 			int i;
 			for (i = 0; i < parms.num_strobes; i++) {
@@ -1217,9 +1223,8 @@ public class TunerTime extends Activity
 	 * organ's pitch is much the same from key to key), until measure
 	 * is tapped with the reference rank sounding.  note mode moves
 	 * along, so that it is at the same key when going back to it.
-	 * The reference row last measured is focused again (decided with
-	 * the organ tuner), so that each key takes just "Ton+", then
-	 * "measure" with the reference rank sounding */
+	 * The focused row stays as it is until the user taps another (Onno,
+	 * 21 Oct; v18.4 focused the row last measured on again) */
 	public void mixture_semi_incr(View v) {
 		cause = "mixture key+";
 		int from = nearest_step(parms.mixture_cents);
@@ -1245,7 +1250,6 @@ public class TunerTime extends Activity
 		update_status();
 		user_moved_note(from, nearest_step(parms.mixture_cents));
 	}
-	private double mixture_last_ref = 0.0d;	/* row last measured on */
 	/* by d steps: where the temperament has two notes on the pitch
 	 * class, both, as semi_step() in note mode: D Dis Es E */
 	private void mixture_move(int d) {
@@ -1268,34 +1272,12 @@ public class TunerTime extends Activity
 			return;
 		}
 		mix.stop();
-		if (parms.mixture_ref > 0.0d) {
-			mixture_last_ref = parms.mixture_ref;
-		}
 		parms.mixture_cents += step_cents(k, alt) - step_cents(cur);
 		parms.mixture_ref = 0.0d;
 		int nk = (parms.note_cents + semi/2) / semi;
 		parms.note_cents += (k-nk)*semi;
 		parms.note_alt = alt;
 		update_status();
-		refocus(mixture_last_ref);
-	}
-
-	/* focuses the row of footage ratio r, if it is shown and not too
-	 * high for the new target; otherwise the focus is left as it is */
-	private void refocus(double r) {
-		if ((r <= 0.0d) || (r == parms.focus_ratio)) {
-			return;
-		}
-		for (int i = 0; i < parms.num_strobes; i++) {
-			if (parms.row_ratio(i) == r) {
-				if (!Strobe.row_too_high(this, i)) {
-					cause = "mixture: back to the reference";
-					parms.focus_ratio = r;
-					update_status();
-				}
-				return;
-			}
-		}
 	}
 
 	/* back to the nearest note (of the temperament, if one is in
