@@ -45,6 +45,12 @@ in `tools/field/data/runs-2026-10-21` (not committed).
    was completely ignored". In mixture mode the key and octave buttons
    did not count as corrections at all (in his fork neither): now they
    do, with continuity, as in note mode (sim_organ already assumed so).
+   His Plenum: in the bass it jumped C <-> c and could not be corrected
+   without turning detection off; in his fork he declared C once (in
+   note mode, where an octave correction turns on continuity) and went
+   through the row. Replayed from the run (run_score follow emulation):
+   as v18.4 mixture mode, C2 jumps an octave 7 times, D2 and G4 shown an
+   octave high; with this branch, after C declared once, 46 of 46 keys.
 2. A tab: shows the note set next to the Hz.
 3. Mixture mode and Dis/Es: key+/- skipped Es (D Dis E); follow rejected Es
    (41 c from Dis), and an Es measured at Dis carried +41 c as the organ's
