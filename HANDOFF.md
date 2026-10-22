@@ -23,12 +23,29 @@ Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
 work well. Noise beds differ per organ (>20 organs needed to learn from
 them), so no noise library and no sample simulator for now.
 
-Status as of 22 Oct 2026, late evening: release
-[**v19.0-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.0-organ)
-(code 30) is on `main`: Onno's spec of 21 Oct complete (packages A and B).
-After it, per Onno's season plan: only what testers need (stability,
-the manual, his answers below), detector work again from May 2027.
-**Start with "22 Oct late: v19.0" below.**
+Status as of 22 Oct 2026, night: release
+[**v19.1-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.1-organ)
+(code 31) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
+and B) plus Onno's two wishes on it (below). After it, per Onno's season
+plan: only what testers need (stability, the manual, his answers below),
+detector work again from May 2027. **Start with "22 Oct late: v19.0"
+below.**
+
+## 22 Oct night: v19.1
+
+Onno on 19.0: "einziges Haar in der Suppe".
+- "Cent ± und 0.1 cent ± vertauschen, die Nachkommastelle rechts", said of
+  "Töne eingeben". "Ton eingeben" (B2) already had ±1c in the middle and
+  ±0.1c on the right; the A buttons (`afreq_buttons`, both orientations:
+  the A tab and B1 "Kammerton einstellen", the first page of the same
+  flow) had +0.1 left, +1 right. Swapped there: ±1 left, ±0.1 right. If
+  he meant B2 after all, ask him what he expects there.
+- Organ mode on by default (`preferences.xml`, `parms`, `Settings`; manual
+  step 2). The pref is only stored once switched, so an install where it
+  was never touched is in organ mode after the update too.
+
+Tests: JVM tests, MeasureTest, FollowTest, UiLayoutTest main_organ,
+main_normal, measure on tt_fairphone4; the buttons tapped on the emulator.
 
 ## Pick up here (22 Oct, night)
 
