@@ -618,6 +618,7 @@ public class TunerTime extends Activity
 	 * by hand carries over to the new note.  after a correction, only
 	 * near the current note (continuity, above). */
 	private void on_pitch(double hz, double level, double floor) {
+		a_heard(hz);
 		if (parms.mixture_mode && (hz > 0.0d)) {
 			/* Dis or Es by the nearer, where both were picked */
 			int[] hn = parms.nearest_note(freq_to_cents(hz));
@@ -926,6 +927,70 @@ public class TunerTime extends Activity
 	public void reset_afreq(View v) {
 		cause = "A reset";
 		parms.A_freq = 4400;
+		update_status();
+	}
+
+	/* A tab, "auto" (Onno, 22 Oct): the A that puts the note shown on
+	 * what is heard.  The median of the detector's estimates of the
+	 * last AUTO_A_MS that agree on the note (within half a semitone of
+	 * its pitch in the temperament); the compromise of many pipes is
+	 * made by hand after it, so 2 s are enough.  With fewer than
+	 * AUTO_A_MIN of them, about 1 s (an estimate every 4096 samples,
+	 * 85-93 ms), it does nothing.  The note's own cent offset set by
+	 * hand is left out: the A is fitted to the note of the temperament
+	 * (with stretch, if any), as Reset and the A buttons are */
+	private static final long AUTO_A_MS = 2000;
+	private static final int AUTO_A_MIN = 11;
+	private static final int AUTO_A_RING = 64;
+	private final long[] a_time = new long[AUTO_A_RING];
+	private final double[] a_hz = new double[AUTO_A_RING];
+	private int a_next = 0;
+
+	/* every estimate (on_pitch), but not the tone generator's own */
+	private void a_heard(double hz) {
+		if ((hz <= 0.0d) || ToneGenerator.playing) {
+			return;
+		}
+		a_time[a_next] = SystemClock.uptimeMillis();
+		a_hz[a_next] = hz;
+		a_next = (a_next + 1) % AUTO_A_RING;
+	}
+
+	public void auto_afreq(View v) {
+		int k = (parms.note_cents + 50*U) / (100*U);
+		int step = step_cents(k);
+		long now = SystemClock.uptimeMillis();
+		double[] h = new double[AUTO_A_RING];
+		int n = 0;
+		for (int i = 0; i < AUTO_A_RING; i++) {
+			if ((a_hz[i] > 0.0d) && (now - a_time[i] <= AUTO_A_MS) &&
+			    (Math.abs(freq_to_cents(a_hz[i]) - step) <= 50*U)) {
+				h[n++] = a_hz[i];
+			}
+		}
+		if (n < AUTO_A_MIN) {
+			/* nothing heard long enough: nothing done, no popup */
+			cause = "A auto: " + n + " estimates on " +
+				new note(step).full_str + ", too few";
+			log_changes();
+			return;
+		}
+		Arrays.sort(h, 0, n);
+		double med = ((n % 2) == 1) ? h[n/2] :
+						(h[n/2 - 1] + h[n/2]) / 2.0d;
+		/* the target is A times a factor of the note, temperament
+		 * and stretch (cents_to_freq): scaled by heard / target */
+		int a = (int)Math.round(parms.A_freq * med /
+					cents_to_freq(step, 1));
+		cause = String.format(Locale.US,
+			"A auto (median %.2f Hz of %d estimates on %s)", med, n,
+			new note(step).full_str);
+		if ((a < 2200) || (a > 8800)) {
+			cause += ", out of range";
+			log_changes();
+			return;
+		}
+		parms.A_freq = a;
 		update_status();
 	}
 

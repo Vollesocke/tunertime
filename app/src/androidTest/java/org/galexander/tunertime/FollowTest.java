@@ -115,6 +115,8 @@ public class FollowTest {
 				else if (what.equals("mix-")) a.mixture_semi_decr(null);
 				else if (what.equals("mixture"))
 					a.stretch_clicked(null);
+				else if (what.equals("A auto"))
+					a.auto_afreq(null);
 			} });
 	}
 
@@ -244,6 +246,38 @@ public class FollowTest {
 		assertEquals(2.0d, parms.focus_ratio, 0.0d);
 		hear(hz(E4 + 1, 0));			/* followed */
 		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+	}
+
+	/* the A tab's auto: the A that puts the note shown (D4 in meantone)
+	 * on the pipe heard, 3 c sharp, from the estimates agreeing on it.
+	 * Fewer than about 1 s of them do nothing; again, the same A */
+	@Test
+	public void a_auto() {
+		main(new Runnable() {
+			public void run() {
+				a.afreq_clicked(null);
+			} });
+		final double f = hz(D4, 0) * Math.pow(2.0, 3.0/1200.0);
+		feed(f, 5);
+		tap("A auto");
+		assertEquals("too few", 4400, parms.A_freq);
+		feed(f, 10);
+		tap("A auto");
+		assertEquals(D4, note_key());
+		assertEquals((int)Math.round(4400*Math.pow(2.0, 3.0/1200.0)),
+			     parms.A_freq);
+		tap("A auto");
+		assertEquals("again", 4408, parms.A_freq);
+	}
+
+	/* estimates in a row, n of them */
+	private void feed(final double f, final int n) {
+		main(new Runnable() {
+			public void run() {
+				for (int i = 0; i < n; i++) {
+					a.pitch_detected(f);
+				}
+			} });
 	}
 
 	/* mixture mode follows to Es (rejected before: 41 cents from Dis)
