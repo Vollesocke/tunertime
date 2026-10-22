@@ -25,5 +25,7 @@
 		android:label="@string/menu_help"
 		android:theme="@style/Tuner.Help"
 		android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden" />
+	<activity android:name="MatchActivity"
+		android:label="@string/title_match" />
     </application>
 </manifest>

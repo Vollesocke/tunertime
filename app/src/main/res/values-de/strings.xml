@@ -118,6 +118,15 @@
 	<string name="no_notes">keine T&#246;ne</string>
 	<string name="delete_preset">Preset l&#246;schen</string>
 	<string name="add_note">Ton hinzuf&#252;gen</string>
+	<string name="measure_notes">T&#246;ne messen</string>
+	<string name="title_measure_a">Kammerton einstellen</string>
+	<string name="measure_set">Set</string>
+	<string name="title_measure_note">Ton eingeben: %1$s</string>
+	<string name="measure_store">Ton speichern</string>
+	<string name="measure_progress">%1$d/12</string>
+	<string name="matching">Matching</string>
+	<string name="title_match">Matching</string>
+	<string name="match_rms">RMS %1$s c</string>
 	<string name="cents_label">Cent:</string>
 	<string name="change_sign">Vorzeichen wechseln</string>
 	<string name="cent_step_minus1">-1c</string>

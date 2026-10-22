@@ -417,6 +417,47 @@ public class UiLayoutTest {
 		scenario = null;
 	}
 
+	/* the measure pages (TunerTime with measure.EXTRA_PRESET), as the
+	 * preset editor's "measure notes" opens them */
+	@Test
+	public void measure() {
+		prefs(true);
+		matrix(new Runnable() {
+			public void run() {
+				measure_states();
+			} });
+		ui.finish("measure");
+	}
+
+	private void measure_states() {
+		scenario = ActivityScenario.launch(new android.content.Intent(
+				ui.target, TunerTime.class)
+			.putExtra(measure.EXTRA_PRESET, WERCK));
+		ui.settle(800);
+		ui.set_orientation(ui.orient);
+		ui.check("measure.a");
+		click(ui.current_activity(), R.id.measure_action);	/* set */
+		ui.check("measure.note");
+		scenario.close();
+		scenario = null;
+	}
+
+	/* the matching table of Werckmeister III: note and 3 columns at
+	 * least, more in landscape, with marked cells */
+	@Test
+	public void matching() {
+		prefs(true);
+		matrix(new Runnable() {
+			public void run() {
+				set_pref("preset_id", WERCK);
+				launch(MatchActivity.class);
+				ui.check("matching");
+				scenario.close();
+				scenario = null;
+			} });
+		ui.finish("matching");
+	}
+
 	@Test
 	public void preset_note() {
 		prefs(false);

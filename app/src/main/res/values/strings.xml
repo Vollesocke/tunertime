@@ -129,6 +129,21 @@
 	<string name="no_notes">no notes</string>
 	<string name="delete_preset">delete preset</string>
 	<string name="add_note">add note</string>
+	<!-- entering a temperament by ear (Onno, 21 Oct): page 1 sets the
+	     A over the A pipes of all octaves, page 2 the 12 notes -->
+	<string name="measure_notes">measure notes</string>
+	<string name="title_measure_a">Set concert pitch</string>
+	<string name="measure_set">set</string>
+	<string name="title_measure_note">Enter note: %1$s</string>
+	<string name="measure_store">store note</string>
+	<!-- notes stored so far, of 12 -->
+	<string name="measure_progress">%1$d/12</string>
+	<!-- the preset beside the nearest known temperaments -->
+	<string name="matching">matching</string>
+	<string name="title_match">Matching</string>
+	<!-- a column's distance to the preset: root mean square of the
+	     12 differences -->
+	<string name="match_rms">RMS %1$s c</string>
 	<string name="cents_label">cents:</string>
 	<string name="change_sign">change sign</string>
 	<string name="cent_step_minus1">-1c</string>

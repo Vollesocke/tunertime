@@ -17,6 +17,11 @@ import java.util.List;
 public class PresetEditActivity extends Activity {
 	private EditText name_view = null;
 	private ListView list = null;
+	private static final int REQ_MEASURE = 1;
+	private View match_button = null;
+	/* all 12 notes were just measured: matching is offered, its button
+	 * selected (no popup) */
+	private boolean offer_match = false;
 
 	protected void attachBaseContext(android.content.Context base) {
 		super.attachBaseContext(Lang.wrap(base));
@@ -32,6 +37,11 @@ public class PresetEditActivity extends Activity {
 		name_view = (EditText)findViewById(R.id.preset_name);
 		list = (ListView)findViewById(R.id.note_list);
 		list.setEmptyView(findViewById(R.id.list_empty));
+		match_button = findViewById(R.id.matching);
+		if (savedInstanceState != null) {
+			offer_match = savedInstanceState.getBoolean(
+					"offer_match", false);
+		}
 		list.setOnItemClickListener(
 			new AdapterView.OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent,
@@ -52,7 +62,27 @@ public class PresetEditActivity extends Activity {
 			R.layout.list_entry, new String[] { "text" },
 			new int[] { R.id.list_entry_text }));
 		name_view.setText(get_preset().name);
+		/* only a temperament, one note per pitch class, is matched */
+		boolean t = (matching.table(get_preset().notes) != null);
+		match_button.setEnabled(t);
+		match_button.setAlpha(t ? 1.0f : 0.4f);
+		match_button.setSelected(offer_match &&
+					 match_button.isEnabled());
 		super.onResume();
+	}
+
+	protected void onSaveInstanceState(Bundle b) {
+		super.onSaveInstanceState(b);
+		b.putBoolean("offer_match", offer_match);
+	}
+
+	protected void onActivityResult(int req, int res, Intent data) {
+		super.onActivityResult(req, res, data);
+		if ((req == REQ_MEASURE) && (res == RESULT_OK) &&
+		    (data != null) &&
+		    data.getBooleanExtra(measure.EXTRA_DONE, false)) {
+			offer_match = true;
+		}
 	}
 
 	public void onPause() {
@@ -95,6 +125,26 @@ public class PresetEditActivity extends Activity {
 		parms.preset_note = n;
 		startActivity(new Intent(v.getContext(),
 				PresetNoteActivity.class));
+	}
+
+	/* the notes by ear on the strobe: the A, then the 12 notes
+	 * (TunerTime's measure pages, on top of this one) */
+	public void do_measure(View v) {
+		preset p = get_preset();
+		EventLog.ui("preset edit: measure notes of " + p.name);
+		startActivityForResult(new Intent(this, TunerTime.class)
+			.putExtra(measure.EXTRA_PRESET, p.id), REQ_MEASURE);
+	}
+
+	/* the preset beside the nearest known temperaments */
+	public void do_matching(View v) {
+		preset p = get_preset();
+		if (matching.table(p.notes) == null) {
+			return;
+		}
+		EventLog.ui("preset edit: matching " + p.name);
+		offer_match = false;
+		startActivity(new Intent(this, MatchActivity.class));
 	}
 
 	public void do_delete(View v) {
