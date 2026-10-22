@@ -11,6 +11,9 @@
 #          scenarios (calibrated on the church runs) and the noise ones
 #  field   score.py on the 19 Oct debug recordings (issue #1)
 #  runs    run_score.py, the 21 Oct runs replayed with the app's hints
+#  runs22  ... the 22 Oct runs (Rinteln: a normal pass, two mixtures)
+#  noise   noise_score.py on both: work noise (knocks, scraping) on
+#          held keys, and soft keys taken for released ("quiet")
 #  warped  run_score.py on tools/field/runs/eval (warp_run.py variants:
 #          make them as tools/field/README.md "Warped runs" says)
 #
@@ -34,6 +37,13 @@ TP="$OUT/test_pitch$X"
 $PY $D/score.py $D/data "$TP" > "$OUT/field.txt" 2>&1 &
 $PY $D/run_score.py --hints log --test-pitch "$TP" \
 	$D/data/runs-2026-10-21 > "$OUT/runs.txt" 2>&1 &
+if [ -d $D/data/runs-2026-10-22 ]; then
+	$PY $D/run_score.py --hints log --test-pitch "$TP" \
+		$D/data/runs-2026-10-22 > "$OUT/runs22.txt" 2>&1 &
+	$PY $D/noise_score.py --hints log --test-pitch "$TP" \
+		$D/data/runs-2026-10-22 $D/data/runs-2026-10-21 \
+		> "$OUT/noise.txt" 2>&1 &
+fi
 if [ -d $D/runs/eval ]; then
 	$PY $D/run_score.py --hints log --test-pitch "$TP" \
 		$D/runs/eval > "$OUT/warped.txt" 2>&1 &
@@ -41,13 +51,18 @@ fi
 wait
 echo "bench:  $(grep '^TOTAL' "$OUT/bench.txt")"
 grep '^SUMMARY' "$OUT/sim.txt" | sed 's/^/sim:    /' | cut -c1-150
-grep '^FOLLOW' "$OUT/sim.txt" | sed 's/^/sim:    /' | cut -c1-150
+grep '^FOLLOW' "$OUT/sim.txt" | sed -e 's/ (shown counts[^)]*)//' \
+	-e 's/^/sim:    /' | cut -c1-150
 grep '^Field\|^noise' "$OUT/sim.txt" | sed -e 's/^/sim:    /' \
 	-e 's/ |.*| empty/ ... empty/' | cut -c1-110
 grep '^  all' "$OUT/field.txt" | sed 's/^/field:  /'
-for f in runs warped; do
+for f in runs runs22 warped; do
 	[ -f "$OUT/$f.txt" ] || continue
 	# the replay's table: its last block, the "all" line
 	awk -v t="$f" '/^==/{b=$0} /^  all/{a=$0} END{print t ":   " a}' \
 		"$OUT/$f.txt"
 done
+if [ -f "$OUT/noise.txt" ]; then
+	# the replay's table: bursts est empty xempty wrong out moved hold quiet
+	awk '/^==/{b=$0} /^  all/{a=$0} END{print "noise:  " a}' "$OUT/noise.txt"
+fi

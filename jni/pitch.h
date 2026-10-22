@@ -15,9 +15,10 @@ void pitch_hint(double focus_ratio, double expect_hz);
  * window ended.  An estimate is made every PITCH_STEP samples fed */
 int pitch_last_at(void);
 /* the input level as the detector sees it (rms of the last window, 16-bit
- * units, 2:1 decimated), its noise floor (a slowly rising minimum), and
- * the level under which nothing is detected (between LOW_RMS and MIN_RMS,
- * by the floor) */
+ * units, 2:1 decimated), its noise floor (a minimum rising slowly while
+ * no note is heard: TunerTime ends the hold of a correction when the
+ * level stays near it), and the level under which nothing is detected
+ * (between LOW_RMS and MIN_RMS, by a floor that rises always) */
 double pitch_level(void);
 double pitch_floor(void);
 double pitch_gate(void);
