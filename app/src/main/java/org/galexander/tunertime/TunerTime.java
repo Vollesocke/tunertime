@@ -232,13 +232,6 @@ public class TunerTime extends Activity
 				R.id.tone_button);
 		auto_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.auto_button);
-		auto_button.setOnLongClickListener(
-				new View.OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				cause = "auto long press";
-				auto_off();
-				return true;
-			} });
 		mode_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.mode_button);
 		fft_mode_buttons = fl8r.inflate(
@@ -493,9 +486,8 @@ public class TunerTime extends Activity
 		}
 	}
 
-	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  the state is
-	 * parms.auto_note and parms.auto_locked, kept across rotation */
+	/* auto note detection: a tap toggles follow and locked (do_auto).
+	 * the state is parms.auto_note, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private int det_alt = 0;	/* with det_semi: parms.note_alt */
 	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
@@ -526,7 +518,7 @@ public class TunerTime extends Activity
 	 * focus()).  Both together do not add up, as folding a note already
 	 * near the current one changes nothing.
 	 * Continuity ends, and detections are taken as heard again, when
-	 *  - auto is turned off (long press) or turned on afresh,
+	 *  - a chromatic run starts (run_lock),
 	 *  - nothing clear was heard for NEAR_SILENCE ms (a new stop).
 	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it.
 	 * The correction holds while the key sounds: the note the detector
@@ -566,36 +558,37 @@ public class TunerTime extends Activity
 							 * digital silence */
 	private long last_loud = 0;
 
+	/* the auto button: a tap toggles follow and locked (fixiert), no
+	 * long press.  Locked leaves the note alone and keeps continuity,
+	 * so following again goes on near the note shown.  Before v18.9
+	 * there was a third state, off, which differed from locked only in
+	 * clearing continuity (Onno, 21 Oct: "what is the difference?"):
+	 * not worth a state, as a correction by hand sets continuity again
+	 * and NEAR_SILENCE clears it */
 	public void do_auto(View v) {
 		if (!auto_applies()) {
 			return;
 		}
 		cause = "auto tap";
-		if (!parms.auto_note && !parms.auto_locked) {
-			parms.auto_note = true;
-			near = false;
-			det_stable = Integer.MIN_VALUE;
-			overruled = Integer.MIN_VALUE;
-		} else if (parms.auto_note) {
-			parms.auto_note = false;	/* lock */
-			parms.auto_locked = true;
-		} else {
-			parms.auto_note = true;		/* unlock */
-			parms.auto_locked = false;
+		parms.auto_note = !parms.auto_note;
+		if (parms.auto_note) {
+			/* the silence that ends continuity counts from here */
 			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
 		update_status();
 	}
 
-	private void auto_off() {
+	/* a chromatic run steps the note by hand: locked, continuity
+	 * cleared; run_stop() restores the state from before */
+	private boolean run_auto_before = false;
+	private void run_lock() {
+		run_auto_before = parms.auto_note;
 		parms.auto_note = false;
-		parms.auto_locked = false;
 		det_count = 0;
 		near = false;
 		det_stable = Integer.MIN_VALUE;
 		overruled = Integer.MIN_VALUE;
-		update_status();
 	}
 
 	/* Preset and FFT modes have their own navigation.  Tone and mixture
@@ -1609,20 +1602,11 @@ public class TunerTime extends Activity
 			ToneGenerator.playing ? R.color.accent : R.color.text));
 
 		auto_button.setEnabled(auto_applies());
-		if (parms.auto_note) {
-			auto_button.setText(R.string.auto_follow);
-			auto_button.setTextColor(getResources().getColor(
-					R.color.accent));
-		} else if (parms.auto_locked) {
-			auto_button.setText(R.string.auto_locked);
-			auto_button.setTextColor(getResources().getColor(
-					R.color.warn));
-		} else {
-			auto_button.setText(R.string.auto);
-			auto_button.setTextColor(getResources().getColor(
-					!auto_applies() ? R.color.outline
-							: R.color.text));
-		}
+		auto_button.setText(parms.auto_note ? R.string.auto_follow
+						    : R.string.auto_locked);
+		auto_button.setTextColor(getResources().getColor(
+			!auto_applies() ? R.color.outline :
+			parms.auto_note ? R.color.accent : R.color.warn));
 		if (parms.length_mode) {
 			length.update();
 		}
@@ -1725,7 +1709,7 @@ public class TunerTime extends Activity
 			lg_first = true;
 			return;
 		}
-		int auto = parms.auto_note ? 1 : (parms.auto_locked ? 2 : 0);
+		int auto = parms.auto_note ? 1 : 2;
 		View tab = (buttons_holder.getChildCount() > 0) ?
 				buttons_holder.getChildAt(0) : null;
 		boolean paused = (strobe != null) && strobe.paused;
@@ -1834,8 +1818,10 @@ public class TunerTime extends Activity
 		lg_mic = parms.microphone;
 	}
 
+	/* 1 follow, 2 locked ("off" before v18.9; the run headers'
+	 * auto_before) */
 	private static String auto_str(int auto, boolean near) {
-		return ((auto == 1) ? "follow" : (auto == 2) ? "lock" : "off") +
+		return ((auto == 1) ? "follow" : "lock") +
 			(near ? " near" : "");
 	}
 	private static String focus_str() {
@@ -1871,8 +1857,7 @@ public class TunerTime extends Activity
 	private String state_str() {
 		return "note " + new note(parms.note_cents).full_str +
 			", target " + new note(parms.strobe_cents).full_str +
-			", auto " + auto_str(parms.auto_note ? 1 :
-				(parms.auto_locked ? 2 : 0), near) +
+			", auto " + auto_str(parms.auto_note ? 1 : 2, near) +
 			", focus " + focus_str() + ", " + mode_str() + ", " +
 			mixture_log_str() + ", " + tuning_str() + ", " +
 			mic_str();
@@ -2257,8 +2242,7 @@ public class TunerTime extends Activity
 					Toast.LENGTH_LONG).show();
 			return;
 		}
-		String before = auto_str(parms.auto_note ? 1 :
-				(parms.auto_locked ? 2 : 0), near);
+		String before = auto_str(parms.auto_note ? 1 : 2, near);
 		String version = "?";
 		try {
 			android.content.pm.PackageInfo pi = getPackageManager()
@@ -2298,11 +2282,12 @@ public class TunerTime extends Activity
 				"\n" +
 			"rows " + rows + "\n" +
 			"auto_before " + before + "\n";
-		auto_off();	/* the note is stepped by hand */
+		run_lock();	/* the note is stepped by hand */
 		/* turning the phone would recreate the screen and end the run */
 		setRequestedOrientation(
 			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		if (!RunRecorder.start(this, m, h)) {
+			parms.auto_note = run_auto_before;
 			setRequestedOrientation(android.content.pm.ActivityInfo
 				.SCREEN_ORIENTATION_UNSPECIFIED);
 			Toast.makeText(this, R.string.run_failed,
@@ -2343,14 +2328,22 @@ public class TunerTime extends Activity
 	}
 
 	private void run_stop(String how) {
+		boolean was = RunRecorder.active();
 		File f = RunRecorder.stop(how);
 		run_handler.removeCallbacks(run_tick);
 		setRequestedOrientation(
 			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 		invalidateOptionsMenu();
-		if (f != null) {
+		if (was) {
+			/* follow or locked, as before the run */
+			parms.auto_note = run_auto_before;
+			if (parms.auto_note) {
+				last_heard = SystemClock.uptimeMillis();
+			}
 			cause = "run end";
 			update_status();
+		}
+		if (f != null) {
 			Toast.makeText(this, getString(R.string.run_saved,
 				f.getName().replace(".txt", ""), f.getParent()),
 				Toast.LENGTH_LONG).show();

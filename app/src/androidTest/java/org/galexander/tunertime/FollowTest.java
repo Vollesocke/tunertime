@@ -279,6 +279,39 @@ public class FollowTest {
 		assertEquals("again", 4408, parms.A_freq);
 	}
 
+	/* the auto button has two states, a tap toggles them: follow and
+	 * locked.  Locked leaves the note alone and keeps continuity: after
+	 * following again an F5 heard is taken as the F4 next to the Es set
+	 * by hand */
+	@Test
+	public void auto_toggle() {
+		assertTrue(parms.auto_note);
+		assertEquals(a.getString(R.string.auto_follow), auto_text());
+		hear(hz(E4, 0));
+		assertEquals(E4, note_key());
+		tap("semi-");				/* E -> Es: continuity */
+		tap("auto");
+		assertTrue("locked", !parms.auto_note);
+		assertEquals(a.getString(R.string.auto_locked), auto_text());
+		hear(hz(E4 + 3, 0));
+		assertEquals("locked", DS4, note_key());
+		tap("auto");
+		assertTrue("follow", parms.auto_note);
+		assertEquals(a.getString(R.string.auto_follow), auto_text());
+		hear(2.0*hz(E4 + 1, 0));		/* F5 */
+		assertEquals("continuity kept", E4 + 1, note_key());
+	}
+
+	private String auto_text() {
+		final String[] s = new String[1];
+		main(new Runnable() {
+			public void run() {
+				s[0] = ((TextView)a.findViewById(
+					R.id.auto_button)).getText().toString();
+			} });
+		return s[0];
+	}
+
 	/* the note survives a round trip over all tabs, Es picked by hand
 	 * included: the temperament tab is a view only (leaving it took
 	 * note mode back to its own note, C, before) */

@@ -15,10 +15,9 @@ public class parms {
 	static public volatile int strobe_cents = 48000;
 		/* note-mode position before any temperament is applied */
 	static public int note_cents = 48000;
-		/* auto note detection is following the input (read natively) */
+		/* auto note detection is following the input (read natively);
+		 * else locked to the note (TunerTime.do_auto) */
 	static public volatile boolean auto_note = false;
-		/* auto is on but locked to the note (not following) */
-	static public boolean auto_locked = false;
 	static public final int MAX_STROBES = 8;	/* matches jni/interface.h */
 	static public volatile int num_strobes = 5;
 		/* harmonic multiplier per strobe row, ascending.  in organ
@@ -271,9 +270,9 @@ public class parms {
 		}
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
 		note_alt = (prefs.getInt("note_alt", 0) == 1) ? 1 : 0;
+		/* follow or locked; v18.8's third state, off, is locked now
+		 * (both had auto_note false) */
 		auto_note = prefs.getBoolean("auto_note", false);
-		auto_locked = !auto_note &&
-				prefs.getBoolean("auto_locked", false);
 		organ_mode = prefs.getBoolean("organ_mode", false);
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
@@ -409,7 +408,7 @@ public class parms {
 		editor.putBoolean("fft_grid_freq", fft_grid_freq);
 		editor.putBoolean("preset_mode", preset_mode);
 		editor.putBoolean("auto_note", auto_note);
-		editor.putBoolean("auto_locked", auto_locked);
+		editor.remove("auto_locked");	/* before v18.9 */
 		if (organ_mode) {
 			editor.putBoolean("length_mode", length_mode);
 		}
