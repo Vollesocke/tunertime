@@ -129,6 +129,11 @@
 	<string name="no_notes">no notes</string>
 	<string name="delete_preset">delete preset</string>
 	<string name="add_note">add note</string>
+	<!-- entering a temperament by ear (Onno, 21 Oct): page 1 sets the
+	     A over the A pipes of all octaves, page 2 the 12 notes -->
+	<string name="measure_notes">measure notes</string>
+	<string name="title_measure_a">Set concert pitch</string>
+	<string name="measure_set">set</string>
 	<string name="cents_label">cents:</string>
 	<string name="change_sign">change sign</string>
 	<string name="cent_step_minus1">-1c</string>

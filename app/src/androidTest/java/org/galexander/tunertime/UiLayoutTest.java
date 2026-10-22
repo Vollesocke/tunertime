@@ -417,6 +417,29 @@ public class UiLayoutTest {
 		scenario = null;
 	}
 
+	/* the measure pages (TunerTime with measure.EXTRA_PRESET), as the
+	 * preset editor's "measure notes" opens them */
+	@Test
+	public void measure() {
+		prefs(true);
+		matrix(new Runnable() {
+			public void run() {
+				measure_states();
+			} });
+		ui.finish("measure");
+	}
+
+	private void measure_states() {
+		scenario = ActivityScenario.launch(new android.content.Intent(
+				ui.target, TunerTime.class)
+			.putExtra(measure.EXTRA_PRESET, WERCK));
+		ui.settle(800);
+		ui.set_orientation(ui.orient);
+		ui.check("measure.a");
+		scenario.close();
+		scenario = null;
+	}
+
 	@Test
 	public void preset_note() {
 		prefs(false);

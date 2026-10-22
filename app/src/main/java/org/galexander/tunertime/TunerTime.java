@@ -82,6 +82,9 @@ public class TunerTime extends Activity
 	private Button mode_button;
 	private View length_panel;
 	private pipelength length;
+	/* the pages that enter a temperament by measuring it, opened from
+	 * the preset editor (measure), else null */
+	private measure meas = null;
 
 	private PowerManager.WakeLock wakelock = null;
 
@@ -240,6 +243,10 @@ public class TunerTime extends Activity
 		length_panel = fl8r.inflate(
 				R.layout.length_panel, surface_frame, false);
 		length = new pipelength(this, length_panel);
+		if (getIntent().hasExtra(measure.EXTRA_PRESET)) {
+			meas = new measure(this, afreq_buttons,
+					   savedInstanceState);
+		}
 	}
 
 	public void onStart() {
@@ -250,6 +257,9 @@ public class TunerTime extends Activity
 		wakelock.acquire();
 		stop_strobe();
 		parms.load();
+		if (meas != null) {
+			meas.apply();	/* its own settings, never saved */
+		}
 		EventLog.on = DebugRecorder.enabled(this);
 		cause = "resume";
 		if (parms.organ_mode) {
@@ -258,7 +268,9 @@ public class TunerTime extends Activity
 			parms.length_mode = false;
 		}
 		organ_resume();
-		if (parms.fft_mode) {
+		if (meas != null) {
+			meas.show();
+		} else if (parms.fft_mode) {
 			set_mode(fft_buttons, true);
 		} else if (parms.mixture_mode) {
 			set_mode(mixture_buttons, false);
@@ -281,8 +293,32 @@ public class TunerTime extends Activity
 		}
 		stop_strobe();
 		ToneGenerator.stop_tone();
-		parms.save();
+		if (meas != null) {
+			meas.pause();	/* the user's settings stay as they were */
+		} else {
+			parms.save();
+		}
 		super.onPause();
+	}
+
+	protected void onSaveInstanceState(Bundle b) {
+		super.onSaveInstanceState(b);
+		if (meas != null) {
+			meas.save(b);
+		}
+	}
+
+	public void onBackPressed() {
+		if ((meas != null) && meas.back()) {
+			return;
+		}
+		super.onBackPressed();
+	}
+
+	/* for the measure pages: a change, logged as why */
+	void refresh(String why) {
+		cause = why;
+		update_status();
 	}
 
 	/* the tab of the current mode is shown selected (underlined) */
@@ -296,7 +332,7 @@ public class TunerTime extends Activity
 	 * that neither it nor the title is cut short.  only set when it
 	 * changes, because update_status() calls this all the time */
 	private String shown_title = null, shown_subtitle = null;
-	private void set_title(String title, String subtitle) {
+	void set_title(String title, String subtitle) {
 		if (!title.equals(shown_title)) {
 			setTitle(title);
 			shown_title = title;
@@ -1579,7 +1615,7 @@ public class TunerTime extends Activity
 			parms.organ_mode ? nn.organ_name() : nn.name_oct);
 		note_cent_display.setText(nn.cents_str);
 		if (!parms.fft_mode && !parms.preset_mode &&
-		    !parms.mixture_mode) {
+		    !parms.mixture_mode && (meas == null)) {
 			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
@@ -1623,6 +1659,9 @@ public class TunerTime extends Activity
 			parms.auto_note ? R.color.accent : R.color.warn));
 		if (parms.length_mode) {
 			length.update();
+		}
+		if (meas != null) {
+			meas.update();
 		}
 		run_key();
 		log_changes();
@@ -1845,7 +1884,8 @@ public class TunerTime extends Activity
 	private String mode_str() {
 		View tab = (buttons_holder.getChildCount() > 0) ?
 				buttons_holder.getChildAt(0) : null;
-		String t = (tab == note_buttons) ? "note" :
+		String t = (meas != null) ? "measure" :
+			(tab == note_buttons) ? "note" :
 			(tab == afreq_buttons) ? "A" :
 			(tab == stretch_buttons) ? "stretch" :
 			(tab == mixture_buttons) ? "mixture" :
@@ -1982,7 +2022,10 @@ public class TunerTime extends Activity
 		private boolean long_fired = false;
 		private final Runnable long_press = new Runnable() {
 			public void run() {
-				if (!could_be_click || parms.fft_mode) {
+				if (!could_be_click || parms.fft_mode ||
+				    (meas != null)) {
+					/* the measure pages' rows are
+					 * their own */
 					return;
 				}
 				long_fired = true;
@@ -2108,6 +2151,9 @@ public class TunerTime extends Activity
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
+		if (meas != null) {
+			return false;	/* the measure pages: no menu */
+		}
 		getMenuInflater().inflate(R.menu.option, menu);
 		return super.onCreateOptionsMenu(menu);
 	}

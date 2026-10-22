@@ -17,6 +17,7 @@ import java.util.List;
 public class PresetEditActivity extends Activity {
 	private EditText name_view = null;
 	private ListView list = null;
+	private static final int REQ_MEASURE = 1;
 
 	protected void attachBaseContext(android.content.Context base) {
 		super.attachBaseContext(Lang.wrap(base));
@@ -95,6 +96,15 @@ public class PresetEditActivity extends Activity {
 		parms.preset_note = n;
 		startActivity(new Intent(v.getContext(),
 				PresetNoteActivity.class));
+	}
+
+	/* the notes by ear on the strobe: the A, then the 12 notes
+	 * (TunerTime's measure pages, on top of this one) */
+	public void do_measure(View v) {
+		preset p = get_preset();
+		EventLog.ui("preset edit: measure notes of " + p.name);
+		startActivityForResult(new Intent(this, TunerTime.class)
+			.putExtra(measure.EXTRA_PRESET, p.id), REQ_MEASURE);
 	}
 
 	public void do_delete(View v) {

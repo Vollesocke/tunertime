@@ -56,4 +56,19 @@
 	    android:text="@string/add_note"
 	    android:onClick="do_new" />
     </LinearLayout>
+    <!-- a temperament by ear: the A, then the 12 notes on the strobe
+	 (TunerTime, measure) -->
+    <LinearLayout
+	android:orientation="horizontal"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<Button android:id="@+id/measure_notes"
+	    style="@style/Tuner.Button.Big"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
+	    android:minHeight="56dp"
+	    android:text="@string/measure_notes"
+	    android:onClick="do_measure" />
+    </LinearLayout>
 </LinearLayout>
