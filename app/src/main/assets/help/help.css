@@ -1,0 +1,128 @@
+/* TunerTime Organ manual (de.html, en.html), shown offline by
+ * HelpActivity.  Plain CSS, no scripts, nothing from the network.
+ * Light, or dark when the phone is in its dark theme. */
+:root {
+	color-scheme: light dark;
+	--bg: #ffffff;
+	--fg: #1b1d20;
+	--muted: #5f6368;
+	--accent: #1a5fd6;
+	--box: #f1f3f5;
+	--line: #d5d9de;
+	--soon-bg: #fff6dc;
+	--soon-line: #c99700;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #121417;
+		--fg: #e8eaed;
+		--muted: #9aa0a6;
+		--accent: #7aa7ff;
+		--box: #1e2228;
+		--line: #2e343c;
+		--soon-bg: #2a2412;
+		--soon-line: #ffb300;
+	}
+}
+html {
+	-webkit-text-size-adjust: 100%;
+}
+body {
+	margin: 0;
+	padding: 16px 16px 48px;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: sans-serif;
+	font-size: 17px;
+	line-height: 1.5;
+	overflow-wrap: break-word;
+}
+h1 {
+	font-size: 1.5em;
+	line-height: 1.25;
+	margin: 0.2em 0 0.1em;
+}
+h2 {
+	font-size: 1.25em;
+	line-height: 1.3;
+	margin: 1.8em 0 0.5em;
+	padding-top: 0.8em;
+	border-top: 1px solid var(--line);
+}
+h3 {
+	font-size: 1.05em;
+	margin: 1.3em 0 0.3em;
+}
+p, ul, ol, dl, pre {
+	margin: 0.5em 0;
+}
+ul, ol {
+	padding-left: 1.4em;
+}
+li {
+	margin: 0.3em 0;
+}
+a {
+	color: var(--accent);
+}
+.version {
+	color: var(--muted);
+	margin-top: 0;
+}
+nav ol {
+	padding-left: 1.8em;
+}
+nav li {
+	margin: 0.45em 0;
+}
+nav a {
+	text-decoration: none;
+}
+/* a label as the app shows it: a button, tab or setting */
+.b {
+	display: inline-block;
+	padding: 0 0.3em;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	background: var(--box);
+	font-weight: 600;
+	line-height: 1.35;
+}
+.list {
+	color: var(--fg);
+	background: var(--box);
+	border-radius: 6px;
+	padding: 0.6em 0.8em;
+}
+pre {
+	background: var(--box);
+	border-radius: 6px;
+	padding: 0.6em 0.8em;
+	font-size: 0.9em;
+	white-space: pre-wrap;
+}
+dt {
+	font-weight: 600;
+	margin-top: 0.8em;
+}
+dd {
+	margin: 0.2em 0 0 1em;
+}
+.top {
+	font-size: 0.9em;
+	margin-top: 1em;
+}
+.top a {
+	text-decoration: none;
+}
+/* the section about a feature of the next version */
+.soon {
+	border-left: 4px solid var(--soon-line);
+	padding-left: 12px;
+}
+.notice {
+	background: var(--soon-bg);
+	border: 1px solid var(--soon-line);
+	border-radius: 6px;
+	padding: 0.5em 0.8em;
+}

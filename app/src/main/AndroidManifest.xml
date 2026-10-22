@@ -20,5 +20,10 @@
 		android:label="@string/title_preset_edit" />
 	<activity android:name="PresetNoteActivity"
 		android:label="@string/title_preset_note" />
+	<!-- turning the phone keeps the place in the manual -->
+	<activity android:name="HelpActivity"
+		android:label="@string/menu_help"
+		android:theme="@style/Tuner.Help"
+		android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden" />
     </application>
 </manifest>
