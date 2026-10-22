@@ -165,3 +165,8 @@ note of B2.
    by ear over the A pipes of all octaves. Addendum: if A is stored
    with an offset other than 0 c, the table is converted to A = 0 c at
    the end.
+
+Package A, done (merged into v18.9). Onno on its open points, 22 Oct:
+a fresh install stays on Fixiert; A Auto fitting the tempered note (not a
+hand offset) is right, as it is used from the Kammerton tab; a mixture's
+measured offset may stay volatile (lost on leaving the Mixtur tab).
