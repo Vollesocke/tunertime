@@ -1,0 +1,91 @@
+diff --git a/app/src/main/java/org/galexander/tunertime/Listener.java b/app/src/main/java/org/galexander/tunertime/Listener.java
+index d4a8549..7680e8b 100644
+--- a/app/src/main/java/org/galexander/tunertime/Listener.java
++++ b/app/src/main/java/org/galexander/tunertime/Listener.java
+@@ -73,7 +73,62 @@ public class Listener extends Thread {
+ 		/* audio source and microphone choice (Settings "Audio") */
+ 	private MicSelect recorder = null;
+ 
++	/* TEST ONLY (not for a release): a mono 16-bit WAV played in a
++	 * loop in real time in place of the microphone */
++	public static volatile java.io.File inject = null;
++	private short[] inj = null;
++	private int inj_pos = 0;
++	private long inj_t0 = 0, inj_n = 0;
++	private boolean inject_init() {
++		try {
++			byte[] b = java.nio.file.Files.readAllBytes(inject.toPath());
++			java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(b)
++				.order(java.nio.ByteOrder.LITTLE_ENDIAN);
++			int p = 12, rate = 44100;
++			while (p + 8 <= b.length) {
++				String id = new String(b, p, 4, "US-ASCII");
++				int len = bb.getInt(p+4);
++				if (id.equals("fmt ")) {
++					rate = bb.getInt(p+12);
++				} else if (id.equals("data")) {
++					len = Math.min(len, b.length - p - 8);
++					inj = new short[len/2];
++					for (int i = 0; i < inj.length; i++) {
++						inj[i] = bb.getShort(p+8+2*i);
++					}
++					break;
++				}
++				p += 8 + len + (len & 1);
++			}
++			samplerate = rate;
++			inj_t0 = System.nanoTime();
++			return inj != null;
++		} catch (Exception e) {
++			return false;
++		}
++	}
++	private boolean inject_read(short[] dst, int len) {
++		for (int i = 0; i < len; i++) {
++			dst[i] = inj[inj_pos];
++			inj_pos = (inj_pos + 1) % inj.length;
++		}
++		inj_n += len;
++		long due = inj_t0 + inj_n*1000000000L/samplerate;
++		long wait = due - System.nanoTime();
++		if (wait > 0) {
++			try {
++				Thread.sleep(wait/1000000L, (int)(wait%1000000L));
++			} catch (InterruptedException e) {
++				return false;
++			}
++		}
++		return true;
++	}
++
+ 	private boolean sound_init() {
++		if ((inject != null) && inject.exists() && inject_init()) {
++			return true;
++		}
+ 		recorder = new MicSelect();
+ 		if (!recorder.open(BUFSZ)) {
+ 			recorder = null;
+@@ -100,7 +155,9 @@ public class Listener extends Thread {
+ 		}
+ 		if (sound_init()) {
+ 			while (!time_to_die()) {
+-				if (!recorder.read(bufs[bufs_w], BUFSZ)) {
++				if ((inj != null) ?
++				    !inject_read(bufs[bufs_w], BUFSZ) :
++				    !recorder.read(bufs[bufs_w], BUFSZ)) {
+ 					break;
+ 				}
+ 				gens[bufs_w] = MicSelect.switches;
+diff --git a/app/src/main/java/org/galexander/tunertime/TunerTime.java b/app/src/main/java/org/galexander/tunertime/TunerTime.java
+index 0d9bb95..5580f1b 100644
+--- a/app/src/main/java/org/galexander/tunertime/TunerTime.java
++++ b/app/src/main/java/org/galexander/tunertime/TunerTime.java
+@@ -112,6 +112,8 @@ public class TunerTime extends Activity
+ 	public void onCreate(Bundle savedInstanceState) {
+ 		super.onCreate(savedInstanceState);
+ 		CrashLog.install(this);
++		Listener.inject = new java.io.File(getExternalFilesDir(null),
++						   "inject.wav");	/* TEST ONLY */
+ 		lang = Lang.get(this);
+ 
+ 		parms.init(this);

@@ -40,10 +40,11 @@ second). Issue #5 (his share of 22 Oct) has no attachments.
   app update (checked), so crashes from before 18.8 show up, the native
   ones with their trace; an old Java crash only says "crash". Tested on the
   emulator: `am crash`, and `kill -11` as root.
-- WAV injection, test only, not in git: the patch is
+- WAV injection, test only: `git apply tools/field/inject-wav.patch` (revert
+  before a release); it adds
   `Listener.inject` (a mono 16-bit WAV in `files/inject.wav` played in real
-  time in place of the mic); kept in the session scratchpad of 22 Oct,
-  easy to redo. Push the WAV as the shell user (`adb unroot` first), else
+  time in place of the mic).
+  Push the WAV as the shell user (`adb unroot` first), else
   SELinux denies the app reading it.
 
 **GitHub share (v18.8).** Onno's share of 22 Oct packed all 202 MB (7
