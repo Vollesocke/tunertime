@@ -1482,7 +1482,11 @@ public class TunerTime extends Activity
 	private void do_help() {
 		Intent i = new Intent(Intent.ACTION_VIEW);
 		i.setData(Uri.parse("http://galexander.org/software/tunertime/"));
-		startActivity(i);
+		try {
+			startActivity(i);
+		} catch (android.content.ActivityNotFoundException e) {
+			/* no browser on this phone: nothing happens */
+		}
 	}
 
 	private String my_version() {

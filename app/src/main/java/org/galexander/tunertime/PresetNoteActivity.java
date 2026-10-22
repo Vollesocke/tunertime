@@ -149,6 +149,9 @@ public class PresetNoteActivity extends Activity {
 	}
 
 	public void do_note(View v) {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
 		int idx = 0;
 		for (int i = 0; i < pn_notes.length; i++) {
 			if (v == pn_notes[i]) {
@@ -164,6 +167,9 @@ public class PresetNoteActivity extends Activity {
 	}
 
 	public void do_sharp(View v) {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
 		note n = new note(notes.get(note_idx));
 		notes.set(note_idx, (n.octave*1200*U) +
 			(sharp_swap[n.note_idx]*100*U) + n.cents - 900*U);
@@ -171,6 +177,9 @@ public class PresetNoteActivity extends Activity {
 	}
 
 	public void do_oct(View v) {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
 		int oct = 4;
 		for (int i = 0; i < pn_octs.length; i++) {
 			if (v == pn_octs[i]) {
@@ -186,6 +195,9 @@ public class PresetNoteActivity extends Activity {
 
 		/* c in tenths of a cent */
 	private void set_cents(int c) {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
 		int prev = notes.get(note_idx);
 		note n = new note(prev);
 		int next = (n.octave*1200*U) + (n.note_idx*100*U) + c - 900*U;
@@ -197,6 +209,9 @@ public class PresetNoteActivity extends Activity {
 
 		/* cent steps; crossing +-50c moves on to the next note */
 	private void step_cents(int delta) {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
 		notes.set(note_idx, notes.get(note_idx) + delta);
 		update();
 	}
