@@ -283,7 +283,8 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	unsigned xsamps_per_col = s->xsamps_per_col;
 	unsigned msamps_per_col = s->xsamps_per_col/100;
 
-	if (!width) {				/* prevent divide by zero */
+	if (!width || (s->height < 1)) {	/* prevent divide by zero, and
+						 * rows under a pixel: h wraps */
 		return;
 	}
 
@@ -610,6 +611,11 @@ strobe_redraw(jint *bitmap_ptr)
 	int y = h-1;
 	int i;
 
+	if (h < 1) {
+		/* a surface lower than the rows (a few pixels): y would
+		 * be -1, before the bitmap */
+		return;
+	}
 	for (i = 0; i < num_strobes-1; i++) {
 		hline(bitmap_ptr, 0, y, width, 0xFF2E343C);
 		y += h;
