@@ -35,6 +35,13 @@
 	style="@style/Tuner.Readout"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content" />
+    <!-- the note heard (TunerTime.on_pitch), as in layout/: without it
+	 the first note heard in mixture mode crashed the app here -->
+    <TextView android:id="@+id/mixture_pitch"
+	style="@style/Tuner.Readout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:textColor="@color/text_muted" />
     <TextView android:id="@+id/mixture_status"
 	style="@style/Tuner.Caption"
 	android:layout_width="fill_parent"
