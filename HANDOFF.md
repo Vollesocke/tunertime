@@ -11,10 +11,61 @@ strobe following so that, with as little input as possible, he sees
 exactly what he hears. So the hand always wins over the detector, and the
 app does not explain or warn where he already knows.
 
-Status as of 21 Oct 2026, night: release
-[**v18.7-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.7-organ)
-(code 27) is on `main`: no popups at all (17 Toasts gone), the level bar
-a setting, off by default. **Start with "Pick up here" below.**
+Status as of 22 Oct 2026, midday: release
+[**v18.8-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.8-organ)
+(code 28) is on `main`: crash reports, and "Recordings to GitHub" with a
+choice of what to send. **Start with "22 Oct: crashes in mixture mode"
+below.**
+
+## 22 Oct: crashes in mixture mode, the GitHub share (v18.8)
+
+**Crashes (open).** Onno, on v18.7: the app closes completely in mixture
+mode, several times since the evening of 21 Oct, also with nobody touching
+it, so the trigger is in the sound path (detector, follow, measurement),
+not the buttons. No pattern known. Not reproduced: the code changed since
+18.5 (pitch.c noise lines and gate, the hold ended by the level, Toasts
+gone) read clean; monkey 8000 events (silent input) and 15 min of the Hmth
+204 Plenum run played into mixture mode with follow on (WAV injection,
+below) ran without a crash. Next: Onno's crash files and his Rinteln runs
+of 22 Oct morning ("Plenum mixtur, 1 key, 139 s", "Plenum scharf, 2 keys,
+175 s": maybe cut off by a crash; a run's .txt/.timeline are flushed every
+second). Issue #5 (his share of 22 Oct) has no attachments.
+
+- `CrashLog.java`: a Java exception writes `files/crashes/crash-*.txt`
+  (stack, `EventLog.state`, with debug recordings on the last 20 s of the
+  event log). At start (Android 11+) the system's `ApplicationExitInfo`
+  records not seen before (pref `crashlog_last_exit`) become
+  `exit-*-{crash,native,anr}.txt`, from Android 12 with the trace (`.trace`:
+  an ANR's thread dump, a native tombstone as protobuf). Records survive an
+  app update (checked), so crashes from before 18.8 show up, the native
+  ones with their trace; an old Java crash only says "crash". Tested on the
+  emulator: `am crash`, and `kill -11` as root.
+- WAV injection, test only: `git apply tools/field/inject-wav.patch` (revert
+  before a release); it adds
+  `Listener.inject` (a mono 16-bit WAV in `files/inject.wav` played in real
+  time in place of the mic).
+  Push the WAV as the shell user (`adb unroot` first), else
+  SELinux denies the app reading it.
+
+**GitHub share (v18.8).** Onno's share of 22 Oct packed all 202 MB (7
+zips: the runs of 21 Oct he had attached to #4 by hand and 100 old debug
+recordings) and none got attached from the phone. Now
+(`ShareRecordings.java`): a dialog with one line per run ("21.10. 12:39
+Plenum prinzipale (stopped), Hmth 204, 57 keys, 233 s, 20.1 MB"), per day of
+debug recordings and one for the crash reports; ticked are those never
+packed, the others say "(packed before)" and can be ticked; no fallback to
+"all". Each line gets its own zips, named after it (`run_<time>_<stop>.zip`,
+`_1`, `_2` over 23 MB); the zips of the share before are deleted from
+Downloads/TunerTime first. `tools/field/unpack.py` takes any `*.zip`.
+- The three Rinteln runs were marked packed by the failed share: Onno has
+  to tick them.
+- Tested for real (issue #6, closed): emulator tt_fairphone4 with Firefox
+  158 (Mozilla's APK, logged in to GitHub as Vollesocke: **stay logged in,
+  for later tests**). On a phone GitHub's new-issue page has "Add Files"
+  (paperclip under the text), not "Paste, drop, or click"; the picker opens
+  on "Recent" (empty): hamburger, Downloads, TunerTime, long-press one zip,
+  tap the others, Select. The links go to the top of the text. The issue
+  text now says so. The attachments came back byte-identical.
 
 Before it, 21 Oct, late: release
 [**v18.6-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.6-organ)

@@ -301,9 +301,14 @@
 	<string name="menu_share">Recordings to GitHub</string>
 	<string name="share_packing">Packing the recordings&#8230;</string>
 	<string name="share_issue_title">Recordings %1$s</string>
-	<string name="share_issue_body">%1$d zip(s) from %2$s, attached below (drag them here, or tap &#8220;Paste, drop, or click to add files&#8221;):</string>
+	<string name="share_issue_body">%1$d zip(s) from %2$s to attach: tap &#8220;Add Files&#8221; (the paperclip under this text), in the file picker &#9776; &#8594; Downloads &#8594; TunerTime, hold one zip, tap the others, then &#8220;Select&#8221;. Their links appear at the top of this text.</string>
 	<string name="share_issue_runs">Chromatic runs:</string>
 	<string name="share_issue_recs">Debug recordings: %1$d</string>
+	<string name="share_issue_crashes">Crash reports: %1$d</string>
+	<string name="share_pack">Pack</string>
+	<string name="share_packed">(packed before)</string>
+	<string name="share_item_crashes">Crash reports: %1$d</string>
+	<string name="share_item_recs">Debug recordings %1$s: %2$d</string>
 	<string name="run_mark">Mark</string>
 	<string-array name="run_kinds">
 		<item>Open flue</item>

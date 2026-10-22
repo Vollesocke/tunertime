@@ -284,9 +284,14 @@
 	<string name="menu_share">Aufnahmen an GitHub</string>
 	<string name="share_packing">Aufnahmen werden gepackt&#8230;</string>
 	<string name="share_issue_title">Aufnahmen %1$s</string>
-	<string name="share_issue_body">%1$d Zip-Datei(en) aus %2$s, unten angeh&#228;ngt (hierher ziehen oder &#8222;Paste, drop, or click to add files&#8220; antippen):</string>
+	<string name="share_issue_body">%1$d Zip-Datei(en) aus %2$s zum Anh&#228;ngen: &#8222;Add Files&#8220; (B&#252;roklammer unter diesem Text) antippen, in der Dateiauswahl &#9776; &#8594; Downloads &#8594; TunerTime, eine Zip lang dr&#252;cken, die anderen antippen, dann &#8222;Ausw&#228;hlen&#8220;. Ihre Links erscheinen oben in diesem Text.</string>
 	<string name="share_issue_runs">Chromatische L&#228;ufe:</string>
 	<string name="share_issue_recs">Debug-Aufnahmen: %1$d</string>
+	<string name="share_issue_crashes">Absturzberichte: %1$d</string>
+	<string name="share_pack">Packen</string>
+	<string name="share_packed">(schon gepackt)</string>
+	<string name="share_item_crashes">Absturzberichte: %1$d</string>
+	<string name="share_item_recs">Debug-Aufnahmen %1$s: %2$d</string>
 	<string name="run_mark">Markieren</string>
 	<string-array name="run_kinds">
 		<item>Offen (Labial)</item>

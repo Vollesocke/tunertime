@@ -111,6 +111,7 @@ public class TunerTime extends Activity
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		CrashLog.install(this);
 		lang = Lang.get(this);
 
 		parms.init(this);
