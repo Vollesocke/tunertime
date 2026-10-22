@@ -4,7 +4,8 @@
 
     python tools/field/unpack.py ZIPDIR [OUTDIR]
 
-ZIPDIR holds tunertime_<time>_<n>.zip (downloaded from the issue); OUTDIR
+ZIPDIR holds the zips downloaded from the issue (since 18.8 one or more
+per run, run_<time>_<stop>[_<n>].zip; before tunertime_<time>_<n>.zip); OUTDIR
 (default ZIPDIR/unpacked) gets runs/ and recordings/ as on the phone.  A
 file too big for one zip is in pieces name.001, name.002 ... in
 consecutive zips; they are joined in order and removed.
@@ -21,11 +22,11 @@ def main():
         sys.exit(__doc__)
     src = sys.argv[1]
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(src, 'unpacked')
-    zips = sorted(glob.glob(os.path.join(src, 'tunertime_*.zip')),
+    zips = sorted(glob.glob(os.path.join(src, '*.zip')),
                   key=lambda p: [int(t) if t.isdigit() else t
                                  for t in re.split(r'(\d+)', p)])
     if not zips:
-        sys.exit('no tunertime_*.zip in ' + src)
+        sys.exit('no *.zip in ' + src)
     pieces = {}
     for z in zips:
         with zipfile.ZipFile(z) as f:
