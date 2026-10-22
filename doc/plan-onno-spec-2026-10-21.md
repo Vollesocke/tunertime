@@ -2,7 +2,8 @@
 
 Onno wrote this spec on the evening of 21 Oct and sent it on 22 Oct. His
 design decisions win (HANDOFF, top); where it leaves something open, the
-default below is used and the point is asked back (marked **Ask Onno**).
+default below was used and asked back; he answered all four on 22 Oct
+(at the end).
 It comes in two packages: **A**, small UI changes (v18.9 if ready in
 time, else v19.0), and **B**, entering temperaments by measuring them and
 matching them (v19.0).
