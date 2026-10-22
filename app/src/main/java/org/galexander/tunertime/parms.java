@@ -47,8 +47,9 @@ public class parms {
 
 	static public int A_freq = 4400;              /* 440.0 *10 */
 	static public int cents_per_octave = 0;       /* *10 */
-		/* organ mode (Settings): no stretch, organ-specific displays */
-	static public volatile boolean organ_mode = false;
+		/* organ mode (Settings): no stretch, organ-specific displays;
+		 * on by default (Onno, 22 Oct) */
+	static public volatile boolean organ_mode = true;
 		/* partial the user focused on (organ mode): its frequency
 		 * divided by the note's 8' fundamental, e.g. 2.0 for 4',
 		 * 0.5 for 16'.  0 = none.  pitch detection prefers it */
@@ -273,7 +274,7 @@ public class parms {
 		/* follow or locked; v18.8's third state, off, is locked now
 		 * (both had auto_note false) */
 		auto_note = prefs.getBoolean("auto_note", false);
-		organ_mode = prefs.getBoolean("organ_mode", false);
+		organ_mode = prefs.getBoolean("organ_mode", true);
 		length_mode = prefs.getBoolean("length_mode", false);
 		pipe_stopped = prefs.getBoolean("pipe_stopped", false);
 		audio_source = prefs.getString("audio_source", "auto");

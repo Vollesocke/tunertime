@@ -44,7 +44,7 @@ public class Settings extends PreferenceActivity {
 		if (getIntent().getBooleanExtra(EXTRA_OPEN_STROBE_ROWS, false)) {
 			final MultiSelectListPreference rows =
 				(PreferenceManager.getDefaultSharedPreferences(this)
-					.getBoolean("organ_mode", false)) ?
+					.getBoolean("organ_mode", true)) ?
 				(MultiSelectListPreference)organ_footages :
 				(MultiSelectListPreference)harmonics;
 			((DirectMultiSelectListPreference)rows).setOnDialogClosed(
@@ -97,7 +97,7 @@ public class Settings extends PreferenceActivity {
 		rows_summary(harmonics, null, R.string.harmonics_summary);
 		rows_summary(organ_footages, null, R.string.footages_summary);
 		organ_rows_show(PreferenceManager.getDefaultSharedPreferences(
-				this).getBoolean("organ_mode", false));
+				this).getBoolean("organ_mode", true));
 		final Preference.OnPreferenceChangeListener prev =
 				organ.getOnPreferenceChangeListener();
 		organ.setOnPreferenceChangeListener(

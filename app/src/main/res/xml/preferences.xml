@@ -5,7 +5,7 @@
 		android:key="organ_mode"
 		android:title="@string/organ_mode"
 		android:summary="@string/organ_mode_summary"
-		android:defaultValue="false" />
+		android:defaultValue="true" />
 	<CheckBoxPreference
 		android:key="german_names"
 		android:title="@string/german_names"
