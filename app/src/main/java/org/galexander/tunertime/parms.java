@@ -89,12 +89,37 @@ public class parms {
 	}
 		/* the strobe row showing the focused partial, or -1 */
 	public static int focus_row() {
-		for (int i = 0; (i < num_strobes) && (focus_ratio > 0.0d); i++) {
-			if (Math.abs(row_ratio(i) - focus_ratio) < 1e-6) {
+		return row_of(focus_ratio);
+	}
+		/* the strobe row showing ratio r, or -1 */
+	public static int row_of(double r) {
+		for (int i = 0; (i < num_strobes) && (r > 0.0d); i++) {
+			if (Math.abs(row_ratio(i) - r) < 1e-6) {
 				return i;
 			}
 		}
 		return -1;
+	}
+
+		/* the focused row, one per mode (Onno, 22 Oct): note mode and
+		 * the A tab share one, mixture mode has its own, each kept
+		 * while the other is used; the temperament tab, a view only,
+		 * focuses nothing.  focus_ratio is the one in effect, these
+		 * the ones kept (TunerTime.set_mode) */
+	static public double note_focus = 0.0d;
+	static public double mixture_focus = 0.0d;
+		/* focus_ratio is kept for the mode in effect */
+	public static void keep_focus() {
+		if (mixture_mode) {
+			mixture_focus = focus_ratio;
+		} else if (!preset_mode) {
+			note_focus = focus_ratio;
+		}
+	}
+		/* the mode in effect gets its own back */
+	public static void use_focus() {
+		focus_ratio = mixture_mode ? mixture_focus :
+			      preset_mode ? 0.0d : note_focus;
 	}
 		/* organ footage of ratio r to the 8', like "10 2/3'" */
 	public static String footage_str(double r) {
@@ -265,6 +290,10 @@ public class parms {
 		mixture_ref = prefs.getFloat("mixture_ref", 0.0f);
 		/* TunerTime.organ_resume() drops it if the row is not shown */
 		focus_ratio = prefs.getFloat("focus_ratio", 0.0f);
+		/* before v18.9 one for all modes: each starts from it */
+		note_focus = prefs.getFloat("note_focus", (float)focus_ratio);
+		mixture_focus = prefs.getFloat("mixture_focus",
+						(float)focus_ratio);
 		if (organ_mode) {
 			load_rows("organ_footages", FOOTAGE_DEFAULT,
 					64*FOOTAGE_DIV);	/* 1/8' */
@@ -386,6 +415,9 @@ public class parms {
 		}
 		/* float holds the footage ratios (multiples of 1/4) exactly */
 		editor.putFloat("focus_ratio", (float)focus_ratio);
+		keep_focus();
+		editor.putFloat("note_focus", (float)note_focus);
+		editor.putFloat("mixture_focus", (float)mixture_focus);
 		editor.putBoolean("pipe_stopped", pipe_stopped);
 		editor.putInt("preset_id", preset_id);
 		editor.putInt("preset_note", preset_note);

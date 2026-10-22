@@ -69,8 +69,7 @@ public class TunerTime extends Activity
 	private TextView mixture_status;
 	private TextView mixture_pitch;
 	private final mixture mix = new mixture();
-	private View preset_buttons;
-	private TextView preset_semi_display;
+	private View preset_buttons;	/* the temperament tab: none */
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
@@ -183,8 +182,6 @@ public class TunerTime extends Activity
 
 		preset_buttons = fl8r.inflate(
 				R.layout.preset_buttons, buttons_holder, false);
-		preset_semi_display = (TextView)preset_buttons.findViewById(
-				R.id.preset_semi_display);
 		preset_workbench = fl8r.inflate(
 				R.layout.preset_workbench, surface_frame, false);
 			preset_workbench_static_name = (TextView)preset_workbench.findViewById(
@@ -323,7 +320,7 @@ public class TunerTime extends Activity
 	private void set_mode(View buttons, boolean fft_mode_) {
 		if (parms.run_active && (fft_mode_ || (buttons == preset_buttons))) {
 			/* the detector stops in FFT mode, and the Preset tab
-			 * steps its own notes: not during a chromatic run */
+			 * hides the note stepped: not during a chromatic run */
 			cause = null;
 			Toast.makeText(this, R.string.run_tab_blocked,
 					Toast.LENGTH_SHORT).show();
@@ -346,15 +343,25 @@ public class TunerTime extends Activity
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
-			mixture_set(buttons == mixture_buttons);
+			/* the focused row stays with its mode: note mode and
+			 * the A tab share one, mixture mode has its own (Onno,
+			 * 22 Oct) */
+			parms.keep_focus();
+			boolean was_mix = parms.mixture_mode;
 			boolean was_preset = parms.preset_mode;
+			/* the temperament tab is a view only: it neither
+			 * moves the note nor focuses a row, and leaving it the
+			 * note is what it was (Onno, 22 Oct; it took note mode
+			 * to its own note, C, before) */
 			parms.preset_mode = (buttons == preset_buttons);
-			if (was_preset && !parms.preset_mode) {
-				/* carry the preset note over to note mode */
-				int[] nn = parms.nearest_note(parms.strobe_cents);
-				parms.note_alt = nn[1];
-				parms.note_cents = parms.strobe_cents -
-					parms.note_offset(nn[0]*100*U);
+			mixture_set(buttons == mixture_buttons);
+			if (!parms.mixture_mode) {
+				parms.use_focus();
+			}
+			if (((was_mix != parms.mixture_mode) ||
+			     (was_preset != parms.preset_mode)) &&
+			    parms.length_mode && !parms.preset_mode) {
+				length_focus();	/* as on entering length mode */
 			}
 			if (parms.mixture_mode) {
 				/* the readout rounds to this temperament */
@@ -1010,30 +1017,6 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
-	public void preset_incr(View v) {
-		cause = "preset note+";
-		parms.preset_note++;
-		update_status();
-	}
-
-	public void preset_decr(View v) {
-		cause = "preset note-";
-		parms.preset_note--;
-		update_status();
-	}
-
-	public void preset_oct_incr(View v) {
-		cause = "preset oct+";
-		parms.preset_oct++;
-		update_status();
-	}
-
-	public void preset_oct_decr(View v) {
-		cause = "preset oct-";
-		parms.preset_oct--;
-		update_status();
-	}
-
 	public void do_preset_select(View v) {
 		startActivity(new Intent(this, PresetSelectActivity.class));
 	}
@@ -1207,6 +1190,13 @@ public class TunerTime extends Activity
 			/* the focused footage is no longer shown */
 			parms.focus_ratio = 0.0d;
 		}
+		if (!parms.organ_mode || (parms.row_of(parms.note_focus) < 0)) {
+			parms.note_focus = 0.0d;
+		}
+		if (!parms.organ_mode ||
+		    (parms.row_of(parms.mixture_focus) < 0)) {
+			parms.mixture_focus = 0.0d;
+		}
 		if (!parms.organ_mode) {
 			parms.mixture_mode = false;
 		}
@@ -1220,6 +1210,7 @@ public class TunerTime extends Activity
 			parms.mixture_cents = parms.strobe_cents;
 			parms.mixture_ref = 0.0d;
 			parms.mixture_mode = true;
+			parms.use_focus();	/* its own row (set_mode) */
 			mixture_measure(null);
 		} else if (!on) {
 			parms.mixture_mode = false;
@@ -1530,31 +1521,6 @@ public class TunerTime extends Activity
 		return Integer.toString(n/10) + "." + Integer.toString(n%10);
 	}
 
-	private void update_preset() {
-		preset p = preset.find(parms.preset_id);
-		if ((p == null) || (p.notes.size() == 0)) {
-			parms.preset_note = 0;
-			parms.preset_oct = 0;
-			parms.strobe_cents = 4800*U;
-		} else {
-			int n = p.tuning_notes().size();
-			while (parms.preset_note < 0) {
-				parms.preset_note += n;
-			}
-			parms.preset_note %= n;
-			parms.strobe_cents = p.tuning_notes().get(parms.preset_note) +
-					1200*U*parms.preset_oct;
-			while (parms.strobe_cents < 0) {
-				parms.strobe_cents += 1200*U;
-				parms.preset_oct++;
-			}
-			while (parms.strobe_cents > 9600*U) {
-				parms.strobe_cents -= 1200*U;
-				parms.preset_oct--;
-			}
-		}
-	}
-
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
@@ -1565,11 +1531,11 @@ public class TunerTime extends Activity
 			parms.mixture_cents = range_limit(parms.mixture_cents,
 							0, 9600*U);
 			parms.strobe_cents = parms.mixture_cents;
-		} else if (parms.preset_mode) {
-			update_preset();
 		} else {
 			/* note mode: apply the selected preset if it is a
-			 * temperament (12 notes, one per pitch class) */
+			 * temperament (12 notes, one per pitch class).  Also
+			 * the temperament tab, which keeps the note (a view
+			 * only, Onno 22 Oct) */
 			parms.note_cents = range_limit(parms.note_cents,
 							0, 9600*U);
 			int off = 0;
@@ -1597,9 +1563,6 @@ public class TunerTime extends Activity
 		parms.changed = true;
 		ToneGenerator.set_freq(cents_to_freq(parms.strobe_cents, 1));
 
-				/* strobe_cents is based on A, adj_cents on C */
-		note n = new note(parms.strobe_cents);
-
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
@@ -1613,8 +1576,6 @@ public class TunerTime extends Activity
 			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
-		preset_semi_display.setText(tuning_name(preset.find(
-			parms.preset_id), parms.preset_note, n) + " " + n.cents_str);
 		update_preset_workbench();
 
 		String center_str = string_int10(parms.A_freq);
@@ -1623,7 +1584,6 @@ public class TunerTime extends Activity
 		 * (Onno) */
 		afreq_center_display.setText(getString(R.string.afreq_note,
 			center_str, parms.mixture_mode ? mixture_str() :
-			parms.preset_mode ? preset_semi_display.getText() :
 			note_semi_display.getText() + " " + nn.cents_str));
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
@@ -1726,9 +1686,9 @@ public class TunerTime extends Activity
 			TextView name = new TextView(this);
 			name.setText(tuning_name(p, i, n));
 			name.setTextSize(18);
-			name.setTextColor(getResources().getColor(
-				(i == parms.preset_note) ? R.color.accent
-							 : R.color.text));
+			/* no note marked: the tab focuses nothing (Onno,
+			 * 22 Oct; C was marked, as the note it played) */
+			name.setTextColor(getResources().getColor(R.color.text));
 			row.addView(name, new LinearLayout.LayoutParams(0,
 				ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 			TextView deviation = new TextView(this);
