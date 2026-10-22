@@ -36,9 +36,10 @@
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content" />
     <!-- the note heard (TunerTime.on_pitch), as in layout/: without it
-	 the first note heard in mixture mode crashed the app here -->
+	 the first note heard in mixture mode crashed the app here.  A
+	 caption here, so the buttons keep 48dp at font scale 1.3 -->
     <TextView android:id="@+id/mixture_pitch"
-	style="@style/Tuner.Readout"
+	style="@style/Tuner.Caption"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:textColor="@color/text_muted" />
