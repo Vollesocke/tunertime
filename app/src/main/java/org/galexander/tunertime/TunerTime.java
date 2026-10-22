@@ -553,7 +553,15 @@ public class TunerTime extends Activity
 	private static final long CORR_RECENT = 4000;
 	private static final long NEAR_SILENCE = 10000;
 	private static final long HOLD_QUIET = 300;
-	private static final double KEY_QUIET = 1.4;	/* pitch.c QUIET */
+	/* the floor (pitch.c pitch_floor) rises only after 0.7 s with no
+	 * note heard (up to v18.8 under the notes too: in a long pass it
+	 * crept up to soft keys held long, which were then taken for
+	 * released).  Over that floor 1.6 rather than 1.4 (pitch.c QUIET)
+	 * sees a release as soon as before.  tools/field (runs of 21 and
+	 * 22 Oct, 239 keys): taken for released while the key sounds 16
+	 * times -> 6, the release seen before the next key 14 times either
+	 * way (median 0.68 s) */
+	private static final double KEY_QUIET = 1.6;
 	private static final double MIN_HZ = 15.0;	/* pitch.c MIN_F0 */
 	private static final double KEY_MIN = 20.0;	/* pitch.c LOW_RMS:
 							 * digital silence */

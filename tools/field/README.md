@@ -82,17 +82,31 @@ run-wide noise floor is organ sound. The onset is where the level
 starts to rise towards its peak (the window's end reaching the pipe),
 the release where it falls 15 dB below it; a key that never rises
 12 dB above its quiet (the 10th percentile within 5 s around it), or
-sounds less than 0.5 s (passed by with Ton+ or Ton-), is silent. In
-pure Python that takes 20-30 s per run of 3-4 minutes.
+sounds less than 0.5 s (passed by with Ton+ or Ton-), is silent. A key
+that fills 80% of that span (one key held for a whole run, as when a
+mixture is tuned) has no quiet around it: then the quiet is its level
+in the run's quietest stretch (0.3-2 s within 6 dB of the WAV's 1st
+percentile, the lowest of them). In pure Python that takes 20-30 s per
+run of 3-4 minutes.
 
-- **ok**: the key's note agreed (4 in a row, as `on_pitch()`), and
-  **first ok** the median time from the onset to it
-- **wrong**: agreements on another note; **oct** the octaves and
-  twelfths among them
+- **ok**: the key's note agreed (4 in a row, as `on_pitch()`) while
+  it sounds (onset to release), and **first ok** the median time from
+  the onset to it (0 where the agreement began before the onset: the
+  key played before the tap)
+- **wrong**: agreements on another note while the key sounds, from a
+  streak of estimates that began at or after its onset (one begun
+  before is the key before, or this one played before the tap);
+  **oct** the octaves and twelfths among them
 - **follow**: follow mode emulated over the run: the first key taken as
   heard, then continuity (the octave nearest the note shown, at most a
   fourth away), a wrong note corrected by hand at the next tap. The
-  keys right at their release without a hand correction.
+  keys right at their release without a hand correction; where the
+  note was right there, the next key, played before the tap, stays
+  followed. The hold of a correction ends on the input at its floor as
+  pitch.c's `pitch_floor()` sees it, the floor starting at the run's
+  quietest stretch (the app heard the place before the run) and rising
+  only with no note heard (`--floor-18.8`: rising always, as up to
+  v18.8)
 - **empty**: share of empty estimates while the key sounds
 - **off>5c**: keys whose pipe is more than 5 cents off: the median
   strobe drift of the focused row (timeline), else of the estimates on
@@ -106,6 +120,69 @@ cents and key 7 played twice; with `--test-pitch` its timeline gets
 the estimates of a replay. All 39 keys come out right: it tests the
 tools, not the detector. With hints the estimates read up to 1.2 cents
 off on the synthetic tones (0.1 without): judge pipes by the drift.
+
+Changed on 22 Oct (Onno's run of that day, Gedackt 8 + Rohrflöte 4,
+app: wrong 12 -> 2, ok 26 -> 30, follow 28 -> 30): 10 of the 12 wrong
+were the scorer's (5 after the key's release, 5 in its first 0.15 s
+from the key before), the two left are the 4' alone (E5: "Register
+einzeln angehört") and an F#6 at G5 (the 4' a semitone off while he
+tuned it). Onno's runs of 21 Oct: unchanged but for two first ok
+(2.1 -> 0 s) and, in the warped runs, wrong 35 -> 34. The two mixture
+runs of 22 Oct were silent; now Cs6 (139 s held) is ok, and Plenum
+scharf's E4/E5 are read as E5, E6, E7 for tens of seconds at a time:
+the mixture's ranks (tone mode, unfocused), not noise.
+
+## Work noise
+
+`noise_score.py` (needs numpy; arguments as `run_score.py`, plus
+`--floor-18.8`): what the noise of working on the pipe while its key
+is held does to the detector and to follow mode. Bursts are found per
+10 ms in the detector's top band (4-8 and 8-11 kHz) against its running
+median (1.5 s either side), 12 dB up, inside each key (0.5 s from its
+onset and release); for each, from its start to 0.5 s after its end:
+
+- **empty**, **xempty**: empty estimates, and how many more than the
+  key's own share elsewhere
+- **wrong**: agreements on another note than the key's, begun in the
+  window (and not on the next key's note, played before the tap)
+- **out**: estimates on the key's note more than 5 cents from both the
+  median before the burst and the one after (a tuning step moves both)
+- **moved**: the note shown (run_score.py's follow emulation) changed
+  from an agreement begun in the window
+- **hold**: a correction held there would have ended: another note
+  agreed than the detector's last
+- **quiet**: per run, not per burst: times the input was taken for
+  released while a key sounds (TunerTime KEY_QUIET, HOLD_QUIET), where a
+  hold ends, burst or not
+
+`-v` lists the bursts. On the runs of 21 and 22 Oct (142 bursts in
+1271 s of held keys, one per 9 s; 97 of them in Onno's normal pass of
+22 Oct): the app's estimates and a replay alike, 28% of the estimates
+in the windows empty (+174), 16 off by more than 5 cents, no wrong
+agreement, the note shown never moved, no hold ended. The detector
+drops the windows a knock falls in, and that is all. What ended holds
+was the floor (`--floor-18.8`): it rose under the notes in a pass with
+no quiet between keys until soft keys were taken for released, 16
+times (9 in that pass). Now pitch.c's `pitch_floor()` rises only after
+0.7 s with no note heard, and TunerTime's KEY_QUIET is 1.6 (was 1.4):
+6 times (the 4' heard alone at E5, and five soft keys of the Gedackt
+at Hmth 204, a quiet place, two of them never read), while a release
+is seen before the next key's onset as often as before (14 of 239
+keys, median 0.68 s after the release). Follow in the runs unchanged.
+
+`tools/sim_organ.c` has the noise, calibrated on these bursts, in two
+scenarios: "Field work noise, Gedackt" and "..., Quinte" (keys held
+20-24 s back to back, knocks every 3 s, scraping every 10 s; see
+`work_run`; the Quinte read a twelfth up and corrected by hand 3 s into
+each key). Against the same keys without it (`-DWORK_LEVEL=0`): empty
+31% -> 35% and 4% -> 7%, the mixture measurement's worst error 0.58 ->
+0.74 and 0.38 -> 0.54 c, nothing else; the one correction undone (a
+soft E5 at 1.5 times the floor) is undone without the noise too (3
+with the floor and KEY_QUIET of v18.8). The bursts match the runs' in
+the broadband level (+1 dB median, +4..+9 at the 90th percentile) and
+length (33 ms median); in the top band the sim's stand ~10 dB higher,
+as its background there is emptier than a church's with a phone's
+hiss.
 
 ## Warped runs
 

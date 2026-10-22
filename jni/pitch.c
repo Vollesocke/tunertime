@@ -75,7 +75,32 @@
 #define NOISE_AVG	0.1	/* ...averaged so.. */
 #define NOISE_OVER	1.5	/* ..and taken off the spectrum this many
 				 * times over before the peaks are found */
-#define FLOOR_RISE	1.0005	/* per analysis: ~2%/s */
+#define FLOOR_RISE	1.0005	/* per analysis: ~0.5%/s.  pitch_floor(),
+				 * the floor the follow logic ends the hold
+				 * of a correction on (TunerTime KEY_QUIET),
+				 * rises so only after FLOOR_UNHEARD with no
+				 * note heard: it follows a noise that grows
+				 * (a blower started), not the organ.
+				 * Rising under the notes too, it crept up
+				 * to the pipes in a pass with no quiet
+				 * between keys (Onno's run of 22 Oct,
+				 * Gedackt 8 + Rohrfloete 4: 65 to 280 in
+				 * 270 s, F6 and G6 sounding at 250-400)
+				 * and soft keys were taken for released:
+				 * tools/field/noise_score.py "quiet" 16
+				 * times in the runs of 21/22 Oct, now 6
+				 * (keys at the floor, never read, and a
+				 * 4' heard alone); sim_organ "Field work
+				 * noise, Quinte": corrections undone 3 ->
+				 * 1.  The gate and the noise lines keep
+				 * the floor rising always: held, the
+				 * Field scenarios of sim_organ lost 11
+				 * and 10 keys */
+#define FLOOR_UNHEARD	8	/* analyses in a row (0.7 s): not the few a
+				 * knock on the pipe drops, which, a knock
+				 * every 3 s (sim_organ "Field work
+				 * noise"), lifted the floor 12% in six
+				 * minutes */
 #define MIN_CONF	0.7	/* share of peak energy on the winner's
 				 * harmonics; the synthetic tones of
 				 * tools/test_pitch.c score 0.84-1,
@@ -121,6 +146,12 @@ static double nmag[N/2];	/* the learnt noise lines, by bin */
 static int nbins;
 static double level, floor_rms;	/* pitch_level(): the last window's rms,
 				 * and its slowly rising minimum */
+static double key_floor;	/* pitch_floor(): the same rising only
+				 * while no note is heard (FLOOR_RISE),
+				 * from the first full window (the ring
+				 * starts with zeros: half the level) */
+static int windows;		/* analyses since pitch_init(), to N/HOP */
+static int unheard;		/* analyses in a row with no note heard */
 static double weak_hz, weak_conf;
 static int weak_count;
 #if 2*HOP != PITCH_STEP
@@ -155,7 +186,8 @@ pitch_init(int sample_rate)
 	ring_pos = fresh = odd = hb_pos = 0;
 	weak_hz = weak_conf = 0.0;
 	weak_count = 0;
-	level = floor_rms = 0.0;
+	level = floor_rms = key_floor = 0.0;
+	windows = unheard = 0;
 	memset(nmag, 0, sizeof nmag);
 	nbins = (int)(NOISE_HZ*N/fs);
 	{
@@ -433,6 +465,11 @@ analyse(double *conf)
 	} else {
 		floor_rms *= FLOOR_RISE;
 	}
+	if (windows < N/HOP) {
+		windows++;
+	} else if ((key_floor <= 0.0) || (level < key_floor)) {
+		key_floor = level;
+	}
 	fft();
 	for (i = 0; i < N/2; i++) {
 		mag[i] = sqrt(re[i]*re[i] + im[i]*im[i]);
@@ -569,6 +606,12 @@ pitch_feed(const short *s, int len, double *hz, double *conf)
 				for (k = 0; k < nbins; k++)
 					nmag[k] += NOISE_AVG*(mag[k] - nmag[k]);
 			}
+			unheard = (*hz > 0.0) ? 0 : unheard + 1;
+			if ((unheard >= FLOOR_UNHEARD) && (key_floor > 0.0) &&
+			    (level > key_floor)) {
+				/* rises only while no note is heard */
+				key_floor *= FLOOR_RISE;
+			}
 			last_at = i+1;
 			ret = 1;
 		}
@@ -585,7 +628,7 @@ pitch_level(void)
 double
 pitch_floor(void)
 {
-	return floor_rms;
+	return key_floor;
 }
 
 double

@@ -37,6 +37,10 @@
  * high-pass microphone (2nd or 4th order, 100-200 Hz), optional AGC with
  * attack/release, gain and hard clipping, 16 bits.
  *
+ * Work on the pipe while its key is held (work_run: knocks of the tuning
+ * tool, handling, scraping), calibrated on Onno's runs of 21 and 22 Oct,
+ * is in the "Field work noise" scenarios: keys held 20-24 s back to back.
+ *
  * The "Field" scenarios are calibrated on Onno's chromatic runs of
  * 21 Oct 2026 (field_run(): two churches, Fairphone 4): pipe over hum
  * per octave, the hum's lines, the blower motor's lines, the phone's
@@ -170,7 +174,7 @@ static double mix_window(double f_row, double r)
 #define NEAR_SILENCE	10.0	/* TunerTime.NEAR_SILENCE */
 #define NEAR_SEMIS	5	/* TunerTime.NEAR_SEMIS */
 #define HOLD_QUIET	0.3	/* TunerTime.HOLD_QUIET */
-#define KEY_QUIET	1.4	/* TunerTime.KEY_QUIET */
+#define KEY_QUIET	1.6	/* TunerTime.KEY_QUIET */
 #define KEY_MIN		20.0	/* TunerTime.KEY_MIN */
 #define MIX_SEMIS	2	/* TunerTime.MIX_SEMIS */
 #define CORR_AFTER	1.5	/* the user corrects a wrong note this long
@@ -272,6 +276,11 @@ struct scen {
 	double wobble;		/* wind: slow pitch wander, cents rms */
 	double speech, speech_on, speech_off;
 	double steps, steps_on, steps_off;
+	double work;		/* work on the pipe while a key is held:
+				 * knocks and scraping (work_run), their
+				 * level against the pipe's, 0 = none */
+	double corr_after;	/* -f: the user corrects this long into a
+				 * key (0: CORR_AFTER) */
 	int hint;		/* pitch_hint(focus, key) like the app with
 				 * a row focused */
 	int mixmode;		/* mixture mode: with -x focus the shown key
@@ -507,6 +516,93 @@ static double steps_run(struct steps *s, double t) {
 		0.5*bq_run(&s->hp, grand())*exp(-d/0.004);
 }
 
+/* work on the pipe while its key is held, as in Onno's runs of 22 Oct
+ * (tools/field/noise_score.py on the Gedackt 8 + Rohrfloete 4 run and
+ * the runs of 21 Oct: 142 bursts in 1271 s of held keys): the tuning
+ * tool knocking on the pipe or the cone, the hand on it, the phone
+ * touched, and scraping (a slide, a stopper, a cone being turned).
+ * Measured per 23 ms frame against the key around it: in the
+ * detector's top band (4-11 kHz) +12..+45 dB, median +17; broadband
+ * median +1 dB, 10% over +8, the strongest +17 (a knock on the pipe);
+ * 23-90 ms (the frame's length mostly: clicks of a few ms with their
+ * room); a fifth with a thump 250-500 Hz up to +40 dB (handling).  So:
+ * knocks every WORK_GAP s on average (the runs: one per 9 s, more
+ * here to have enough of them), a decaying noise ringing at 2-7 kHz,
+ * at -14..+10 dB against the pipe's level (S->work, in amplitude
+ * units as pipe levels are); a third of them with a thump; and
+ * scraping every WORK_SCRAPE s, 0.15-0.5 s of 3-8 kHz noise in
+ * strokes of 8-25 Hz, 10-20 dB under the knocks */
+#define WORK_GAP	3.0
+#define WORK_SCRAPE	10.0
+#ifndef WORK_DB
+#define WORK_DB		-2.0	/* the knocks' median level */
+#endif
+#ifndef WORK_S_DB
+#define WORK_S_DB	-24.0	/* the scraping's, to it */
+#endif
+#ifndef WORK_HF
+#define WORK_HF		0.05	/* their part over 1.5 kHz */
+#endif
+#define WORK_AMP	3.0	/* a decaying noise's peak to its rms
+				 * over a 23 ms frame */
+struct work {
+	double next, t0, amp, tau, thump, ttau;
+	double s_next, s_t0, s_end, s_amp, s_rate;
+	struct bq hp, mid, ring, lp, sbp;
+	int sr;
+};
+static void work_init(struct work *w, int sr) {
+	memset(w, 0, sizeof *w);
+	w->sr = sr;
+	w->next = 1.0;
+	w->s_next = 2.0;
+	bq_set(&w->hp, HP, 1500.0, 0.7, sr);
+	bq_set(&w->lp, LP, 400.0, 0.7, sr);
+}
+/* the noise at t, while key k sounds (on..off): only from 0.6 s after
+ * its onset to 0.3 s before its release, as the bursts were counted */
+static double work_run(struct work *w, double t, double on, double off,
+			double level) {
+	double y = 0.0, d;
+	int in = (t >= on + 0.6) && (t <= off - 0.3);
+	if (in && (t >= w->next)) {
+		w->t0 = t;
+		w->amp = WORK_AMP*level*pow(10.0, (WORK_DB - 18.0 +
+			36.0*urand())/20.0);
+		w->tau = 0.002 + 0.006*urand();
+		w->thump = (urand() < 0.33) ? w->amp*(0.5 + 2.0*urand()) : 0.0;
+		w->ttau = 0.015 + 0.02*urand();
+		bq_set(&w->ring, BP, 2000.0 + 5000.0*urand(), 4.0, w->sr);
+		bq_set(&w->mid, BP, 600.0 + 1400.0*urand(), 1.0, w->sr);
+		w->next = t + 0.2 + WORK_GAP*(-log(1.0 - urand() + 1e-12));
+	}
+	if (in && (t >= w->s_next)) {
+		w->s_t0 = t;
+		w->s_end = t + 0.1 + 0.2*urand();
+		w->s_amp = WORK_AMP*level*pow(10.0, (WORK_DB + WORK_S_DB +
+			8.0*urand())/20.0);
+		w->s_rate = 8.0 + 17.0*urand();
+		bq_set(&w->sbp, BP, 3000.0 + 5000.0*urand(), 0.8, w->sr);
+		w->s_next = w->s_end + WORK_SCRAPE*(-log(1.0 - urand() + 1e-12));
+	}
+	d = t - w->t0;
+	if ((w->amp > 0.0) && (d < 0.15)) {
+		double n = grand();
+		y += w->amp*exp(-d/w->tau)*(bq_run(&w->mid, n) +
+			WORK_HF*(bq_run(&w->hp, grand()) +
+				 bq_run(&w->ring, grand())));
+		if (w->thump > 0.0)
+			y += w->thump*exp(-d/w->ttau)*bq_run(&w->lp, grand());
+	}
+	if (t < w->s_end) {
+		double e = fmin(1.0, (t - w->s_t0)/0.02) *
+			fmin(1.0, (w->s_end - t)/0.02);
+		double am = 0.5 + 0.5*sin(2.0*M_PI*w->s_rate*(t - w->s_t0));
+		y += w->s_amp*e*am*bq_run(&w->sbp, grand());
+	}
+	return y;
+}
+
 /* ---- rendering ---- */
 static short *render(struct scen *S, int *n_out) {
 	int sr = S->sr, n = (int)(S->secs*sr), nbuf = n/BUFLEN + 1;
@@ -515,6 +611,7 @@ static short *render(struct scen *S, int *n_out) {
 	struct bq mic[2], hiss, rumb;
 	struct speech sp;
 	struct steps st;
+	struct work wk;
 	double agc_env = 0.0, agc_gain = 1.0;
 	double wob_a = exp(-2.0*M_PI*0.7/sr), wob_b = sqrt(1.0 - wob_a*wob_a);
 	int i, j, h;
@@ -541,6 +638,7 @@ static short *render(struct scen *S, int *n_out) {
 	memset(&st, 0, sizeof st);
 	bq_set(&st.lp, LP, 140.0, 1.0, sr);
 	bq_set(&st.hp, HP, 2500.0, 0.7, sr);
+	work_init(&wk, sr);
 
 	for (i = 0; i < n; i++) {
 		double t = (double)i/sr, dry = 0.0, x, hum;
@@ -615,6 +713,17 @@ static short *render(struct scen *S, int *n_out) {
 		    (t < S->steps_off)) {
 			dry += S->steps*steps_run(&st, t);
 		}
+		if (S->work > 0.0) {
+			/* on the pipe of the key held (the truth pipe) */
+			for (j = 0; j < S->nk; j++) {
+				struct key *k = &S->k[j];
+				if ((t >= k->on) && (t <= k->off)) {
+					dry += work_run(&wk, t, k->on, k->off,
+						S->work*S->p[k->truth].level);
+					break;
+				}
+			}
+		}
 		x = dry;
 		if (S->rt60 > 0.0) {
 			x += S->wet*fdn_run(&room, dry);
@@ -679,7 +788,7 @@ static double true_hz(struct scen *S, int j, int b0, int b1) {
 }
 
 /* ---- evaluation ---- */
-#define MAXEST 4096
+#define MAXEST 8192	/* estimates: 760 s */
 struct est { double t, hz; int buf, shown; };
 
 /* what length mode shows over a key, pipelength.update() */
@@ -972,6 +1081,10 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			    (pitch_level() >= KEY_MIN)) {
 				last_loud = t;
 			} else if (t - last_loud > HOLD_QUIET) {
+				if ((verbose > 1) && (overruled != -999))
+					printf("    %6.2fs hold ended: level %.0f, "
+						"floor %.0f\n", t, pitch_level(),
+						pitch_floor());
 				overruled = -999;	/* key released */
 			}
 			if ((hz <= 0.0) && (t - last_heard > NEAR_SILENCE)) {
@@ -1046,7 +1159,8 @@ static void evaluate(struct scen *S, short *buf, int n, struct scenres *R)
 			 * key and corrects it to the key's note by hand
 			 * (TunerTime.user_moved_note) */
 			if (follow_mode && (ki >= 0) &&
-			    (t >= S->k[ki].on + CORR_AFTER) &&
+			    (t >= S->k[ki].on + (S->corr_after > 0.0 ?
+					       S->corr_after : CORR_AFTER)) &&
 			    (t <= S->k[ki].off) && !kr[ki].corrected &&
 			    !is_ok(&S->k[ki], S->k[ki].semi, shown)) {
 				int to = S->k[ki].semi;
@@ -1737,9 +1851,10 @@ static void sc_steps_over(void) {
  * a principal plenum (Hmth 204) 35-40.  The hum lines: Hmth 202 50 and
  * 150 Hz near equal, 100 Hz 10 dB down; Hmth 204 100 Hz strongest,
  * 50 Hz 10-20 dB down */
-static void field_run(const char *nm, int from, int to, double ratio,
-			int kind, const double *db, double chiff) {
-	int i, nk = to - from + 1;
+static void field_keys(const char *nm, int from, int nk, int step,
+			double hold, double gap, double ratio, int kind,
+			const double *db, double chiff) {
+	int i;
 	double t = 0.5;
 	church(nm);
 	S->mic_hp = 40.0;
@@ -1748,32 +1863,37 @@ static void field_run(const char *nm, int from, int to, double ratio,
 		/* db[]: the level of the octaves from C2 up; the voicing
 		 * varies +-FIELD_SPREAD dB, the same every time: from
 		 * the key */
-		int o = (from + i - C2)/12;
-		double j = ((((from + i)*7919 + 13) % 41 + 41) % 41)/20.0 - 1.0;
+		int s = from + i*step;
+		int o = (s - C2)/12;
+		double j = (((s*7919 + 13) % 41 + 41) % 41)/20.0 - 1.0;
 		double d;
 		if (o < 0) o = 0;
 		if (o > 5) o = 5;
-		int k = key(from + i, t, 3.0);
+		int k = key(s, t, hold);
 		double c = ((i*37) % 11) - 5.0;
 		d = db[o] + FIELD_SPREAD*j;
 		pipe(k, ratio, c, kind, FIELD_LEVEL*pow(10.0, d/20.0), chiff);
-		if ((from + i >= C3) &&
-		    ((((from + i)*104729 + 7) % 100 + 100) % 100 <
-		     FIELD_BEATING)) {
+		if ((s >= C3) &&
+		    (((s*104729 + 7) % 100 + 100) % 100 < FIELD_BEATING)) {
 			/* a second tone 8-20 Hz off, 10-16 dB down: the
 			 * keys the phone missed at Hmth 204 beat so, 5-9 c
 			 * rms of pitch and 1.6-2.5 dB of level wobble at
 			 * 10-20 Hz, those it read about 1 c (a pipe that
 			 * speaks unsteadily, or wind leaking into its
 			 * neighbour) */
-			double hz = key_hz(from + i)*ratio;
+			double hz = key_hz(s)*ratio;
 			double df = (8.0 + 12.0*(j + 1.0)/2.0)*((i % 2) ? 1 : -1);
 			pipe(k, ratio, c + 1200.0*log2(1.0 + df/hz), kind,
 				FIELD_LEVEL*pow(10.0, (d - 10.0 - 3.0*(j + 1.0))/20.0),
 				0.0);
 		}
-		t += 3.6;
+		t += hold + gap;
 	}
+}
+static void field_run(const char *nm, int from, int to, double ratio,
+			int kind, const double *db, double chiff) {
+	field_keys(nm, from, to - from + 1, 1, 3.0, 0.6, ratio, kind, db,
+		chiff);
 }
 static void hum202(void) {
 	S->hum = FIELD_HUM;
@@ -1809,6 +1929,41 @@ static void sc_field_ged204(void) {
 	field_run("Field Gedackt 8', Hmth 204", C2, C2 + 48, 1.0, STOPPED,
 		db, 0.4);
 	hum204();
+}
+/* work noise (work_run): keys held WORK_HOLD s each while the pipe is
+ * tuned, back to back as in Onno's run of 22 Oct (Gedackt 8 +
+ * Rohrfloete 4, Rinteln: no quiet between keys for minutes, so the
+ * input's floor is the place's from before the first key).  The
+ * Gedackt as at Hmth 202 (the hardest Field scenario); the Quinte is
+ * read a twelfth up (Chromatic Quinte 2 2/3'), so -f new corrects every
+ * key by hand, WORK_CORR s into it (once the detector has agreed on it:
+ * at 1.5 s some keys were not yet, and a correction made before the
+ * detector heard the key is undone by its first agreement, noise or
+ * not), and the correction must hold through the noise and the rest of
+ * the key ("undone").  With the floor of v18.8 (pitch_floor() rising
+ * under the notes too) and KEY_QUIET 1.4, 3 were undone (G#4, D5, E5:
+ * the floor crept up to them); now 1 (E5, at 1.5 times the floor),
+ * with the noise or without (-DWORK_LEVEL=0) */
+#define WORK_HOLD	20.0
+#define WORK_CORR	3.0
+#ifndef WORK_LEVEL
+#define WORK_LEVEL	1.0	/* -DWORK_LEVEL=0: the same keys without */
+#endif
+static void sc_work_ged(void) {
+	static const double db[6] = { GED202 };
+	field_keys("Field work noise, Gedackt", C3 + 7, 12, 2, WORK_HOLD,
+		0.3, 1.0, STOPPED, db, 0.4);
+	hum202();
+	S->work = WORK_LEVEL;
+	S->corr_after = WORK_CORR;
+}
+static void sc_work_quint(void) {
+	static const double db[6] = { ROHR202 };
+	field_keys("Field work noise, Quinte", C3, 16, 2, WORK_HOLD + 4.0, 0.3,
+		3.0, OPEN, db, 0.4);
+	hum202();
+	S->work = WORK_LEVEL;
+	S->corr_after = WORK_CORR;
 }
 /* chromatic runs, the way a stop is tuned key by key: what follow mode's
  * continuity (-f new) is for */
@@ -1882,6 +2037,7 @@ static const builder builders[] = {
 	sc_chr_quint_row, sc_chr_sub,
 	sc_chr_down, sc_chr_speech,
 	sc_field_ged202, sc_field_rohr202, sc_field_ged204,
+	sc_work_ged, sc_work_quint,
 	sc_noise, sc_speech, sc_steps,
 };
 
