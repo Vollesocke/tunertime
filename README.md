@@ -19,15 +19,18 @@ this fork.
   high), gated on level and on the share of peak energy that lies on the
   winner's harmonics. Down to C0 (32' C). Note mode follows after 4 agreeing
   estimates, holds on silence and keeps the cent offset set by hand. The
-  "auto" button cycles off → follow → lock → follow; a long press turns it
-  off. In organ mode a focused partial (`parms.focus_ratio`) makes the note
-  that partial's peak / ratio. Tested in the field with a ukulele only.
+  auto button toggles follow and locked with a tap (before v18.9 there was
+  also off, by a long press). In organ mode a focused partial
+  (`parms.focus_ratio`, one for note mode and one for mixture mode) makes
+  the note that partial's peak / ratio. Tested in the field with a ukulele
+  only.
 - **Corrections while following** (`TunerTime.on_pitch`): moving the note by
   hand while following applies to that note only, and turns on continuity:
   later detections are taken in the octave nearest the note shown, and move
   it only within a fourth (500 cents) either way, as a stop is tuned key by
   key. So a 4' stop corrected down an octave once follows in the 8' octave.
-  It ends when auto is turned off or on afresh, or after 10 s of silence.
+  It ends after 10 s of silence or when a chromatic run starts; locking
+  and following again keep it.
   Mutations (Quinte, Terz) are followed by focusing their row instead.
   The correction holds while the key sounds: the note the detector heard
   is not followed again until it hears another one or the input stays

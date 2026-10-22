@@ -69,8 +69,7 @@ public class TunerTime extends Activity
 	private TextView mixture_status;
 	private TextView mixture_pitch;
 	private final mixture mix = new mixture();
-	private View preset_buttons;
-	private TextView preset_semi_display;
+	private View preset_buttons;	/* the temperament tab: none */
 	private View fft_buttons;
 	private TextView N_display;
 	private Button grid_button;
@@ -183,8 +182,6 @@ public class TunerTime extends Activity
 
 		preset_buttons = fl8r.inflate(
 				R.layout.preset_buttons, buttons_holder, false);
-		preset_semi_display = (TextView)preset_buttons.findViewById(
-				R.id.preset_semi_display);
 		preset_workbench = fl8r.inflate(
 				R.layout.preset_workbench, surface_frame, false);
 			preset_workbench_static_name = (TextView)preset_workbench.findViewById(
@@ -235,13 +232,6 @@ public class TunerTime extends Activity
 				R.id.tone_button);
 		auto_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.auto_button);
-		auto_button.setOnLongClickListener(
-				new View.OnLongClickListener() {
-			public boolean onLongClick(View v) {
-				cause = "auto long press";
-				auto_off();
-				return true;
-			} });
 		mode_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.mode_button);
 		fft_mode_buttons = fl8r.inflate(
@@ -323,7 +313,7 @@ public class TunerTime extends Activity
 	private void set_mode(View buttons, boolean fft_mode_) {
 		if (parms.run_active && (fft_mode_ || (buttons == preset_buttons))) {
 			/* the detector stops in FFT mode, and the Preset tab
-			 * steps its own notes: not during a chromatic run */
+			 * hides the note stepped: not during a chromatic run */
 			cause = null;
 			Toast.makeText(this, R.string.run_tab_blocked,
 					Toast.LENGTH_SHORT).show();
@@ -346,15 +336,25 @@ public class TunerTime extends Activity
 			} else if (buttons == preset_buttons) {
 				brighten_mode(preset_button);
 			}
-			mixture_set(buttons == mixture_buttons);
+			/* the focused row stays with its mode: note mode and
+			 * the A tab share one, mixture mode has its own (Onno,
+			 * 22 Oct) */
+			parms.keep_focus();
+			boolean was_mix = parms.mixture_mode;
 			boolean was_preset = parms.preset_mode;
+			/* the temperament tab is a view only: it neither
+			 * moves the note nor focuses a row, and leaving it the
+			 * note is what it was (Onno, 22 Oct; it took note mode
+			 * to its own note, C, before) */
 			parms.preset_mode = (buttons == preset_buttons);
-			if (was_preset && !parms.preset_mode) {
-				/* carry the preset note over to note mode */
-				int[] nn = parms.nearest_note(parms.strobe_cents);
-				parms.note_alt = nn[1];
-				parms.note_cents = parms.strobe_cents -
-					parms.note_offset(nn[0]*100*U);
+			mixture_set(buttons == mixture_buttons);
+			if (!parms.mixture_mode) {
+				parms.use_focus();
+			}
+			if (((was_mix != parms.mixture_mode) ||
+			     (was_preset != parms.preset_mode)) &&
+			    parms.length_mode && !parms.preset_mode) {
+				length_focus();	/* as on entering length mode */
 			}
 			if (parms.mixture_mode) {
 				/* the readout rounds to this temperament */
@@ -486,9 +486,8 @@ public class TunerTime extends Activity
 		}
 	}
 
-	/* auto note detection: off -> follow; then tap toggles follow/lock,
-	 * long press turns it off.  the state is
-	 * parms.auto_note and parms.auto_locked, kept across rotation */
+	/* auto note detection: a tap toggles follow and locked (do_auto).
+	 * the state is parms.auto_note, kept across rotation */
 	private int det_semi = Integer.MIN_VALUE, det_count = 0;
 	private int det_alt = 0;	/* with det_semi: parms.note_alt */
 	/* estimates in a row.  4 rather than 3 (tools/sim_organ.c -a):
@@ -519,7 +518,7 @@ public class TunerTime extends Activity
 	 * focus()).  Both together do not add up, as folding a note already
 	 * near the current one changes nothing.
 	 * Continuity ends, and detections are taken as heard again, when
-	 *  - auto is turned off (long press) or turned on afresh,
+	 *  - a chromatic run starts (run_lock),
 	 *  - nothing clear was heard for NEAR_SILENCE ms (a new stop).
 	 * Lock and unlock keep it.  tools/sim_organ.c -f new emulates it.
 	 * The correction holds while the key sounds: the note the detector
@@ -560,36 +559,37 @@ public class TunerTime extends Activity
 							 * digital silence */
 	private long last_loud = 0;
 
+	/* the auto button: a tap toggles follow and locked (fixiert), no
+	 * long press.  Locked leaves the note alone and keeps continuity,
+	 * so following again goes on near the note shown.  Before v18.9
+	 * there was a third state, off, which differed from locked only in
+	 * clearing continuity (Onno, 21 Oct: "what is the difference?"):
+	 * not worth a state, as a correction by hand sets continuity again
+	 * and NEAR_SILENCE clears it */
 	public void do_auto(View v) {
 		if (!auto_applies()) {
 			return;
 		}
 		cause = "auto tap";
-		if (!parms.auto_note && !parms.auto_locked) {
-			parms.auto_note = true;
-			near = false;
-			det_stable = Integer.MIN_VALUE;
-			overruled = Integer.MIN_VALUE;
-		} else if (parms.auto_note) {
-			parms.auto_note = false;	/* lock */
-			parms.auto_locked = true;
-		} else {
-			parms.auto_note = true;		/* unlock */
-			parms.auto_locked = false;
+		parms.auto_note = !parms.auto_note;
+		if (parms.auto_note) {
+			/* the silence that ends continuity counts from here */
 			last_heard = SystemClock.uptimeMillis();
 		}
 		det_count = 0;
 		update_status();
 	}
 
-	private void auto_off() {
+	/* a chromatic run steps the note by hand: locked, continuity
+	 * cleared; run_stop() restores the state from before */
+	private boolean run_auto_before = false;
+	private void run_lock() {
+		run_auto_before = parms.auto_note;
 		parms.auto_note = false;
-		parms.auto_locked = false;
 		det_count = 0;
 		near = false;
 		det_stable = Integer.MIN_VALUE;
 		overruled = Integer.MIN_VALUE;
-		update_status();
 	}
 
 	/* Preset and FFT modes have their own navigation.  Tone and mixture
@@ -624,6 +624,7 @@ public class TunerTime extends Activity
 			 * row's partial divided down (pitch.c focus()) */
 			hz = 0.0d;
 		}
+		a_heard(hz);
 		if (parms.mixture_mode && (hz > 0.0d)) {
 			/* Dis or Es by the nearer, where both were picked */
 			int[] hn = parms.nearest_note(freq_to_cents(hz));
@@ -935,6 +936,70 @@ public class TunerTime extends Activity
 		update_status();
 	}
 
+	/* A tab, "auto" (Onno, 22 Oct): the A that puts the note shown on
+	 * what is heard.  The median of the detector's estimates of the
+	 * last AUTO_A_MS that agree on the note (within half a semitone of
+	 * its pitch in the temperament); the compromise of many pipes is
+	 * made by hand after it, so 2 s are enough.  With fewer than
+	 * AUTO_A_MIN of them, about 1 s (an estimate every 4096 samples,
+	 * 85-93 ms), it does nothing.  The note's own cent offset set by
+	 * hand is left out: the A is fitted to the note of the temperament
+	 * (with stretch, if any), as Reset and the A buttons are */
+	private static final long AUTO_A_MS = 2000;
+	private static final int AUTO_A_MIN = 11;
+	private static final int AUTO_A_RING = 64;
+	private final long[] a_time = new long[AUTO_A_RING];
+	private final double[] a_hz = new double[AUTO_A_RING];
+	private int a_next = 0;
+
+	/* every estimate (on_pitch), but not the tone generator's own */
+	private void a_heard(double hz) {
+		if ((hz <= 0.0d) || ToneGenerator.playing) {
+			return;
+		}
+		a_time[a_next] = SystemClock.uptimeMillis();
+		a_hz[a_next] = hz;
+		a_next = (a_next + 1) % AUTO_A_RING;
+	}
+
+	public void auto_afreq(View v) {
+		int k = (parms.note_cents + 50*U) / (100*U);
+		int step = step_cents(k);
+		long now = SystemClock.uptimeMillis();
+		double[] h = new double[AUTO_A_RING];
+		int n = 0;
+		for (int i = 0; i < AUTO_A_RING; i++) {
+			if ((a_hz[i] > 0.0d) && (now - a_time[i] <= AUTO_A_MS) &&
+			    (Math.abs(freq_to_cents(a_hz[i]) - step) <= 50*U)) {
+				h[n++] = a_hz[i];
+			}
+		}
+		if (n < AUTO_A_MIN) {
+			/* nothing heard long enough: nothing done, no popup */
+			cause = "A auto: " + n + " estimates on " +
+				new note(step).full_str + ", too few";
+			log_changes();
+			return;
+		}
+		Arrays.sort(h, 0, n);
+		double med = ((n % 2) == 1) ? h[n/2] :
+						(h[n/2 - 1] + h[n/2]) / 2.0d;
+		/* the target is A times a factor of the note, temperament
+		 * and stretch (cents_to_freq): scaled by heard / target */
+		int a = (int)Math.round(parms.A_freq * med /
+					cents_to_freq(step, 1));
+		cause = String.format(Locale.US,
+			"A auto (median %.2f Hz of %d estimates on %s)", med, n,
+			new note(step).full_str);
+		if ((a < 2200) || (a > 8800)) {
+			cause += ", out of range";
+			log_changes();
+			return;
+		}
+		parms.A_freq = a;
+		update_status();
+	}
+
 	public void stretch_incr(View v) {
 		cause = "stretch+";
 		parms.cents_per_octave++;
@@ -948,30 +1013,6 @@ public class TunerTime extends Activity
 	public void reset_stretch(View v) {
 		cause = "stretch reset";
 		parms.cents_per_octave = 0;
-		update_status();
-	}
-
-	public void preset_incr(View v) {
-		cause = "preset note+";
-		parms.preset_note++;
-		update_status();
-	}
-
-	public void preset_decr(View v) {
-		cause = "preset note-";
-		parms.preset_note--;
-		update_status();
-	}
-
-	public void preset_oct_incr(View v) {
-		cause = "preset oct+";
-		parms.preset_oct++;
-		update_status();
-	}
-
-	public void preset_oct_decr(View v) {
-		cause = "preset oct-";
-		parms.preset_oct--;
 		update_status();
 	}
 
@@ -1148,6 +1189,13 @@ public class TunerTime extends Activity
 			/* the focused footage is no longer shown */
 			parms.focus_ratio = 0.0d;
 		}
+		if (!parms.organ_mode || (parms.row_of(parms.note_focus) < 0)) {
+			parms.note_focus = 0.0d;
+		}
+		if (!parms.organ_mode ||
+		    (parms.row_of(parms.mixture_focus) < 0)) {
+			parms.mixture_focus = 0.0d;
+		}
 		if (!parms.organ_mode) {
 			parms.mixture_mode = false;
 		}
@@ -1161,6 +1209,7 @@ public class TunerTime extends Activity
 			parms.mixture_cents = parms.strobe_cents;
 			parms.mixture_ref = 0.0d;
 			parms.mixture_mode = true;
+			parms.use_focus();	/* its own row (set_mode) */
 			mixture_measure(null);
 		} else if (!on) {
 			parms.mixture_mode = false;
@@ -1471,31 +1520,6 @@ public class TunerTime extends Activity
 		return Integer.toString(n/10) + "." + Integer.toString(n%10);
 	}
 
-	private void update_preset() {
-		preset p = preset.find(parms.preset_id);
-		if ((p == null) || (p.notes.size() == 0)) {
-			parms.preset_note = 0;
-			parms.preset_oct = 0;
-			parms.strobe_cents = 4800*U;
-		} else {
-			int n = p.tuning_notes().size();
-			while (parms.preset_note < 0) {
-				parms.preset_note += n;
-			}
-			parms.preset_note %= n;
-			parms.strobe_cents = p.tuning_notes().get(parms.preset_note) +
-					1200*U*parms.preset_oct;
-			while (parms.strobe_cents < 0) {
-				parms.strobe_cents += 1200*U;
-				parms.preset_oct++;
-			}
-			while (parms.strobe_cents > 9600*U) {
-				parms.strobe_cents -= 1200*U;
-				parms.preset_oct--;
-			}
-		}
-	}
-
 		/* note that ranges are checked in update_status() as well,
 		 * because status display is really the only part that will go
 		 * wonkers if the values go out-of-range anyways.  */
@@ -1506,11 +1530,11 @@ public class TunerTime extends Activity
 			parms.mixture_cents = range_limit(parms.mixture_cents,
 							0, 9600*U);
 			parms.strobe_cents = parms.mixture_cents;
-		} else if (parms.preset_mode) {
-			update_preset();
 		} else {
 			/* note mode: apply the selected preset if it is a
-			 * temperament (12 notes, one per pitch class) */
+			 * temperament (12 notes, one per pitch class).  Also
+			 * the temperament tab, which keeps the note (a view
+			 * only, Onno 22 Oct) */
 			parms.note_cents = range_limit(parms.note_cents,
 							0, 9600*U);
 			int off = 0;
@@ -1538,9 +1562,6 @@ public class TunerTime extends Activity
 		parms.changed = true;
 		ToneGenerator.set_freq(cents_to_freq(parms.strobe_cents, 1));
 
-				/* strobe_cents is based on A, adj_cents on C */
-		note n = new note(parms.strobe_cents);
-
 		/* note mode shows the position before the
 		 * temperament, which is shown in the title */
 		note nn = new note(parms.note_cents);
@@ -1554,8 +1575,6 @@ public class TunerTime extends Activity
 			set_title(getString(R.string.title_strobe), temper_str);
 		}
 
-		preset_semi_display.setText(tuning_name(preset.find(
-			parms.preset_id), parms.preset_note, n) + " " + n.cents_str);
 		update_preset_workbench();
 
 		String center_str = string_int10(parms.A_freq);
@@ -1564,7 +1583,6 @@ public class TunerTime extends Activity
 		 * (Onno) */
 		afreq_center_display.setText(getString(R.string.afreq_note,
 			center_str, parms.mixture_mode ? mixture_str() :
-			parms.preset_mode ? preset_semi_display.getText() :
 			note_semi_display.getText() + " " + nn.cents_str));
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
@@ -1590,20 +1608,11 @@ public class TunerTime extends Activity
 			ToneGenerator.playing ? R.color.accent : R.color.text));
 
 		auto_button.setEnabled(auto_applies());
-		if (parms.auto_note) {
-			auto_button.setText(R.string.auto_follow);
-			auto_button.setTextColor(getResources().getColor(
-					R.color.accent));
-		} else if (parms.auto_locked) {
-			auto_button.setText(R.string.auto_locked);
-			auto_button.setTextColor(getResources().getColor(
-					R.color.warn));
-		} else {
-			auto_button.setText(R.string.auto);
-			auto_button.setTextColor(getResources().getColor(
-					!auto_applies() ? R.color.outline
-							: R.color.text));
-		}
+		auto_button.setText(parms.auto_note ? R.string.auto_follow
+						    : R.string.auto_locked);
+		auto_button.setTextColor(getResources().getColor(
+			!auto_applies() ? R.color.outline :
+			parms.auto_note ? R.color.accent : R.color.warn));
 		if (parms.length_mode) {
 			length.update();
 		}
@@ -1667,9 +1676,9 @@ public class TunerTime extends Activity
 			TextView name = new TextView(this);
 			name.setText(tuning_name(p, i, n));
 			name.setTextSize(18);
-			name.setTextColor(getResources().getColor(
-				(i == parms.preset_note) ? R.color.accent
-							 : R.color.text));
+			/* no note marked: the tab focuses nothing (Onno,
+			 * 22 Oct; C was marked, as the note it played) */
+			name.setTextColor(getResources().getColor(R.color.text));
 			row.addView(name, new LinearLayout.LayoutParams(0,
 				ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 			TextView deviation = new TextView(this);
@@ -1706,7 +1715,7 @@ public class TunerTime extends Activity
 			lg_first = true;
 			return;
 		}
-		int auto = parms.auto_note ? 1 : (parms.auto_locked ? 2 : 0);
+		int auto = parms.auto_note ? 1 : 2;
 		View tab = (buttons_holder.getChildCount() > 0) ?
 				buttons_holder.getChildAt(0) : null;
 		boolean paused = (strobe != null) && strobe.paused;
@@ -1815,8 +1824,10 @@ public class TunerTime extends Activity
 		lg_mic = parms.microphone;
 	}
 
+	/* 1 follow, 2 locked ("off" before v18.9; the run headers'
+	 * auto_before) */
 	private static String auto_str(int auto, boolean near) {
-		return ((auto == 1) ? "follow" : (auto == 2) ? "lock" : "off") +
+		return ((auto == 1) ? "follow" : "lock") +
 			(near ? " near" : "");
 	}
 	private static String focus_str() {
@@ -1852,8 +1863,7 @@ public class TunerTime extends Activity
 	private String state_str() {
 		return "note " + new note(parms.note_cents).full_str +
 			", target " + new note(parms.strobe_cents).full_str +
-			", auto " + auto_str(parms.auto_note ? 1 :
-				(parms.auto_locked ? 2 : 0), near) +
+			", auto " + auto_str(parms.auto_note ? 1 : 2, near) +
 			", focus " + focus_str() + ", " + mode_str() + ", " +
 			mixture_log_str() + ", " + tuning_str() + ", " +
 			mic_str();
@@ -2238,8 +2248,7 @@ public class TunerTime extends Activity
 					Toast.LENGTH_LONG).show();
 			return;
 		}
-		String before = auto_str(parms.auto_note ? 1 :
-				(parms.auto_locked ? 2 : 0), near);
+		String before = auto_str(parms.auto_note ? 1 : 2, near);
 		String version = "?";
 		try {
 			android.content.pm.PackageInfo pi = getPackageManager()
@@ -2279,11 +2288,12 @@ public class TunerTime extends Activity
 				"\n" +
 			"rows " + rows + "\n" +
 			"auto_before " + before + "\n";
-		auto_off();	/* the note is stepped by hand */
+		run_lock();	/* the note is stepped by hand */
 		/* turning the phone would recreate the screen and end the run */
 		setRequestedOrientation(
 			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		if (!RunRecorder.start(this, m, h)) {
+			parms.auto_note = run_auto_before;
 			setRequestedOrientation(android.content.pm.ActivityInfo
 				.SCREEN_ORIENTATION_UNSPECIFIED);
 			Toast.makeText(this, R.string.run_failed,
@@ -2324,14 +2334,22 @@ public class TunerTime extends Activity
 	}
 
 	private void run_stop(String how) {
+		boolean was = RunRecorder.active();
 		File f = RunRecorder.stop(how);
 		run_handler.removeCallbacks(run_tick);
 		setRequestedOrientation(
 			android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 		invalidateOptionsMenu();
-		if (f != null) {
+		if (was) {
+			/* follow or locked, as before the run */
+			parms.auto_note = run_auto_before;
+			if (parms.auto_note) {
+				last_heard = SystemClock.uptimeMillis();
+			}
 			cause = "run end";
 			update_status();
+		}
+		if (f != null) {
 			Toast.makeText(this, getString(R.string.run_saved,
 				f.getName().replace(".txt", ""), f.getParent()),
 				Toast.LENGTH_LONG).show();

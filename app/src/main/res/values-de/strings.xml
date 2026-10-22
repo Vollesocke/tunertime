@@ -171,6 +171,7 @@
 		<item>Werckmeister IV (Rohlf)</item>
 		<item>Werckmeister V (Rohlf)</item>
 		<item>Werckmeister III (Rohlf)</item>
+		<item>Lambert (1774)</item>
 	</string-array>
 	<!-- Tonnamen hier englisch (G#, Eb); mit deutschen Tonnamen werden
 	     sie als Gis, Es angezeigt -->
@@ -200,6 +201,7 @@
 		<item>Z&#228;hlung nach Rohlf; meist Werckmeister V genannt</item>
 		<item>Z&#228;hlung nach Rohlf</item>
 		<item>Z&#228;hlung nach Rohlf; 1/3 Komma, meist Werckmeister IV genannt</item>
+		<item>1774; sieben Quinten F-C-G-D-A-E-B-F# um 1/7 pyth. Komma verkleinert, die &#252;brigen rein</item>
 	</string-array>
 
 	<!-- Mikrofone -->

@@ -206,11 +206,6 @@ public class UiLayoutTest {
 		ui.check("main.note.follow");
 		click(a, R.id.auto_button);		/* locked */
 		ui.check("main.note.locked");
-		ui.on_main(new Runnable() {
-			public void run() {	/* off */
-				a.findViewById(R.id.auto_button)
-					.performLongClick();
-			} });
 		click(a, R.id.tone_button);
 		ui.check("main.note.tone");
 		click(a, R.id.tone_button);
