@@ -555,6 +555,7 @@ public class TunerTime extends Activity
 	private static final long NEAR_SILENCE = 10000;
 	private static final long HOLD_QUIET = 300;
 	private static final double KEY_QUIET = 1.4;	/* pitch.c QUIET */
+	private static final double MIN_HZ = 15.0;	/* pitch.c MIN_F0 */
 	private static final double KEY_MIN = 20.0;	/* pitch.c LOW_RMS:
 							 * digital silence */
 	private long last_loud = 0;
@@ -618,6 +619,11 @@ public class TunerTime extends Activity
 	 * by hand carries over to the new note.  after a correction, only
 	 * near the current note (continuity, above). */
 	private void on_pitch(double hz, double level, double floor) {
+		if (hz < MIN_HZ) {
+			/* under the lowest organ C: only from a high focused
+			 * row's partial divided down (pitch.c focus()) */
+			hz = 0.0d;
+		}
 		if (parms.mixture_mode && (hz > 0.0d)) {
 			/* Dis or Es by the nearer, where both were picked */
 			int[] hn = parms.nearest_note(freq_to_cents(hz));
