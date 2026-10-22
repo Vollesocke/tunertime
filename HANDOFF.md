@@ -30,6 +30,41 @@ After it, per Onno's season plan: only what testers need (stability,
 the manual, his answers below), detector work again from May 2027.
 **Start with "22 Oct late: v19.0" below.**
 
+## Pick up here (22 Oct, night)
+
+1. **Onno's answers** to the open questions (listed under "22 Oct late"
+   below): package B's English labels, Back from "Ton eingeben", one note
+   replacing Dis and Es, "C#" with German UI; the manual's light theme,
+   its tips, German note names. Apply what he decides.
+2. **Issues #7 and #8** (his recordings, his crash log) have no reply yet;
+   Volker decides whether to post one linking v18.9/v19.0.
+3. **Crash reports from 18.8+:** the next "Aufnahmen an GitHub" share can
+   carry `files/crashes`. If he still sees the app close, ask for one.
+4. **Small leftovers**, none urgent:
+   - stale comments: `pipelength.java` mentions a temperature setting (the
+     length is fixed at 18 °C); a ShareRecordings comment still says
+     "Paste, drop, or click" (the issue text itself says "Add Files")
+   - the wolf button shows "Gs–Ds", the temperament texts say "Gis–Es"
+   - Help is not in UiLayoutTest yet; the full UI suite was not run for
+     18.9/19.0
+   - sim: a hand correction made before the detector's first agreement on
+     a key is undone by that agreement; knocks raise the mixture
+     measurement's worst error (0.58 -> 0.74 c); a knock's start can shift
+     a weak upper row's drift by up to 2.4 c (strobe.c)
+   - Hmth 204: soft keys near 1.6x the floor are still sometimes taken for
+     released (5 cases)
+5. **Not now (season plan):** the sample-based simulator (real key
+   samples, work noise, noise beds) was planned and set aside on Onno's
+   answer: work on a pipe changes its own sound, and noise beds need >20
+   organs. Revisit with real tuning recordings from May 2027; he can also
+   deliver Prinzipal, reed and 16' runs, though those already work well.
+6. **Housekeeping:** agent worktrees under `.claude/worktrees/` (spec-a,
+   spec-b, crash-hunt, manual, the two noise branches, older ones); all
+   merged. Remove with `git worktree remove` (unlock first where locked)
+   and `git branch -d`. The data of issues #7/#8 is in
+   `tools/field/data/issue7-2026-10-22`, `runs-2026-10-22`, `issue8`
+   (git-ignored).
+
 ## 22 Oct late: v19.0
 
 **Package B** (`doc/plan-onno-spec-2026-10-21.md`; branch `spec-b`):
