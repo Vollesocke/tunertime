@@ -134,6 +134,10 @@
 	<string name="measure_notes">measure notes</string>
 	<string name="title_measure_a">Set concert pitch</string>
 	<string name="measure_set">set</string>
+	<string name="title_measure_note">Enter note: %1$s</string>
+	<string name="measure_store">store note</string>
+	<!-- notes stored so far, of 12 -->
+	<string name="measure_progress">%1$d/12</string>
 	<string name="cents_label">cents:</string>
 	<string name="change_sign">change sign</string>
 	<string name="cent_step_minus1">-1c</string>

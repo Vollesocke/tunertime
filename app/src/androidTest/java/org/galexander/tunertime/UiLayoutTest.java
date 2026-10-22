@@ -436,6 +436,8 @@ public class UiLayoutTest {
 		ui.settle(800);
 		ui.set_orientation(ui.orient);
 		ui.check("measure.a");
+		click(ui.current_activity(), R.id.measure_action);	/* set */
+		ui.check("measure.note");
 		scenario.close();
 		scenario = null;
 	}
