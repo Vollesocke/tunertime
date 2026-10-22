@@ -119,6 +119,9 @@ new buttons at the bottom: **"Töne messen"** and **"Matching"**.
 - Offsets are relative to the A set on page 1 (so A = 0 holds as for the
   built-in tables, `temperaments.make_notes`). Only the 12 semitones are
   entered (Onno, 22 Oct), also in a preset with Dis/Es or Gis/As.
+- If A itself is stored with an offset other than 0 c, the finished table
+  is shifted at the end so that A = 0 c: every note minus A's offset
+  (Onno, 22 Oct). The same before matching a preset whose A is not 0.
 - A preset that already has notes: page 2 starts from their values (it
   edits them). Back leaves what was stored so far.
 
@@ -158,4 +161,6 @@ note of B2.
 2. No Auto on the "Kammerton einstellen" page.
 3. Only the 12 semitones are entered.
 4. Matching strictly at A = 0: the A is set to 0 c on the first page,
-   by ear over the A pipes of all octaves.
+   by ear over the A pipes of all octaves. Addendum: if A is stored
+   with an offset other than 0 c, the table is converted to A = 0 c at
+   the end.
