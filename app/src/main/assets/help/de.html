@@ -9,7 +9,7 @@
 <body>
 
 <h1 id="inhalt">TunerTime Organ – Handbuch</h1>
-<p class="version">Stand: Version 18.9, Oktober 2026</p>
+<p class="version">Stand: Version 19.0, Oktober 2026</p>
 
 <nav>
 <ol>
@@ -30,7 +30,7 @@
 <li><a href="#github">Aufnahmen an GitHub</a></li>
 <li><a href="#einstellungen">Die Einstellungen</a></li>
 <li><a href="#ohne">Ohne Orgelmodus: Spreizung und FFT</a></li>
-<li><a href="#messen">Demnächst: Temperierung messen und vergleichen</a></li>
+<li><a href="#messen">Temperierung messen und vergleichen</a></li>
 <li><a href="#links">Probleme melden, Links</a></li>
 </ol>
 </nav>
@@ -613,26 +613,45 @@ hält an. <span class="b">Strobe</span> führt zurück.</li>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
 
-<section id="messen" class="soon">
-<h2>18. Demnächst: Temperierung messen und vergleichen</h2>
-<p class="notice"><b>Noch nicht in dieser Version.</b> Geplant für
-Version 19.0; Einzelheiten können sich noch ändern.</p>
-<p>Damit lässt sich die Temperierung einer Orgel messen und mit den
-bekannten vergleichen. Unter Temperierung → Bearbeiten kommen zwei
-Knöpfe hinzu:</p>
-<ul>
-<li><b>Töne messen</b>: Zuerst die Seite „Kammerton einstellen“: Strobe
-mit Oktavzeilen 8′ bis 1/4′, ohne Reiter und ohne Erkennung, das A von
-Hand nach Gehör über die A-Pfeifen aller Oktaven. „Set“ übernimmt es.
-Dann „Ton eingeben“: Sie stellen jeden der 12 Töne C bis H mit Cent ±1
-und ±0,1 ein, bis seine Zeile steht, und tippen „Ton speichern“; die App
-geht zum nächsten. Nach dem zwölften geht es zurück. Hat das A nicht
-0 Cent, wird die Tabelle am Ende auf A = 0 verschoben.</li>
-<li><b>Matching</b>: eine Tabelle mit den 12 Tönen, dem gemessenen Preset
-und den zwei nächsten bekannten Temperierungen (alle eingebauten und
-Ihre eigenen Presets), mit ihrer mittleren Abweichung. Unterschiede über
-2 Cent gelb, über 4 Cent rot.</li>
-</ul>
+<section id="messen">
+<h2>18. Temperierung messen und vergleichen</h2>
+<p>So lässt sich die Temperierung einer Orgel nach Gehör abnehmen und mit
+den bekannten vergleichen. Legen Sie dafür unter Temperierung ein neues
+Preset an (oder nehmen Sie ein vorhandenes) und öffnen Sie
+<b>Bearbeiten</b>. Unten sind zwei Knöpfe: <b>Töne messen</b> und
+<b>Matching</b>.</p>
+<h3>Töne messen</h3>
+<ol>
+<li><b>Kammerton einstellen.</b> Ein Strobe nur mit Oktavzeilen, 8′ bis
+1/4′ auf dem A (110 bis 3520 Hz), ohne Reiter und ohne Tonerkennung.
+Stellen Sie das A mit ±1 und ±0,1 so ein, wie es über die A-Pfeifen aller
+Oktaven richtig ist; Reset setzt 440,0 Hz. <b>Set</b> übernimmt das A für
+diese Messung.</li>
+<li><b>Ton eingeben: &lt;Preset&gt;.</b> Die Töne C bis H der
+8′-Oktave, gegen die gleichstufige Stimmung. Ton+ und Ton− wechseln den
+Ton (innerhalb der Oktave), Cent ±1 und ±0,1 verschieben ihn, bis seine
+Zeilen stehen. <b>Ton speichern</b> legt ihn im Preset ab und geht zum
+nächsten noch nicht gespeicherten. Oben zeigt „n/12“, wie viele es sind;
+ein gespeicherter Ton wird blau. Hat das Preset schon Töne, beginnt die
+Seite mit ihren Werten.</li>
+<li>Nach dem zwölften Ton geht es zurück zum Bearbeiten, und
+<b>Matching</b> ist hervorgehoben. Hatte das A dabei nicht 0 Cent, wird
+die ganze Tabelle so verschoben, dass A = 0 Cent ist.</li>
+</ol>
+<p>Zurück führt von „Ton eingeben“ zum Kammerton und von dort zum
+Bearbeiten; was schon gespeichert ist, bleibt (noch ohne die
+Verschiebung auf A = 0). Ihre Einstellungen im Hauptbildschirm (Ton,
+Kammerton, Zeilen, Fokus, Folgen/Fixiert) ändert die Messung nicht.
+Gemessen werden nur die 12 Halbtöne, auch bei Temperierungen mit Dis/Es
+oder Gis/As.</p>
+<h3>Matching</h3>
+<p>Geht, sobald das Preset genau einen Ton je Halbton hat. Die Tabelle
+zeigt für C bis H die Centwerte des Presets und daneben die nächsten
+bekannten Temperierungen (alle eingebauten und Ihre eigenen Presets),
+jede mit ihrer mittleren Abweichung (RMS) im Kopf; auf einem schmalen
+Telefon zwei, auf einem breiteren mehr. Verglichen wird bei A = 0 Cent,
+ohne Verschiebung. Unterschiede über 2 Cent sind gelb, über 4 Cent
+rot.</p>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
 
