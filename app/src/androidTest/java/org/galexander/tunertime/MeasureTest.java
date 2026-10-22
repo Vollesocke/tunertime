@@ -233,6 +233,8 @@ public class MeasureTest {
 			assertEquals("pc " + pc,
 				w[pc] + ((pc == 9) ? 0 : 3 - 8), offset(pc));
 		}
+		/* matching offered: its button selected */
+		assertTrue(ed.findViewById(R.id.matching).isSelected());
 		assertEquals(csv(werck), prefs.getString(
 				"preset_" + OTHER + "_notes10", ""));
 		user_state_kept();
@@ -272,6 +274,7 @@ public class MeasureTest {
 		assertEquals(w[2] - 20, offset(2));
 		assertEquals(w[4], offset(4));
 		assertEquals(0, offset(9));
+		assertTrue(!ed.findViewById(R.id.matching).isSelected());
 		user_state_kept();
 	}
 }

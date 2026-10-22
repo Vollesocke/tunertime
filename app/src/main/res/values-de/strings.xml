@@ -124,6 +124,9 @@
 	<string name="title_measure_note">Ton eingeben: %1$s</string>
 	<string name="measure_store">Ton speichern</string>
 	<string name="measure_progress">%1$d/12</string>
+	<string name="matching">Matching</string>
+	<string name="title_match">Matching</string>
+	<string name="match_rms">RMS %1$s c</string>
 	<string name="cents_label">Cent:</string>
 	<string name="change_sign">Vorzeichen wechseln</string>
 	<string name="cent_step_minus1">-1c</string>

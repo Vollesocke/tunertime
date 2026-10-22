@@ -138,6 +138,12 @@
 	<string name="measure_store">store note</string>
 	<!-- notes stored so far, of 12 -->
 	<string name="measure_progress">%1$d/12</string>
+	<!-- the preset beside the nearest known temperaments -->
+	<string name="matching">matching</string>
+	<string name="title_match">Matching</string>
+	<!-- a column's distance to the preset: root mean square of the
+	     12 differences -->
+	<string name="match_rms">RMS %1$s c</string>
 	<string name="cents_label">cents:</string>
 	<string name="change_sign">change sign</string>
 	<string name="cent_step_minus1">-1c</string>

@@ -70,5 +70,15 @@
 	    android:minHeight="56dp"
 	    android:text="@string/measure_notes"
 	    android:onClick="do_measure" />
+	<!-- the preset beside the nearest known temperaments; only for a
+	     temperament (PresetEditActivity) -->
+	<Button android:id="@+id/matching"
+	    style="@style/Tuner.Button.Big"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
+	    android:minHeight="56dp"
+	    android:text="@string/matching"
+	    android:onClick="do_matching" />
     </LinearLayout>
 </LinearLayout>

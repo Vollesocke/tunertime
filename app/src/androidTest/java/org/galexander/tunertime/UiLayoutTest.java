@@ -442,6 +442,22 @@ public class UiLayoutTest {
 		scenario = null;
 	}
 
+	/* the matching table of Werckmeister III: note and 3 columns at
+	 * least, more in landscape, with marked cells */
+	@Test
+	public void matching() {
+		prefs(true);
+		matrix(new Runnable() {
+			public void run() {
+				set_pref("preset_id", WERCK);
+				launch(MatchActivity.class);
+				ui.check("matching");
+				scenario.close();
+				scenario = null;
+			} });
+		ui.finish("matching");
+	}
+
 	@Test
 	public void preset_note() {
 		prefs(false);
