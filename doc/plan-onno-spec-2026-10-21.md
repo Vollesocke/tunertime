@@ -44,9 +44,10 @@ to note mode", ~line 350), `parms.preset_note/preset_oct`, the workbench
 - Today the workbench's own note (`preset_note`, starting at C) drives the
   strobe, and leaving the tab copies it into note mode: back at C.
 - New: the Temperierung tab drives nothing and focuses nothing. Leaving
-  it, the note is what it was before. Check whether `preset_buttons`
-  (semi±) still has a job; if the tab is "a pure view page", they go.
-  **Ask Onno** only if something he uses goes with them.
+  it, the note is what it was before. Onno (22 Oct): the tab has no
+  buttons any more (gone since the list became a display only), so
+  nothing to remove there; check that no leftover `preset_buttons` code
+  still steps or focuses a note.
 - The note set (`strobe_cents`, `note_alt`) stays the same across Ton,
   Kammerton, Mixtur, Temperierung and back. Check `mixture_set` (copies
   `strobe_cents` into `mixture_cents` on entry) and the way back.
@@ -93,8 +94,8 @@ new buttons at the bottom: **"Töne messen"** and **"Matching"**.
 - The strobe with octave rows only: 8', 4', 2', 1', 1/2', 1/4' (organ mode
   rows; above the sample rate's limit they stay blank as now).
 - No tab bar; title "Kammerton einstellen".
-- The Kammerton controls (A ±1, ±0.1, Reset; Auto from A1 if wanted
-  there: **Ask Onno**; default: no, detection is off on this page).
+- The Kammerton controls (A ±1, ±0.1, Reset). No Auto here (Onno, 22
+  Oct): the A is set by ear on this page.
 - Detection off. Auto, Signal (tone generator) and Länge are replaced by
   one button, "Set": it sets the A for this measurement and opens page 2.
 - Technically: a separate Activity is cleaner than a third state of
@@ -115,9 +116,8 @@ new buttons at the bottom: **"Töne messen"** and **"Matching"**.
   the preset being edited, then steps to the next note not yet stored.
   When all 12 are stored, back to the preset edit page.
 - Offsets are relative to the A set on page 1 (so A = 0 holds as for the
-  built-in tables, `temperaments.make_notes`). A preset with Dis/Es
-  (more than 12 notes): page 2 measures the 12 of the chromatic octave;
-  **Ask Onno** if he wants the extra ones too.
+  built-in tables, `temperaments.make_notes`). Only the 12 semitones are
+  entered (Onno, 22 Oct), also in a preset with Dis/Es or Gis/As.
 - A preset that already has notes: page 2 starts from their values (it
   edits them). Back leaves what was stored so far.
 
@@ -127,9 +127,11 @@ note of B2.
   being matched, then the two nearest known temperaments. Known means all
   built-in ones (`temperaments.names`) and all of the user's presets
   except the one matched.
-- Nearest: the smallest RMS of the 12 differences, both sides normalised to
-  A = 0. Default without a free shift; **Ask Onno** whether a common
-  offset should be allowed (a temperament measured at a slightly other A).
+- Nearest: the smallest RMS of the 12 differences, both sides at A = 0,
+  with no free common offset (Onno, 22 Oct): page 1 sets the A to 0 c
+  first. The tuner does that by looking at all the A pipes in every
+  octave and choosing the right mean, which can't be automated, as it
+  depends on which pipes are used where.
 - Each candidate column marks its difference to the matched one: > 2 c
   yellow, > 4 c red (cell background; readable in light and dark theme).
   Header: the name and the RMS.
@@ -149,10 +151,10 @@ note of B2.
    except errors (HANDOFF "UI rule", Onno 22 Oct: errors and recording
    messages are fine; the post-correction popup is not).
 
-## Ask Onno (collected)
+## Onno's answers (22 Oct, Signal)
 
-1. A2: do the Temperierung tab's semitone buttons go with "a pure view
-   page"?
-2. B1: A Auto on the "Kammerton einstellen" page too, or by hand only?
-3. B2: in a preset with Dis/Es or Gis/As, measure the extra notes as well?
-4. B3: compare with a free common offset, or strictly at A = 0?
+1. The Temperierung tab has no buttons any more; nothing to remove.
+2. No Auto on the "Kammerton einstellen" page.
+3. Only the 12 semitones are entered.
+4. Matching strictly at A = 0: the A is set to 0 c on the first page,
+   by ear over the A pipes of all octaves.
