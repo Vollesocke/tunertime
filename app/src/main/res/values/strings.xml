@@ -112,6 +112,7 @@
 	<string name="ordinal_suffix"></string>
 
 	<!-- toasts and dialogs on the main screen -->
+	<string name="toast_row_too_high">This row is too high for the sample rate</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="about_title">About</string>
@@ -147,6 +148,7 @@
 	<string name="rename">Rename</string>
 	<string name="rename_title">Rename preset</string>
 	<string name="add_temperament_title">Add temperament (A = 0)</string>
+	<string name="no_file_picker">No file picker available</string>
 	<string name="export_file_name">TunerTime presets.txt</string>
 	<string name="export_failed">Export failed</string>
 	<string name="import_failed">Import failed</string>
@@ -298,8 +300,12 @@
 	<string name="run_ok">OK</string>
 	<string name="run_stop_status">&#9632; Stop %1$d:%2$02d &#183; %3$d</string>
 	<string name="afreq_enter">Pitch of A (Hz)</string>
+	<string name="afreq_range">A between 220 and 880 Hz</string>
 	<string name="menu_share">Recordings to GitHub</string>
 	<string name="share_packing">Packing the recordings&#8230;</string>
+	<string name="share_none">No recordings yet</string>
+	<string name="share_failed">Could not pack the recordings: %1$s</string>
+	<string name="share_ready">%1$d zip(s) in %2$s. Attach them to the issue that opens now.</string>
 	<string name="share_issue_title">Recordings %1$s</string>
 	<string name="share_issue_body">%1$d zip(s) from %2$s to attach: tap &#8220;Add Files&#8221; (the paperclip under this text), in the file picker &#9776; &#8594; Downloads &#8594; TunerTime, hold one zip, tap the others, then &#8220;Select&#8221;. Their links appear at the top of this text.</string>
 	<string name="share_issue_runs">Chromatic runs:</string>
@@ -309,7 +315,12 @@
 	<string name="share_packed">(packed before)</string>
 	<string name="share_item_crashes">Crash reports: %1$d</string>
 	<string name="share_item_recs">Debug recordings %1$s: %2$d</string>
+	<string name="run_tab_blocked">Not during a chromatic run</string>
 	<string name="run_mark">Mark</string>
+	<string name="run_started">Recording. Play the key shown, then semi+.</string>
+	<string name="run_saved">Run saved: %1$s in %2$s</string>
+	<string name="run_failed">Could not record the run</string>
+	<string name="run_need_strobe">Runs record in note or mixture mode</string>
 	<string-array name="run_kinds">
 		<item>Open flue</item>
 		<item>Stopped (Gedackt)</item>

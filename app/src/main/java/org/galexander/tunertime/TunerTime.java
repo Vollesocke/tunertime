@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewConfiguration;
 import android.widget.Button;
+import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -324,6 +325,8 @@ public class TunerTime extends Activity
 			/* the detector stops in FFT mode, and the Preset tab
 			 * steps its own notes: not during a chromatic run */
 			cause = null;
+			Toast.makeText(this, R.string.run_tab_blocked,
+					Toast.LENGTH_SHORT).show();
 			return;
 		}
 		String title = null, subtitle = null;
@@ -903,7 +906,10 @@ public class TunerTime extends Activity
 						return;
 					}
 					if ((hz < 220.0) || (hz > 880.0)) {
-						return;		/* 220-880 Hz */
+						Toast.makeText(TunerTime.this,
+							R.string.afreq_range,
+							Toast.LENGTH_SHORT).show();
+						return;
 					}
 					cause = "A keypad";
 					parms.A_freq = (int)Math.round(hz*10.0);
@@ -1169,6 +1175,9 @@ public class TunerTime extends Activity
 			/* the target moved up since it was focused: not
 			 * measured, but the row stays focused until the
 			 * user taps another (Onno, 21 Oct) */
+			if (settle == 0.0d) {
+				too_high_toast();
+			}
 			mix.stop();
 			update_status();
 			return;
@@ -1345,6 +1354,7 @@ public class TunerTime extends Activity
 		double r = parms.row_ratio(row);
 		if ((parms.focus_ratio != r) && Strobe.row_too_high(this, row)) {
 			/* a blank row: no drift to show or measure */
+			too_high_toast();
 			return;
 		}
 		cause = "tap row " + parms.footage_str(r);
@@ -1355,6 +1365,11 @@ public class TunerTime extends Activity
 			mix.start();		/* measure the new row */
 		}
 		update_status();
+	}
+
+	private void too_high_toast() {
+		Toast.makeText(this, R.string.toast_row_too_high,
+				Toast.LENGTH_SHORT).show();
 	}
 
 	/* the measured pitch, rounded to the nearest step of note mode
@@ -2138,6 +2153,8 @@ public class TunerTime extends Activity
 			}
 			if (RunRecorder.failed()) {
 				run_stop("write error");
+				Toast.makeText(TunerTime.this, R.string.run_failed,
+						Toast.LENGTH_LONG).show();
 				return;
 			}
 			invalidateOptionsMenu();
@@ -2210,7 +2227,10 @@ public class TunerTime extends Activity
 
 	private void run_start(RunRecorder.Meta m) {
 		if ((strobe == null) || parms.fft_mode || parms.preset_mode) {
-			return;		/* the menu offers it only in strobe mode */
+			/* the menu offers it only in strobe mode */
+			Toast.makeText(this, R.string.run_need_strobe,
+					Toast.LENGTH_LONG).show();
+			return;
 		}
 		String before = auto_str(parms.auto_note ? 1 :
 				(parms.auto_locked ? 2 : 0), near);
@@ -2260,12 +2280,16 @@ public class TunerTime extends Activity
 		if (!RunRecorder.start(this, m, h)) {
 			setRequestedOrientation(android.content.pm.ActivityInfo
 				.SCREEN_ORIENTATION_UNSPECIFIED);
+			Toast.makeText(this, R.string.run_failed,
+					Toast.LENGTH_LONG).show();
 			return;
 		}
 		cause = "run start";
 		update_status();
 		invalidateOptionsMenu();
 		run_handler.postDelayed(run_tick, 1000);
+		Toast.makeText(this, R.string.run_started,
+				Toast.LENGTH_LONG).show();
 	}
 
 	/* the key shown, for the run's truth (update_status()) */
@@ -2302,6 +2326,9 @@ public class TunerTime extends Activity
 		if (f != null) {
 			cause = "run end";
 			update_status();
+			Toast.makeText(this, getString(R.string.run_saved,
+				f.getName().replace(".txt", ""), f.getParent()),
+				Toast.LENGTH_LONG).show();
 		}
 	}
 
