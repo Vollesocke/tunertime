@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the measure pages (TunerTime, measure): one button in place of
+     auto, tone and length, "set" on page 1, "store note" on page 2.  Two
+     lines where the side column is narrow (portrait) -->
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/measure_action"
+    style="@style/Tuner.Button.Panel"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:maxLines="2"
+    android:textColor="@color/accent" />

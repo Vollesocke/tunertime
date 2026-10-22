@@ -23,11 +23,59 @@ Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
 work well. Noise beds differ per organ (>20 organs needed to learn from
 them), so no noise library and no sample simulator for now.
 
-Status as of 22 Oct 2026, evening: release
-[**v18.9-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.9-organ)
-(code 29) is on `main`. Package B of Onno's spec (measuring a
-temperament, matching) is on branch `spec-b` for v19.0. **Start with
-"22 Oct evening: v18.9" below.**
+Status as of 22 Oct 2026, late evening: release
+[**v19.0-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.0-organ)
+(code 30) is on `main`: Onno's spec of 21 Oct complete (packages A and B).
+After it, per Onno's season plan: only what testers need (stability,
+the manual, his answers below), detector work again from May 2027.
+**Start with "22 Oct late: v19.0" below.**
+
+## 22 Oct late: v19.0
+
+**Package B** (`doc/plan-onno-spec-2026-10-21.md`; branch `spec-b`):
+- Hosting: "Töne messen" on the preset edit page starts a second
+  `TunerTime` instance with `measure.EXTRA_PRESET`
+  (startActivityForResult); the strobe is bound to TunerTime's SurfaceView
+  and jni, so no separate Activity. Logic in `measure.java`, hooks in
+  TunerTime's onResume/onPause/onSaveInstanceState/onBackPressed/
+  update_status/menu. In measure mode `onPause` skips `parms.save()`, so the
+  user's prefs stay and the next `parms.load()` restores them; stored notes
+  are saved at once (`parms.save_presets()`).
+- B1 "Kammerton einstellen": octave rows 8' to 1/4' on the 8' A, A ±1/±0.1,
+  Reset, "Set"; no Auto, no detection. B2 "Ton eingeben: <preset>": C..H of
+  the 8' octave against equal temperament, cent ±1/±0.1, "Ton speichern"
+  (replaces the preset's note on that pitch class, Dis and Es alike; steps
+  to the next unsaved; n/12 in the corner, stored names blue). After the
+  12th: shifted to A = 0 c (offsets clamped to ±49.9 c), back to the edit
+  page with "Matching" highlighted (the offer, no popup). Back: B2 -> B1 ->
+  edit page, stored notes kept unshifted.
+- B3 Matching (`matching.java`, `MatchActivity`): needs exactly one note
+  per pitch class. RMS of the 12 differences at A = 0, no free offset;
+  candidates all built-ins plus user presets except the one matched and
+  copies of a built-in within 0.1 c; > 2 c amber, > 4 c red. Note + 3
+  columns at 360 dp. Example (agent): Lambert measured with ±0.3 c errors
+  and A 0.5 c high -> Lambert 0.53, Young II 1.05, Rothert 1.08 c.
+- Manual section 18 rewritten from the code (was "coming soon").
+
+**Ask Onno (package B):** the English labels ("Set concert pitch", "set",
+"store note"); Back from B2 to B1 rather than out of the flow; one stored
+note replacing both Dis and Es; "C#" in the table with German UI but
+English note names. From the manual: light help page in a light phone
+theme; the tips (about 3 c per degree, tremulant off, Rohrfloete lengths
+approximate, cent+ for an Unda maris); recommend German note names?
+
+**Tests for 19.0** (tt_fairphone4, 1080x2340 at 420 dpi): FollowTest
+11/11, MeasureTest 2/2, UiLayoutTest measure, matching, main_organ,
+preset_edit, main_normal; JVM tests (matching, measured, temperaments,
+meantone). The full UI suite was not run.
+
+**Emulator screens reset (check before UI tests):** at 18:19 on 22 Oct both
+AVDs' `config.ini` went back to the pixel_4 profile (1080x2280, 440 dpi),
+probably when an agent copied tt_fairphone4 to run a second instance. The
+layout tests then fail with TOUCH_TARGET (buttons 44-47dp) and OVERLAP at
+the cent display in portrait at font scale 1.3. Restored to README's values
+(tt_fairphone4 420 dpi, tt_galaxy_s25 450 dpi, both 2340 high); check with
+`adb shell wm size` / `wm density`. Agents: never copy or edit the AVDs.
 
 ## 22 Oct evening: v18.9
 

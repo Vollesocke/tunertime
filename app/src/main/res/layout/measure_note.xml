@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- measure page 2, "enter note" (TunerTime, measure): as note mode, the
+     octave buttons become cent +-1 and the cent buttons cent +-0.1
+     (Onno, 21 Oct); the note name centred between note+ and note-, the
+     cents between the four cent buttons.  One layout for both
+     orientations -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <LinearLayout
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:orientation="horizontal">
+	<Button android:id="@+id/measure_semi_plus"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/semi_plus" />
+	<Button android:id="@+id/measure_cent_plus1"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/cent_step_plus1" />
+	<Button android:id="@+id/measure_cent_plus01"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/cent_step_plus01" />
+    </LinearLayout>
+    <LinearLayout
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal">
+	<TextView android:id="@+id/measure_note_name"
+	    style="@style/Tuner.Readout"
+	    android:layout_width="1dp"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1" />
+	<TextView android:id="@+id/measure_note_cents"
+	    style="@style/Tuner.Readout"
+	    android:layout_width="1dp"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="2" />
+    </LinearLayout>
+    <LinearLayout
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1"
+	android:orientation="horizontal">
+	<Button android:id="@+id/measure_semi_minus"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/semi_minus" />
+	<Button android:id="@+id/measure_cent_minus1"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/cent_step_minus1" />
+	<Button android:id="@+id/measure_cent_minus01"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="1dp"
+	    android:layout_height="fill_parent"
+	    android:layout_weight="1"
+	    android:text="@string/cent_step_minus01" />
+    </LinearLayout>
+</LinearLayout>

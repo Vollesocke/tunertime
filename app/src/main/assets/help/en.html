@@ -9,7 +9,7 @@
 <body>
 
 <h1 id="contents">TunerTime Organ – Manual</h1>
-<p class="version">Version 18.9, October 2026</p>
+<p class="version">Version 19.0, October 2026</p>
 
 <nav>
 <ol>
@@ -30,7 +30,7 @@
 <li><a href="#github">Recordings to GitHub</a></li>
 <li><a href="#settings">The settings</a></li>
 <li><a href="#without">Without organ mode: stretch and FFT</a></li>
-<li><a href="#measure">Coming soon: measuring and matching temperaments</a></li>
+<li><a href="#measure">Measuring and matching temperaments</a></li>
 <li><a href="#links">Reporting problems, links</a></li>
 </ol>
 </nav>
@@ -580,25 +580,41 @@ with two fingers, scroll with one, tap to pause.
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
 
-<section id="measure" class="soon">
-<h2>18. Coming soon: measuring and matching temperaments</h2>
-<p class="notice"><b>Not in this version yet.</b> Planned for version
-19.0; details may still change.</p>
-<p>It measures an organ's temperament and compares it with the known
-ones. Under temperament → Edit, two buttons are added:</p>
-<ul>
-<li><b>Measure notes</b> ("Töne messen"): first the page "Set the A":
-strobe with octave rows 8′ to 1/4′, no tabs and no detection; you set the
-A by ear over the A pipes of all octaves. "Set" takes it. Then "Enter
-note": you set each of the 12 notes C to B with cent ±1 and ±0.1 until
-its row stands still, and tap "Save note"; the app goes on to the next.
-After the twelfth it goes back. If A is not at 0 cents, the table is
-shifted to A = 0 at the end.</li>
-<li><b>Matching</b>: a table with the 12 notes, the preset measured, and
-the two nearest known temperaments (all built-in ones and your own
-presets), with their mean deviation. Differences over 2 cents in yellow,
-over 4 cents in red.</li>
-</ul>
+<section id="measure">
+<h2>18. Measuring and matching temperaments</h2>
+<p>This takes an organ's temperament by ear and compares it with the
+known ones. Under temperament, add a new preset (or take an existing one)
+and open <b>Edit</b>. At the bottom are two buttons: <b>measure notes</b>
+and <b>matching</b>.</p>
+<h3>Measure notes</h3>
+<ol>
+<li><b>Set concert pitch.</b> A strobe with octave rows only, 8′ to 1/4′
+on the A (110 to 3520 Hz), no tabs and no detection. Set the A with ±1
+and ±0.1 as it is right over the A pipes of all octaves; Reset sets
+440.0 Hz. <b>set</b> takes this A for the measurement.</li>
+<li><b>Enter note: &lt;preset&gt;.</b> The notes C to B of the 8′
+octave, against equal temperament. semi+ and semi− change the note
+(within the octave), cent ±1 and ±0.1 move it until its rows stand
+still. <b>store note</b> saves it in the preset and goes on to the next
+note not yet stored. "n/12" at the top shows how many there are; a
+stored note turns blue. If the preset already has notes, the page starts
+from their values.</li>
+<li>After the twelfth note it goes back to Edit, with <b>matching</b>
+highlighted. If the A was not at 0 cents, the whole table is shifted so
+that A = 0 cents.</li>
+</ol>
+<p>Back goes from "Enter note" to the concert pitch page and from there
+to Edit; what is stored stays (not yet shifted to A = 0). The
+measurement does not change your main screen's settings (note, A, rows,
+focus, follow/locked). Only the 12 semitones are measured, also in
+temperaments with D#/Eb or G#/Ab.</p>
+<h3>Matching</h3>
+<p>Available once the preset has exactly one note per semitone. The table
+shows the preset's cents for C to B and beside them the nearest known
+temperaments (all built-in ones and your own presets), each with its
+mean deviation (RMS) in the header: two on a narrow phone, more on a
+wider one. They are compared at A = 0 cents, with no shift. Differences
+over 2 cents are yellow, over 4 cents red.</p>
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
 

@@ -425,6 +425,14 @@ public class parms {
 		editor.commit();
 	}
 
+		/* only the presets: the measure pages (TunerTime, measure),
+		 * whose other settings are temporary, store notes right away */
+	public static void save_presets() {
+		SharedPreferences.Editor editor = prefs.edit();
+		preset.save(editor);
+		editor.commit();
+	}
+
 		/* a.getPreferences() returns an Activity-local store, while now
 		 * we use the PreferenceManager default, so copy them over */
 	private static void check_for_legacy(Activity a) {
