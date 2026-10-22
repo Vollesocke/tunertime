@@ -151,7 +151,12 @@ public class ShareRecordings {
 				final String err_ = err;
 				a.runOnUiThread(new Runnable() {
 					public void run() {
-						pd.dismiss();
+						try {
+							pd.dismiss();
+						} catch (IllegalArgumentException e) {
+							/* the screen was turned while
+							 * packing: its window is gone */
+						}
 						done(a, chosen, parts, err_);
 					} });
 			}
