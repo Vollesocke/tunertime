@@ -172,4 +172,5 @@ and the time from each onset to the first usable drift.
 On the runs as recorded (22 Oct), the knocks hardly reach the 8' and 4'
 rows: their energy lies far above the pipe's band (the big one in E5,
 33 dB over the pipe broadband, raised the 4' row 3 dB). They darkened
-the weak upper rows, where the pipe has little, for up to 0.8 s.
+the weak upper rows, where the pipe has little, for up to 0.8 s; since
+`strobe_gain()` (jni/strobe.c) about 0.1 s.
