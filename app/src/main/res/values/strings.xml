@@ -182,6 +182,7 @@
 		<item>Werckmeister IV (Rohlf)</item>
 		<item>Werckmeister V (Rohlf)</item>
 		<item>Werckmeister III (Rohlf)</item>
+		<item>Lambert (1774)</item>
 	</string-array>
 	<!-- note names in these are English (G#, Eb); they are shown in
 	     German if German note names are on -->
@@ -211,6 +212,7 @@
 		<item>Rohlf\'s numbering; usually called Werckmeister V</item>
 		<item>Rohlf\'s numbering</item>
 		<item>Rohlf\'s numbering; 1/3 comma, usually called Werckmeister IV</item>
+		<item>1774; seven fifths F-C-G-D-A-E-B-F# 1/7 Pythagorean comma narrow, the rest pure</item>
 	</string-array>
 
 	<!-- microphones (Settings, toasts) -->
