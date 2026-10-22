@@ -159,7 +159,8 @@ note of B2.
 
 1. The Temperierung tab has no buttons any more; nothing to remove.
 2. No Auto on the "Kammerton einstellen" page.
-3. Only the 12 semitones are entered.
+3. Only the 12 semitones are entered. On instruments with subsemitones
+   their tuning is known already, so they don't need to be measured.
 4. Matching strictly at A = 0: the A is set to 0 c on the first page,
    by ear over the A pipes of all octaves. Addendum: if A is stored
    with an offset other than 0 c, the table is converted to A = 0 c at
