@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TunerTime Organ – Handbuch</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+
+<h1 id="inhalt">TunerTime Organ – Handbuch</h1>
+<p class="version">Stand: Version 18.9, Oktober 2026</p>
+
+<nav>
+<ol>
+<li><a href="#was">Was die App ist</a></li>
+<li><a href="#einrichten">Einrichten</a></li>
+<li><a href="#bildschirm">Der Bildschirm</a></li>
+<li><a href="#ton">Einen Ton stimmen</a></li>
+<li><a href="#folgen">Folgen und Fixiert</a></li>
+<li><a href="#kammerton">Den Kammerton einstellen</a></li>
+<li><a href="#temperierung">Eine Temperierung wählen</a></li>
+<li><a href="#presets">Eigene Temperierungen (Presets)</a></li>
+<li><a href="#mixtur">Eine Mixtur stimmen</a></li>
+<li><a href="#laenge">Pfeifenlänge (Länge)</a></li>
+<li><a href="#signal">Vergleichston (Signal)</a></li>
+<li><a href="#tipps">Tipps für die Praxis</a></li>
+<li><a href="#lauf">Einen chromatischen Lauf aufnehmen</a></li>
+<li><a href="#debug">Debug-Aufnahmen und Absturzberichte</a></li>
+<li><a href="#github">Aufnahmen an GitHub</a></li>
+<li><a href="#einstellungen">Die Einstellungen</a></li>
+<li><a href="#ohne">Ohne Orgelmodus: Spreizung und FFT</a></li>
+<li><a href="#messen">Demnächst: Temperierung messen und vergleichen</a></li>
+<li><a href="#links">Probleme melden, Links</a></li>
+</ol>
+</nav>
+
+<section id="was">
+<h2>1. Was die App ist</h2>
+<p>TunerTime Organ ist ein Strobe-Stimmgerät für den Orgelbau, eine
+Weiterentwicklung von Greg Alexanders TunerTime. Es ist eine
+<b>Stimmhilfe</b>: Der Strobe zeigt, was Sie hören. Was gestimmt wird
+und was nicht, entscheiden Sie nach Gehör.</p>
+<ul>
+<li>Die App erkennt den gespielten Ton und lässt den Strobe ihm folgen
+(<span class="b">Folgen</span>). So sehen Sie mit möglichst wenig
+Eingaben genau das, was Sie hören, Taste für Taste.</li>
+<li><b>Die Hand hat immer Vorrang.</b> Stellen Sie einen Ton von Hand
+ein, gilt er, auch wenn die Erkennung etwas anderes hört.</li>
+<li>Für jede Fußtonlage gibt es eine Strobe-Zeile, so dass Sie Oktaven
+und Aliquoten (Quinte, Terz) rein gegen den Grundton sehen.</li>
+<li>Mixturen werden Chor für Chor gegen einen Bezugschor gestimmt
+(<a href="#mixtur">Mixtur</a>).</li>
+</ul>
+<p>Der Bildschirm bleibt an, solange die App offen ist. Sie läuft im
+Hoch- und im Querformat.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="einrichten">
+<h2>2. Einrichten</h2>
+<ol>
+<li>Beim ersten Start fragt Android nach dem <b>Mikrofon</b>: erlauben.
+Ohne Mikrofon geht nichts. Später lässt es sich in den
+Systemeinstellungen unter Apps → TunerTime Organ → Berechtigungen
+erlauben.</li>
+<li>Menü (⋮ oben rechts) → <span class="b">Einstellungen</span> →
+<span class="b">Orgelmodus</span> einschalten. Nach der Installation ist
+er aus. Erst im Orgelmodus gibt es Zeilen nach Fußtonlage, den
+Mixtur- und den Längenmodus.</li>
+<li>Ebenda <span class="b">Deutsche Tonnamen</span> einschalten, wenn
+Sie Cis, B, H und c¹ statt C#4 lesen möchten (a¹ = 440 Hz; große Oktave
+C, Kontra-Oktave C₁). Die Sprache der App stellen Sie unter
+<span class="b">Language / Sprache</span> ein.</li>
+<li>Unter <span class="b">Angezeigte Fußtonlagen</span> die Zeilen
+wählen, höchstens 8. Voreingestellt sind 16′, 8′, 4′, 2 2/3′ und 2′.
+8′ ist der Ton selbst.</li>
+<li>Zurück im Hauptbildschirm im Reiter
+<span class="b">Kammerton</span> das A einstellen
+(<a href="#kammerton">Kammerton</a>) und im Reiter
+<span class="b">Temperierung</span> die Stimmung wählen
+(<a href="#temperierung">Temperierung</a>).</li>
+<li>Rechts unten <span class="b">Fixiert</span> antippen: Der Knopf
+zeigt dann <span class="b">Folgen</span>, und der Strobe folgt dem
+gespielten Ton. Nach der Installation steht er auf Fixiert.</li>
+</ol>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="bildschirm">
+<h2>3. Der Bildschirm</h2>
+<h3>Titelzeile</h3>
+<p>„TunerTime Organ: Strobe“ (im Mixturmodus „TunerTime Organ: Mixtur“).
+Ist eine Temperierung gewählt, steht darunter ihr Name und ihre
+Abweichung für den angezeigten Ton, etwa „Mitteltönig 1/4 Komma
++10.3c“. Das Menü ⋮ enthält <span class="b">Lauf aufnehmen</span>,
+<span class="b">Aufnahmen an GitHub</span>,
+<span class="b">Einstellungen</span>, <span class="b">Hilfe</span> und
+<span class="b">Über TunerTime Organ</span> (mit der Versionsnummer).</p>
+
+<h3>Die Strobe-Zeilen</h3>
+<p>Jede Zeile gehört zu einer Fußtonlage, die tiefste oben. Links steht
+die Fußtonlage und die Frequenz der Zeile in Hz, etwa „8' 130.8“. Die
+Zeile zeigt, wie der Teilton dieser Lage zum Sollton steht:</p>
+<ul>
+<li><b>Stimmt</b> er, laufen die Streifen waagerecht.</li>
+<li>Ist er <b>zu hoch</b>, steigen sie nach rechts an, ist er
+<b>zu tief</b>, fallen sie. Je steiler, desto weiter daneben; ganz weit
+daneben wird das Bild senkrecht oder unruhig.</li>
+<li><b>Wellige</b> Streifen: Zwei Töne schweben auf diesem Teilton.</li>
+</ul>
+<p>Das Bild wird von links nach rechts geschrieben und beginnt dann
+wieder links. Eine Zeile, die für die Abtastrate des Telefons zu hoch
+liegt, bleibt leer und zeigt „zu hoch“.</p>
+
+<h3>Eine Zeile antippen: Fokus</h3>
+<p>Tippen Sie eine Zeile an, wird sie <b>fokussiert</b> (blauer Rahmen);
+nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft
+der Erkennung: Sie sucht dann diesen Teilton und meldet die Taste, zu der
+er gehört. So stimmen Sie ein 4′-Register mit fokussierter 4′-Zeile,
+eine Quinte 2 2/3′ mit fokussierter 2 2/3′-Zeile, und der angezeigte Ton
+bleibt die gespielte Taste. Der Reiter <span class="b">Ton</span> (mit
+<span class="b">Kammerton</span>) und der Reiter
+<span class="b">Mixtur</span> merken sich ihren Fokus getrennt.</p>
+<p>Langes Drücken auf den Strobe öffnet direkt die Auswahl der
+angezeigten Fußtonlagen.</p>
+
+<h3>Unter dem Strobe</h3>
+<ul>
+<li>Die <b>Reiter</b> <span class="b">Ton</span>,
+<span class="b">Kammerton</span>, <span class="b">Mixtur</span> und
+<span class="b">Temperierung</span>. Der gewählte ist unterstrichen.
+Der eingestellte Ton bleibt beim Wechsel zwischen allen Reitern
+erhalten.</li>
+<li>Die <b>Knöpfe des Reiters</b> mit ihren Anzeigen (siehe die
+folgenden Abschnitte).</li>
+<li>Rechts oben in der Ecke: <span class="b">A=440.0</span> (der
+Kammerton) und <span class="b">Orgel</span>, im Mixturmodus statt
+dessen die gemessene Abweichung der Mixtur, etwa
+<span class="b">Mix+01.5c</span>.</li>
+<li>Rechts darunter drei Knöpfe: <span class="b">Folgen</span> /
+<span class="b">Fixiert</span> (<a href="#folgen">Folgen und
+Fixiert</a>), <span class="b">Signal</span>
+(<a href="#signal">Vergleichston</a>) und
+<span class="b">Länge</span> (<a href="#laenge">Pfeifenlänge</a>).</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="ton">
+<h2>4. Einen Ton stimmen</h2>
+<p>Im Reiter <span class="b">Ton</span>:</p>
+<ul>
+<li>Die Anzeige in der Mitte zeigt den Ton (die gespielte Taste in der
+8′-Lage) und darunter seinen Versatz in Cent, den Sie von Hand
+einstellen. Die Abweichung der Temperierung steht in der Titelzeile; der
+Sollton ist Ton + Temperierung + Versatz.</li>
+<li><span class="b">Ton+</span> / <span class="b">Ton-</span>: einen
+Halbton weiter. Lang drücken: eine Quinte weiter.</li>
+<li><span class="b">Okt+</span> / <span class="b">Okt-</span>: eine
+Oktave weiter.</li>
+<li><span class="b">Cent+</span> / <span class="b">Cent-</span>: den
+Versatz um 1 Cent ändern, etwa für eine Schwebung (Unda maris,
+Vox coelestis). Der Versatz bleibt beim Folgen erhalten.</li>
+</ul>
+<p>So stimmen Sie ein Register:</p>
+<ol>
+<li>Register ziehen, Telefon in die Nähe der Pfeifen legen.</li>
+<li>Bei einem 4′, 2′ oder einer Aliquote die Zeile dieser Fußtonlage
+antippen (Fokus), bei einem 8′ die 8′-Zeile.</li>
+<li><span class="b">Folgen</span> einschalten und die erste Taste
+halten. Der Strobe springt nach etwa einer halben Sekunde auf die
+Taste.</li>
+<li>Die Pfeife stimmen, bis die Streifen ihrer Zeile waagerecht
+stehen.</li>
+<li>Nächste Taste. Stimmt der angezeigte Ton nicht, von Hand
+korrigieren (<a href="#folgen">Folgen und Fixiert</a>).</li>
+</ol>
+<p>Oktaven und Aliquoten sind rein: Die Zeilen 4′, 2 2/3′, 2′, 1 3/5′
+liegen genau auf dem 2-, 3-, 4- und 5-fachen der 8′-Frequenz, ohne
+Temperierung.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="folgen">
+<h2>5. Folgen und Fixiert</h2>
+<p>Der Knopf rechts unten wechselt mit jedem Antippen zwischen zwei
+Zuständen:</p>
+<ul>
+<li><span class="b">Folgen</span> (blau): Hört die Erkennung viermal
+hintereinander denselben Ton (etwa 0,4 s), springt der angezeigte Ton
+dorthin. In der Stille bleibt der letzte Ton stehen.</li>
+<li><span class="b">Fixiert</span> (gelb): Der Ton bleibt, wo er ist;
+er ändert sich nur von Hand.</li>
+</ul>
+<p>Im Reiter Temperierung und während eines chromatischen Laufs ist der
+Knopf grau und ohne Wirkung. Während das <a href="#signal">Signal</a>
+spielt, folgt die App nicht.</p>
+
+<h3>Von Hand korrigieren</h3>
+<p>Zeigt die App beim Folgen einen falschen Ton (meist eine Oktave
+daneben), stellen Sie den richtigen mit <span class="b">Ton+</span>,
+<span class="b">Ton-</span>, <span class="b">Okt+</span> oder
+<span class="b">Okt-</span> ein. Im Mixturmodus gelten dessen Ton- und
+Oktavknöpfe ebenso. Dann:</p>
+<ol>
+<li><b>Die Korrektur hält, solange die Taste klingt.</b> Den Ton, den
+die Erkennung gehört hatte, übernimmt sie nicht wieder, bis sie einen
+anderen hört oder die Taste losgelassen wird (das Signal fällt 0,3 s
+lang auf das Grundgeräusch).</li>
+<li><b>Danach geht es nah am angezeigten Ton weiter</b>, wie beim
+Stimmen eines Registers Taste für Taste: Jeder erkannte Ton wird in die
+Oktave gelegt, die dem angezeigten am nächsten ist, und der angezeigte
+Ton folgt nur bis zu einer Quarte (500 Cent) nach oben oder unten.
+Ein 4′-Register, einmal eine Oktave nach unten korrigiert, wird danach
+in der 8′-Lage angezeigt.</li>
+<li><b>Ende:</b> nach 10 s, in denen kein Ton erkannt wird (ein neues
+Register), oder wenn ein chromatischer Lauf beginnt. Fixiert und wieder
+Folgen ändert daran nichts.</li>
+</ol>
+<p>Aliquoten (Quinte, Terz) folgen nicht über diese Oktavfaltung: Tippen
+Sie ihre Zeile an, dann meldet die Erkennung die Taste.</p>
+<p>Wenn die Erkennung immer wieder danebenliegt: auf
+<span class="b">Fixiert</span> schalten und die Tasten mit
+<span class="b">Ton+</span> von Hand weiterschalten.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="kammerton">
+<h2>6. Den Kammerton einstellen</h2>
+<p>Im Reiter <span class="b">Kammerton</span>:</p>
+<ul>
+<li>Die Anzeige zeigt das A und den eingestellten Ton, etwa
+„440.0 Hz · a¹ +00.0c“. Antippen öffnet ein Zahlenfeld für das A (220 bis
+880 Hz).</li>
+<li><span class="b">+1</span> / <span class="b">-1</span> und
+<span class="b">+0.1</span> / <span class="b">-0.1</span>: das A in
+Schritten von 1 Hz und 0,1 Hz.</li>
+<li><span class="b">Auto</span>: setzt das A so, dass der angezeigte Ton
+(in der gewählten Temperierung) genau auf das Gehörte passt. Dazu nimmt
+die App den Mittelwert (Median) der Erkennung aus den letzten 2 s, soweit
+sie auf diesen Ton passt, und rundet auf 0,1 Hz. Hat sie davon weniger
+als etwa 1 s gehört, geschieht nichts. Das geht mit jedem Ton, nicht nur
+mit dem A. Ein von Hand eingestellter Cent-Versatz zählt dabei nicht
+mit.</li>
+<li><span class="b">Reset</span>: A = 440,0 Hz.</li>
+</ul>
+<p>So bestimmen Sie die Tonhöhe einer Orgel: eine Pfeife des
+Bezugsregisters etwa 2 s halten, <span class="b">Auto</span> tippen;
+dann mit den Knöpfen als Kompromiss aus mehreren Pfeifen (etwa den A
+aller Oktaven) nachstellen. Eine Temperaturkorrektur gibt es nicht:
+Die Pfeifen ändern sich um etwa 3 Cent je Grad, das gleichen Sie über
+das A aus.</p>
+<p>Der Reiter Kammerton teilt Ton und Fokus mit dem Reiter Ton, und die
+Erkennung folgt auch hier.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="temperierung">
+<h2>7. Eine Temperierung wählen</h2>
+<p>Der Reiter <span class="b">Temperierung</span> ist eine reine
+Ansicht: Er zeigt die gewählte Temperierung als Tabelle (Ton und
+Abweichung von gleichstufig in Cent) und ändert weder den Ton noch den
+Fokus. Der Strobe ist hier ausgeblendet.</p>
+<ul>
+<li><span class="b">Auswahl</span> öffnet die Liste „Preset wählen“.
+Ein Preset antippen wählt es. Langes Drücken auf den Reiter
+Temperierung öffnet diese Liste direkt, ohne den Reiter zu
+wechseln.</li>
+<li><span class="b">Bearbeiten</span> öffnet das gewählte Preset
+(<a href="#presets">Presets</a>).</li>
+</ul>
+<h3>Die eingebauten Temperierungen</h3>
+<p>Nach der Installation ist die Liste leer. Im Bildschirm „Preset
+wählen“ fügt Menü ⋮ → <span class="b">Stimmung hinzufügen…</span> eine
+der eingebauten Temperierungen als Preset hinzu und wählt sie gleich:</p>
+<p class="list">Gleichstufig · Pythagoreisch · Mitteltönig 1/4 Komma ·
+Mitteltönig 1/6 Komma · Werckmeister III · Kirnberger III ·
+Vallotti (1754) · Young II · Kellner (Bach) · Young-Sorge ·
+Fast gleichstufig · Gräf-Sorge · Vallotti modifiziert ·
+Wegscheider / Reinfeld · Johannes Lang (Freiburg) ·
+Thomas Rothert (Bayreuth) · Frischknecht II · Neidhardt modifiziert ·
+Neidhardt für das Dorf (1732) · Neidhardt für die kleine Stadt (1732) ·
+Neidhardt für die große Stadt (1724) · Werckmeister 1691 modifiziert
+(Niederrodenbach) · Werckmeister III, IV und V (Rohlf) · Lambert
+(1774)</p>
+<p>Die Tabellen der Orgelbau Rohlf zählen Werckmeister um eins anders
+als üblich (Rohlfs 1691 ist das übliche III, sein III das übliche IV).
+Lambert (1774): sieben Quinten F–C–G–D–A–E–H–Fis um 1/7 pythagoreisches
+Komma verkleinert, die übrigen rein. Alle Tabellen haben A = 0 Cent,
+damit der Kammerton das A bleibt, das Sie hören.</p>
+<p>Eine gewählte Temperierung gilt im Reiter Ton (und Kammerton) und im
+Mixturmodus, der auf ihre Töne rundet.</p>
+
+<h3>Wolfsquinte, Dis und Es, Gis und As</h3>
+<p>Bei Pythagoreisch und den mitteltönigen Stimmungen ist der Name im
+Reiter Temperierung ein Knopf. Er öffnet „Lage der Wolfsquinte oder
+Töne“:</p>
+<ul>
+<li>eine der 12 Lagen der Wolfsquinte (voreingestellt zwischen Gis und Es), oder</li>
+<li><span class="b">Töne wählen (auch mehr als 12)…</span>: eine Liste
+der 21 Töne Fes bis His mit ihren Cent. Für eine mitteltönige Orgel mit
+Subsemitonien kreuzen Sie etwa Dis und Es, Gis und As an. Jede Taste
+braucht einen Ton; fehlt einer, steht das im Titel der Liste.</li>
+</ul>
+<p>Mit zwei Tönen auf einer Taste geht <span class="b">Ton+</span>
+D → Dis → Es → E, im Mixturmodus ebenso, und die Erkennung nimmt den
+näheren der beiden. Die Töne heißen dann „dis¹“ und „es¹“ (mit genau 12
+Tönen schreibt die App „Ds“). Die Wahl bleibt gespeichert, bis eine
+andere Temperierung gewählt wird.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="presets">
+<h2>8. Eigene Temperierungen (Presets)</h2>
+<p>Ein Preset mit genau einem Ton für jede der 12 Tasten der Oktave ist
+eine Temperierung. Die Liste „Preset wählen“:</p>
+<ul>
+<li><span class="b">Neues Preset</span>: ein leeres Preset anlegen.</li>
+<li>Lang auf ein Preset drücken: <span class="b">Bearbeiten</span>,
+<span class="b">Umbenennen</span>, <span class="b">Duplizieren</span>,
+<span class="b">Nach oben</span>, <span class="b">Nach unten</span>,
+<span class="b">Exportieren…</span>, <span class="b">Löschen</span>.</li>
+<li>Menü ⋮: <span class="b">Stimmung hinzufügen…</span>,
+<span class="b">Nach Namen sortieren</span>,
+<span class="b">Importieren…</span>,
+<span class="b">Alle exportieren…</span>.</li>
+</ul>
+<h3>Bearbeiten</h3>
+<p>„Preset bearbeiten“ zeigt den Namen und die Töne.
+<span class="b">Ton hinzufügen</span> fügt einen Ton an, ein Ton
+antippen öffnet „Preset-Ton bearbeiten“: Tonbuchstabe, <b>#</b>, Oktave,
+das Feld <b>Cent</b> mit <span class="b">±</span> (Vorzeichen),
+<span class="b">-1c</span> <span class="b">-0.1c</span>
+<span class="b">+0.1c</span> <span class="b">+1c</span>, dann
+<span class="b">Speichern</span> oder
+<span class="b">Ton löschen</span>. Die Cent sind die Abweichung von
+gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton
+das A bleibt. <span class="b">Preset löschen</span> löscht das ganze
+Preset.</p>
+<h3>Import und Export</h3>
+<p>Presets werden als Textdatei ausgetauscht (etwa per Mail oder Cloud),
+die sich auch von Hand schreiben lässt:</p>
+<pre># Zeilen mit # sind Kommentare
+preset Meine Stimmung
+    C4   +5.9
+    C#4  -3.9
+    ...
+    A4   +0.0
+end</pre>
+<p>Tonnamen englisch (C D E F G A B mit # oder b), Oktaven wie C4 = c¹,
+A4 = a¹; Cent mit Vorzeichen, auf 0,1 Cent. Die Beschreibung steht oben
+in jeder exportierten Datei. Enthält eine Datei einen Fehler, wird
+nichts importiert und die Fehler werden angezeigt.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="mixtur">
+<h2>9. Eine Mixtur stimmen</h2>
+<p>Im Mixturmodus nimmt die App keinen Sollton an. Sie <b>misst den
+Bezugschor</b> (die fokussierte Zeile) und legt den Sollton dorthin,
+wo er klingt: Dessen Zeile steht dann still, und die anderen Zeilen
+zeigen, wie die übrigen Chöre rein zu ihm stehen.</p>
+<h3>Der Reiter Mixtur</h3>
+<ul>
+<li>Die Anzeige zeigt die Taste mit der gemessenen Abweichung von ihrem
+temperierten Ton, etwa „c¹ +01.5c“, daneben den gehörten Ton und darunter
+den Stand: „Strobe-Zeile antippen“, „Messen antippen“, „messe 2': 60 %“
+oder „gemessen an 2'“.</li>
+<li><span class="b">Ton+</span> / <span class="b">Ton-</span> und
+<span class="b">Okt+</span> / <span class="b">Okt-</span>: die nächste
+Taste oder Oktave. Die gemessene Abweichung wird mitgenommen.</li>
+<li><span class="b">Messen</span> (oder den Reiter Mixtur nochmals
+antippen): neu messen.</li>
+<li><span class="b">Reset</span>: zurück auf den temperierten Ton ohne
+Abweichung.</li>
+<li>Rechts oben im Strobe groß die Abweichung des fokussierten Chors,
+etwa „2' +01.5c“; in der Ecke unter dem A die gemessene Abweichung der
+Mixtur („Mix+01.5c“).</li>
+</ul>
+<h3>So geht es</h3>
+<ol>
+<li>Prüfen, ob alle Fußtonlagen der Mixtur als Zeilen angezeigt werden
+(Einstellungen → Angezeigte Fußtonlagen, höchstens 8).</li>
+<li>Reiter <span class="b">Mixtur</span>. Die Zeile des Bezugschors
+antippen. Ist keine fokussiert, misst die App an der 8′-Zeile.</li>
+<li>Die Taste mit dem Bezugschor halten. Die Messung mittelt 2 s
+(unter 8′: 3 s) und hört früher auf, sobald das Ergebnis ruhig ist.
+Dann steht „gemessen an …“.</li>
+<li>Den nächsten Chor dazunehmen und seine Pfeife stimmen, bis seine
+Zeile stillsteht. Wer die Abweichung als Zahl lesen will, tippt die
+Zeile dieses Chors an: Die große Anzeige zeigt dann ihn. (Danach
+<span class="b">Messen</span> misst an diesem Chor.)</li>
+<li>Nächste Taste. Mit <span class="b">Folgen</span> springt die App
+selbst dorthin und misst neu, 0,5 s nach dem Einsatz.</li>
+</ol>
+<h3>Hinweise im Mixturmodus</h3>
+<ul>
+<li>„Schwebung: zweite Pfeife auf diesem Teilton?“: Der gemessene
+Teilton schwebt, wohl klingt noch eine Pfeife darauf (ein Chor nicht
+abgestellt, eine Schwebung). Das Ergebnis gilt, kann aber die lautere
+der beiden sein oder dazwischen liegen.</li>
+<li>„Ton über einen Halbton neben den Zeilen: Taste prüfen“: Was klingt,
+liegt mehr als einen Halbton neben jeder Zeile. Dann misst der Strobe
+falsch. Taste prüfen, oder ein Chor (etwa nach einer Repetition) hat
+keine Zeile.</li>
+<li>Beim Folgen gilt nur, was höchstens 20 Cent neben dem gemessenen Ton
+der Mixtur liegt. Ton- und Oktavknöpfe gelten als
+<a href="#folgen">Korrektur von Hand</a>.</li>
+<li>Wird die Taste losgelassen, bevor die Messung fertig ist, gilt, was
+bis dahin gemessen wurde, wenn es mindestens die halbe Zeit war; sonst
+gilt die Messung nicht.</li>
+<li>Die gemessene Abweichung gilt nur im Reiter Mixtur; beim Verlassen
+geht sie verloren, beim Wiederkommen misst die App neu.</li>
+<li>Einstellungen → <span class="b">Mixtur: dem Bezugschor folgen</span>
+(aus): Dann wird die Taste am fokussierten Chor erkannt und bewegt sich
+höchstens um einen Ganzton, so dass ein allein klingender anderer Chor
+sie nicht verschiebt. Größere Schritte von Hand.</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="laenge">
+<h2>10. Pfeifenlänge (Länge)</h2>
+<p>Der Knopf <span class="b">Länge</span> schaltet unter dem Strobe eine
+Anzeige ein, um wie viel die klingende Pfeife zu lang oder zu kurz ist,
+etwa „+12 mm (λ/2)“. Das ist zum Einrichten des Tonumfangs gedacht,
+nicht zum Feinstimmen.</p>
+<ul>
+<li><b>+</b>: zu lang (zu tief), abschneiden. <b>−</b>: zu kurz (zu
+hoch), verlängern. <b>±</b>: stimmt (innerhalb 0,2 Cent).</li>
+<li>Der Knopf links daneben wählt <span class="b">offen</span> (λ/2)
+oder <span class="b">gedackt</span> (λ/4). Für Rohrflöten ist die
+Angabe nur ungefähr.</li>
+<li>Farbe: blau, wenn die Anzeige ruhig ist; gelb, solange sie sich noch
+bewegt; grau „(gehalten)“, wenn die Pfeife verstummt ist.
+„warte auf Ton…“: noch nichts gehört. „unklar“: Was klingt, ist kein
+Teilton des Solltons.</li>
+<li>Ist keine Zeile fokussiert, fokussiert Länge die 8′-Zeile. Mit
+fokussierter 4′-Zeile gilt die Länge für die 4′-Pfeife.</li>
+<li>Gerechnet wird mit der Schallgeschwindigkeit bei 18 °C. Die
+Mündungskorrektur fällt heraus, da nur der Unterschied zählt.</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="signal">
+<h2>11. Vergleichston (Signal)</h2>
+<p><span class="b">Signal</span> spielt den Sollton (die 8′-Lage, mit
+Temperierung und Versatz) als Sinuston über den Lautsprecher, bis Sie
+nochmals tippen. Der Knopf ist dann hervorgehoben. Solange er spielt,
+folgt die Erkennung nicht. Mit dem Signal hören Sie, wohin der Strobe
+zielt; zugleich ist es ein Selbsttest: Die 8′-Zeile muss dabei waagerecht
+stehen.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="tipps">
+<h2>12. Tipps für die Praxis</h2>
+<ul>
+<li><b>Wohin mit dem Telefon:</b> nah an die Pfeifen, die Sie stimmen,
+nicht auf das Notenpult neben dem Gebläse, wenn es sich vermeiden lässt.
+Brummen von Gebläse und Netz lernt die App zwischen den Tasten und zieht
+es ab, aber direkt daneben gelingt das nicht. Die
+<span class="b">Pegelanzeige</span> (Einstellungen) zeigt, ob das
+Signal reicht: rot zu leise, gelb knapp, grün gut.</li>
+<li><b>Leise Gedackte und Rohrflöten</b> sind für die Erkennung am
+schwersten: fast reine Sinustöne, oft schwebend. Hier hilft die
+fokussierte 8′-Zeile, und notfalls Fixiert und Ton+ von Hand.</li>
+<li><b>Jede Taste etwa 3 s halten.</b> Die Erkennung braucht rund
+0,5 s, die Mixturmessung 2 bis 3 s.</li>
+<li><b>Wenn die Erkennung falsch liegt:</b> einmal von Hand
+korrigieren; die Korrektur hält, und die nächsten Tasten folgen nah an
+ihr (<a href="#folgen">Folgen und Fixiert</a>). Bei 4′, 2′ und
+Aliquoten die Zeile der Fußtonlage antippen. Hilft das nicht:
+<span class="b">Fixiert</span> und von Hand weiterschalten.</li>
+<li>Sprechen, Schritte und Klopfen in der Nähe stören die Erkennung
+kurz; sie übernimmt einen Ton erst, wenn sie ihn mehrmals hintereinander
+gehört hat.</li>
+<li>Tremulant aus.</li>
+<li>Die Temperatur ändert die Tonhöhe der Pfeifen (etwa 3 Cent je Grad):
+den Kammerton von Hand anpassen.</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="lauf">
+<h2>13. Einen chromatischen Lauf aufnehmen</h2>
+<p>Ein Lauf ist die Aufnahme eines ganzen Registers, Taste für Taste.
+Da Sie die Tasten von Hand weiterschalten, ist für jede Taste bekannt,
+welcher Ton es ist. Damit verbessern die Entwickler die Erkennung an
+echten Pfeifen. Jeder Lauf hilft, besonders von schwierigen Registern
+und lauten Orten.</p>
+<ol>
+<li>Im Reiter Ton oder Mixtur die erste Taste als angezeigten Ton
+einstellen. Die Zeile der Fußtonlage des Registers antippen, dann wird
+auch aufgezeichnet, wie weit jede Pfeife verstimmt ist.</li>
+<li>Menü ⋮ → <span class="b">Lauf aufnehmen</span>. Ausfüllen:
+Orgel, Kirche; Register (z. B. Rohrflöte 8′); die Art (Offen (Labial),
+Gedackt, Zungenregister, Mixtur, Aliquot, Anderes); die Fußlage;
+Notizen (Handyposition, Mikrofon, Temperatur…).
+<span class="b">Start</span>.</li>
+<li>Jede Taste der Reihe nach: etwa 3 s halten, loslassen, dann
+<span class="b">Ton+</span> (im Mixturmodus ebenso).
+<span class="b">Ton-</span> nimmt eine Taste noch einmal auf.</li>
+<li><span class="b">Markieren</span> (oben in der Leiste) vermerkt bei
+der aktuellen Taste: Störgeräusch, Pfeife defekt, Falsche Taste gespielt
+oder einen Text.</li>
+<li>Beenden mit <span class="b">■ Ende</span> oben in der Leiste; dort
+stehen auch die Zeit und die Zahl der Tasten.</li>
+</ol>
+<p>Während des Laufs folgt die App nicht (der angezeigte Ton ist die
+gespielte Taste), die Erkennung läuft aber mit. Der Bildschirm dreht sich
+nicht, Einstellungen, Hilfe und Über sind ausgeblendet, Temperierung
+ist gesperrt. Die App zu verlassen beendet und speichert den Lauf.
+Höchstens 20 Minuten (etwa 6 MB je Minute). Danach steht der Knopf
+wieder auf Folgen oder Fixiert wie vorher.</p>
+<p><b>Gespeichert</b> wird das ganze Mikrofonsignal als WAV und eine
+Textdatei mit den Angaben aus dem Dialog, Kammerton, Temperierung,
+Gerät und Mikrofon, einer Zeile je Taste (Beginn, Ende, Ton, Sollfrequenz),
+den Markierungen und dem Verlauf der Erkennung und der Bedienung. Die
+Dateien liegen im Ordner der App (Android/data/…/files/runs) und werden
+mit <a href="#github">Aufnahmen an GitHub</a> verschickt.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="debug">
+<h2>14. Debug-Aufnahmen und Absturzberichte</h2>
+<p><b>Debug-Aufnahmen</b> (Einstellungen → Debug, in den Testversionen
+an): Jedes Mal, wenn Sie beim Folgen den Ton von Hand korrigieren,
+speichert die App 7 s Mikrofonsignal (5 s davor, 2 s danach) als WAV mit
+einer Textdatei: welchen Ton sie erkannt und welchen Sie eingestellt
+haben, und was sie in dieser Zeit gehört und getan hat. Genau diese
+Stellen braucht die Entwicklung. Die neuesten 100 bleiben.</p>
+<p><b>Absturzberichte</b>: Stürzt die App ab, schreibt sie einen
+Bericht; ab Android 11 holt sie beim nächsten Start auch die Berichte
+des Systems nach. Sie gehen mit
+<a href="#github">Aufnahmen an GitHub</a> mit.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="github">
+<h2>15. Aufnahmen an GitHub</h2>
+<p>So kommen Läufe, Debug-Aufnahmen und Absturzberichte vom Telefon zu
+den Entwicklern. Sie brauchen ein Konto bei GitHub und müssen im Browser
+des Telefons angemeldet sein.</p>
+<ol>
+<li>Menü ⋮ → <span class="b">Aufnahmen an GitHub</span>. Eine Liste
+zeigt je Lauf eine Zeile (Datum, Register, Tasten, Dauer, Größe), je Tag
+die Debug-Aufnahmen und die Absturzberichte. Angekreuzt ist, was noch
+nicht gepackt wurde; „(schon gepackt)“ lässt sich wieder ankreuzen.</li>
+<li><span class="b">Packen</span>. Die App legt Zip-Dateien in
+<b>Downloads/TunerTime</b> ab, jede unter 25 MB (die Grenze von GitHub;
+große Dateien werden geteilt). Die Zips vom letzten Mal löscht sie dort
+vorher.</li>
+<li>Der Browser öffnet ein neues Issue auf github.com/Vollesocke/tunertime
+mit einer Liste der Zips.</li>
+<li>Unter dem Text <b>„Add Files“</b> (Büroklammer) antippen. Die
+Dateiauswahl zeigt zuerst die zuletzt verwendeten Dateien, oft keine: ☰ → <b>Downloads</b> →
+<b>TunerTime</b>, eine Zip lang drücken, die anderen antippen, dann
+<span class="b">Auswählen</span>. Die Links erscheinen oben im Text.</li>
+<li>Gern ein paar Worte dazu schreiben (Orgel, was auffiel), dann das
+Issue anlegen.</li>
+</ol>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="einstellungen">
+<h2>16. Die Einstellungen</h2>
+<dl>
+<dt>Allgemein</dt>
+<dd><span class="b">Orgelmodus</span>: Zeilen nach Fußtonlage, Mixtur
+und Länge, keine Spreizung. <span class="b">Deutsche Tonnamen</span>:
+Cis, B, H; C₁ C c c¹ c². <span class="b">Language / Sprache</span>:
+Systemsprache, English, Deutsch.</dd>
+<dt>Audio</dt>
+<dd><span class="b">Audioquelle</span>: am besten
+<b>Automatisch</b>. Das Mikrofon wählt die App selbst (das mit dem
+besten Signal).</dd>
+<dt>Strobe</dt>
+<dd><span class="b">Farben</span> (Batlow, Schiefer / Weiß, Rot / Grün,
+Schwarz / Weiß, Blau / Gelb, Rot / Blau).
+<span class="b">Pegelanzeige</span> (aus): am rechten Rand des Strobe der
+Eingangspegel; rot zu leise zum Erkennen, gelb knapp, grün gut; der
+weiße Strich ist die Schwelle der Erkennung.
+<span class="b">Angezeigte Fußtonlagen</span>: bis zu 8 aus 32′ bis
+1/8′, auch 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
+<dt>Debug</dt>
+<dd><span class="b">Mixtur: dem Bezugschor folgen</span>
+(<a href="#mixtur">Mixtur</a>). <span class="b">Debug-Aufnahmen</span>
+(<a href="#debug">Debug-Aufnahmen</a>).</dd>
+</dl>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="ohne">
+<h2>17. Ohne Orgelmodus: Spreizung und FFT</h2>
+<p>Ohne Orgelmodus ist TunerTime das Stimmgerät von Greg Alexander, etwa
+für Klaviere:</p>
+<ul>
+<li>Die Zeilen zeigen Teiltöne (1., 2., 4., 6., 8.; Einstellungen →
+Angezeigte Teiltöne). Antippen hält den Strobe an
+(<b>Pause</b>).</li>
+<li>Statt Mixtur gibt es den Reiter <span class="b">Spreizung</span>
+(Cent je Oktave, für Saiteninstrumente).</li>
+<li>Statt Länge gibt es <span class="b">FFT</span>: ein Spektrogramm.
+<span class="b">N+</span> / <span class="b">N-</span> ändert die
+Blockgröße (größer: genauer, kleiner: schneller),
+<span class="b">Skala</span> / <span class="b">Hz</span> die
+Beschriftung; zoomen mit zwei Fingern, verschieben mit einem, antippen
+hält an. <span class="b">Strobe</span> führt zurück.</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="messen" class="soon">
+<h2>18. Demnächst: Temperierung messen und vergleichen</h2>
+<p class="notice"><b>Noch nicht in dieser Version.</b> Geplant für
+Version 19.0; Einzelheiten können sich noch ändern.</p>
+<p>Damit lässt sich die Temperierung einer Orgel messen und mit den
+bekannten vergleichen. Unter Temperierung → Bearbeiten kommen zwei
+Knöpfe hinzu:</p>
+<ul>
+<li><b>Töne messen</b>: Zuerst die Seite „Kammerton einstellen“: Strobe
+mit Oktavzeilen 8′ bis 1/4′, ohne Reiter und ohne Erkennung, das A von
+Hand nach Gehör über die A-Pfeifen aller Oktaven. „Set“ übernimmt es.
+Dann „Ton eingeben“: Sie stellen jeden der 12 Töne C bis H mit Cent ±1
+und ±0,1 ein, bis seine Zeile steht, und tippen „Ton speichern“; die App
+geht zum nächsten. Nach dem zwölften geht es zurück. Hat das A nicht
+0 Cent, wird die Tabelle am Ende auf A = 0 verschoben.</li>
+<li><b>Matching</b>: eine Tabelle mit den 12 Tönen, dem gemessenen Preset
+und den zwei nächsten bekannten Temperierungen (alle eingebauten und
+Ihre eigenen Presets), mit ihrer mittleren Abweichung. Unterschiede über
+2 Cent gelb, über 4 Cent rot.</li>
+</ul>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+<section id="links">
+<h2>19. Probleme melden, Links</h2>
+<p>Fehler, Abstürze und Wünsche bitte als Issue auf GitHub melden,
+gern mit <a href="#github">Aufnahmen</a>:<br>
+<a href="https://github.com/Vollesocke/tunertime/issues">github.com/Vollesocke/tunertime/issues</a></p>
+<p>Quelltext von TunerTime Organ:<br>
+<a href="https://github.com/Vollesocke/tunertime">github.com/Vollesocke/tunertime</a></p>
+<p>Das ursprüngliche TunerTime von Greg Alexander, mit seiner
+Beschreibung des Strobe und des FFT (englisch):<br>
+<a href="http://galexander.org/software/tunertime/">galexander.org/software/tunertime</a></p>
+<p>TunerTime und TunerTime Organ sind freie Software unter der GNU GPL,
+Version 2.</p>
+<p class="top"><a href="#inhalt">↑ Inhalt</a></p>
+</section>
+
+</body>
+</html>

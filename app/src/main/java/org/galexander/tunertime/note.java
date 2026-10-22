@@ -21,17 +21,26 @@ public class note {
 	public note(int cents_) {
 		int adj_cents = cents_+900*U;	/* based on C instead of A */
 
-		note_idx = ((adj_cents+50*U)/(100*U))%12;
+		/* floored, so that a note below C0 has a name too: 18.7
+		 * crashed on a negative index here, from a mixture-mode
+		 * estimate divided by a high focused row's ratio */
+		int semi = floor_div(adj_cents+50*U, 100*U);
+		note_idx = semi - 12*floor_div(semi, 12);
 
-		cents = (((adj_cents%(100*U))+50*U)%(100*U))-50*U;
+		cents = adj_cents+50*U - semi*100*U - 50*U;
 		cents_str = cents_str(cents);
 
-		octave = (adj_cents+50*U)/(1200*U);
+		octave = floor_div(semi, 12);
 
 		note_str = class_name(note_idx);
 		name_oct = german() ? german(note_idx, octave)
 				    : (note_str + octave);
 		full_str = name_oct + " " + cents_str;
+	}
+
+		/* a/b rounded down, b > 0 (Math.floorDiv needs API 24) */
+	private static int floor_div(int a, int b) {
+		return (a >= 0) ? a/b : -((b-1-a)/b);
 	}
 
 		/* the "German note names" setting */

@@ -26,6 +26,9 @@ struct strobe_rec {
 	unsigned prev_x, prev_y;	/* display location of last point */
 	unsigned prev_color;		/* display color of last point */
 	int samp_max;			/* highest amplitude seen so far */
+	int pre_max;			/* samp_max before a jump, 0 if none
+					 * pending (strobe_gain) */
+	int jump_samps;			/* samples since that jump */
 	unsigned multiplier;		/* horizontal scale */
 	int last_cleared_col;
 };
@@ -229,6 +232,39 @@ clear_col(jint *bitmap_ptr, struct strobe_rec *s, int col)
 		start_x, s->y, stop_x+1, s->y+s->height-1, 0xFF000000);
 }
 
+	/* the gain of a row follows its loudest sample at once and falls
+	 * back by a tenth per buffer, so a pipe fills the row however loud.
+	 * A knock of the tuning tool on the pipe, the cone, the slide: a
+	 * burst, often far above the pipe in its band, and gone again in
+	 * 0.05-0.3 s.  Followed like a new note, it would leave the pipe's
+	 * pattern dim for up to a second (the gain falls 39 dB/s), on the
+	 * weak upper rows above all.  So a jump of the buffer's peak to
+	 * GAIN_JUMP times the gain is remembered, and when the peak is back
+	 * within GAIN_BACK times the gain before inside GAIN_JUMP_SECS, the
+	 * gain goes straight back to it.  A key played (or louder) stays up
+	 * longer, and its jump stands: it looks as before, and so do a
+	 * release and a soft pipe after silence (the gain only falls there) */
+#define GAIN_JUMP 4
+#define GAIN_BACK 2
+#define GAIN_JUMP_SECS 0.5
+static void
+strobe_gain(struct strobe_rec *s, int start_max, int buf_peak)
+{
+	if (s->pre_max > 0) {
+		s->jump_samps += snd_buflen;
+		if (buf_peak <= GAIN_BACK*s->pre_max) {
+			/* a transient: back to the gain before it */
+			s->samp_max = s->pre_max;
+			s->pre_max = 0;
+		} else if (s->jump_samps > GAIN_JUMP_SECS*sample_rate) {
+			s->pre_max = 0;		/* a new level */
+		}
+	} else if ((start_max > 0) && (buf_peak > GAIN_JUMP*start_max)) {
+		s->pre_max = start_max;
+		s->jump_samps = 0;
+	}
+}
+
 static void
 strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 {
@@ -236,6 +272,7 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	unsigned pos = s->prev_pos;
 	unsigned color, last_color = s->prev_color;
 	int samp_max = (s->samp_max*9)/10;
+	int start_max = samp_max, buf_peak = 0;
 	int samp_divider = 1+(samp_max/256);
 	unsigned last_x = s->prev_x, last_y = s->prev_y;
 	unsigned h = s->height-1;
@@ -246,7 +283,8 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	unsigned xsamps_per_col = s->xsamps_per_col;
 	unsigned msamps_per_col = s->xsamps_per_col/100;
 
-	if (!width) {				/* prevent divide by zero */
+	if (!width || (s->height < 1)) {	/* prevent divide by zero, and
+						 * rows under a pixel: h wraps */
 		return;
 	}
 
@@ -262,6 +300,9 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	for (i = 0; i < snd_buflen; i++) {
 		int samp = s->filtered[i];
 
+		if (abs(samp) > buf_peak) {
+			buf_peak = abs(samp);
+		}
 		if (abs(samp) > samp_max) {
 			samp_max = abs(samp);
 			samp_divider = 1+(samp_max/256);
@@ -307,6 +348,7 @@ strobe_drawnew(jint *bitmap_ptr, struct strobe_rec *s)
 	s->prev_y = last_y;
 	s->prev_color = last_color;
 	s->samp_max = samp_max;
+	strobe_gain(s, start_max, buf_peak);
 }
 
 /* draw a vertical tic mark at 1 second into the buffer */
@@ -355,6 +397,17 @@ strobe_draw_htic(jint *bitmap_ptr, struct strobe_rec *s)
 #define DRIFT_SETTLE_TAUS 4.0
 #define DRIFT_ONSET 2.0
 #define DRIFT_ONSET_SECS 0.2
+	/* a knock on the pipe or the tuning cone is an onset too, often far
+	 * above the pipe in the row's band, and its blocks are skipped as
+	 * above.  But it raised the peak, and with it the gate: after a
+	 * knock more than 20 dB over the pipe the pipe stayed below the gate
+	 * until the peak had decayed (up to 1.5 s in tools/strobe_replay.c),
+	 * and a mixture measurement could take that for the key released
+	 * (mixture.java RELEASE_GAP).
+	 * So when, within DRIFT_TRANSIENT_SECS of an onset, a block is back
+	 * within DRIFT_ONSET times the peak before it, the peak goes back to
+	 * that (a key played stays up, and keeps its peak) */
+#define DRIFT_TRANSIENT_SECS 0.5
 
 static int focus_row = -1;
 static struct {
@@ -373,6 +426,9 @@ static struct {
 	double prev_amp;	/* the previous block's amplitude */
 	int quiet;		/* a block was below the gate since the
 				 * last onset */
+	double tr_peak;		/* the peak before the last onset (decaying) */
+	int tr_left;		/* samples left in which a block back near it
+				 * makes that onset a transient */
 } drift;
 
 static void
@@ -427,10 +483,23 @@ static void
 drift_block(void)
 {
 	double amp = 2.0*hypot(drift.re, drift.im)/drift.n;
-	double secs = drift.n/(double)sample_rate, gate;
+	double secs = drift.n/(double)sample_rate, gate, before;
+	double decay = pow(0.5, secs/DRIFT_PEAK_HALFLIFE);
 	int ok;
 
-	drift.peak *= pow(0.5, secs/DRIFT_PEAK_HALFLIFE);
+	drift.peak *= decay;
+	if (drift.tr_left > 0) {
+		/* within DRIFT_TRANSIENT_SECS of an onset: back to the level
+		 * before it is a transient (a knock), so its peak goes.  Not
+		 * ended there, as a knock often rises in bumps */
+		drift.tr_peak *= decay;
+		drift.tr_left -= drift.n;
+		if (amp <= DRIFT_ONSET*drift.tr_peak) {
+			drift.peak = drift.tr_peak;
+			drift.quiet = 0;
+		}
+	}
+	before = drift.peak;
 	if (amp > drift.peak) {
 		drift.peak = amp;
 	}
@@ -443,6 +512,11 @@ drift_block(void)
 		   (drift.quiet && (amp > DRIFT_ONSET*gate)))) {
 		drift.settle = drift.settle_len;
 		drift.quiet = 0;
+		if (drift.tr_left <= 0) {
+			drift.tr_peak = before;
+			drift.tr_left = (int)fmax(drift.settle_len,
+					DRIFT_TRANSIENT_SECS*sample_rate);
+		}
 	}
 	drift.prev_amp = amp;
 	if (drift.settle > 0) {
@@ -537,6 +611,11 @@ strobe_redraw(jint *bitmap_ptr)
 	int y = h-1;
 	int i;
 
+	if (h < 1) {
+		/* a surface lower than the rows (a few pixels): y would
+		 * be -1, before the bitmap */
+		return;
+	}
 	for (i = 0; i < num_strobes-1; i++) {
 		hline(bitmap_ptr, 0, y, width, 0xFF2E343C);
 		y += h;

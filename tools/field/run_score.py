@@ -23,12 +23,15 @@ Per key, from its onset to the next tap.  Onset and release come from
 the WAV: the level at the key's harmonics 1-4 (its target Hz), so mains
 hum, blower rumble and the mic's hiss do not hide a soft treble pipe;
 a key that never rises 12 dB above that level's quiet (the 10th
-percentile around it) counts as silent.  Without the WAV, the first and
+percentile around it; for a key held through nearly all of the run,
+its level in the run's quietest stretch) counts as silent.  Without
+the WAV, the first and
 last estimate:
   ok      the key's note agreed as TunerTime.on_pitch() agrees it
           (DET_AGREE estimates in a row on one semitone, an empty one
-          starts over), and how long after the onset
-  wrong   agreements on another note: interval, oct and 12th flagged
+          starts over) while it sounds, and how long after the onset
+  wrong   agreements on another note while it sounds, of estimates
+          from its onset on: interval, oct and 12th flagged
   empty   share of empty estimates while it sounds
   cents   median of the estimates on the right note, against the key's
           target Hz (A, temperament, stretch): how far the pipe is off
@@ -43,7 +46,11 @@ last estimate:
           CORR_RECENT) is not followed again until another one is
           agreed or the input stays at its noise floor for HOLD_QUIET
           (TunerTime.hold_correction; the level as pitch.c sees it,
-          from the WAV).
+          from the WAV, its floor from the run's quietest stretch on,
+          rising only after FLOOR_UNHEARD with no note heard;
+          --floor-18.8: rising always, and KEY_QUIET 1.4).
+          A key right at its release needs no correction, so the next
+          key, played before the tap, stays followed.
 A table per source, one line per run; -v adds the keys.
 """
 import array
@@ -63,14 +70,19 @@ NEAR_SEMIS = 5
 NEAR_SILENCE = 10.0
 CORR_RECENT = 4.0
 HOLD_QUIET = 0.3
-KEY_QUIET = 1.4		# TunerTime.KEY_QUIET
+KEY_QUIET = 1.6		# TunerTime.KEY_QUIET (1.4 up to v18.8)
 KEY_MIN = 20.0		# TunerTime.KEY_MIN: digital silence is quiet
-FLOOR_RISE = 1.0005	# pitch.c, per analysis
+FLOOR_RISE = 1.0005	# pitch.c, per analysis..
+FLOOR_HELD = True	# ..with no note heard (False: every analysis, <= 18.8)
+FLOOR_UNHEARD = 8	# pitch.c: that many analyses in a row
 FRAME = 0.01		# envelope frames, seconds
 HARMONICS = 4		# a key's level: at its harmonics 1..HARMONICS
 PERIODS = 17		# over this many periods: a semitone away in its first null
 AROUND = 5.0		# its quiet: over the key's segment and this much around
 MIN_SOUND = 0.5		# seconds a key sounds at least (else a key passed by)
+COVER = 0.8		# a key this much of the span around it: no quiet there..
+QUIET_MIN = 0.3		# ..so the run's quietest stretch, if this long
+QUIET_MAX = 2.0		# (at most this much of it)
 KEY = re.compile(r'^key (\d+) (\S+) (\S+) (\S+) (-?\d+) (\S+)( redo)?\s*$')
 MARK = re.compile(r'^mark (\S+) (.*)$')
 EVENT = re.compile(r'^\s*([\d.]+)\s+(\d+)\s+(est|drift|hint|ui)\s+(.*)$')
@@ -261,25 +273,39 @@ class Run:
             a.byteswap()
         self.x = a[::ch] if ch > 1 else a
 
-    def loud(self, times):
-        """per time: the input at least KEY_QUIET over its noise floor,
-        as pitch.c's level and floor see them (the rms of the 8192
-        samples 2:1 decimated, ending there; the floor a minimum rising
-        FLOOR_RISE per analysis); all True without the WAV"""
+    def loud(self, est):
+        """per estimate (time, Hz or None): the input at least KEY_QUIET
+        over its noise floor, as pitch.c's level and floor see them (the
+        rms of the 8192 samples 2:1 decimated, ending there; the floor a
+        minimum rising FLOOR_RISE per analysis after FLOOR_UNHEARD with
+        no note heard), the
+        floor starting at the run's quiet(); all True without the WAV"""
         if self.x is None:
-            return [True]*len(times)
+            return [True]*len(est)
         x = self.x
         d = [0.5*(x[i] + x[i + 1]) for i in range(0, len(x) - 1, 2)]
         s1 = [0.0] + list(itertools.accumulate(d))
         s2 = [0.0] + list(itertools.accumulate(v*v for v in d))
-        out, fl, n = [], 0.0, 8192
-        for t in times:
+        out, fl, n, unheard = [], 0.0, 8192, 0
+        q = self.quiet()
+        if q:
+            # the app heard the place before the run (a run that starts
+            # on a key held would else take the key for the floor)
+            a, b = int(q[0]*self.rate/2.0), int(q[1]*self.rate/2.0)
+            m = max(b - a, 1)
+            mean = (s1[b] - s1[a])/m
+            fl = math.sqrt(max((s2[b] - s2[a])/m - mean*mean, 0.0))
+        for t, hz in est:
             e = min(len(d), int(t*self.rate/2.0))
             b = max(0, e - n)
             m = max(e - b, 1)
             mean = (s1[e] - s1[b])/m
             lv = math.sqrt(max((s2[e] - s2[b])/m - mean*mean, 0.0))
-            fl = lv if (fl <= 0.0 or lv < fl) else fl*FLOOR_RISE
+            unheard = 0 if hz else unheard + 1
+            if fl <= 0.0 or lv < fl:
+                fl = lv
+            elif unheard >= FLOOR_UNHEARD or not FLOOR_HELD:
+                fl *= FLOOR_RISE
             out.append(lv >= KEY_QUIET*fl and lv >= KEY_MIN)
         return out
 
@@ -311,6 +337,35 @@ class Run:
         return a/self.rate + half, half, [10*math.log10(p + 1.0)
                                           for p in power]
 
+    def quiet(self):
+        """(t0, t1): the run's quietest stretch: of the runs of 0.1 s
+        frames within 6 dB of the WAV's 1st percentile of level that
+        last QUIET_MIN s at least, the one of the lowest level, at most
+        QUIET_MAX s of it; None if there is none"""
+        if hasattr(self, '_quiet'):
+            return self._quiet
+        self._quiet = None
+        x, hop = self.x, int(0.1*self.rate)
+        lv = [10*math.log10(sum(v*v for v in x[i:i + hop])/hop + 1.0)
+              for i in range(0, len(x) - hop + 1, hop)]
+        lim = pct(lv, 0.01)
+        if lim is None:
+            return None
+        best, i = None, 0
+        while i < len(lv):
+            j = i
+            while j < len(lv) and lv[j] <= lim + 6:
+                j += 1
+            j = min(j, i + int(QUIET_MAX/0.1))
+            if (j - i)*0.1 >= QUIET_MIN - 1e-9:
+                m = sum(lv[i:j])/(j - i)
+                if best is None or m < best[0]:
+                    best = (m, i, j)
+            i = j + 1
+        if best:
+            self._quiet = (best[1]*0.1, best[2]*0.1)
+        return self._quiet
+
     def sounding(self, k):
         """whether key k sounds, its onset and release as k['on'] and
         k['off'] (None if silent): on its level (level()), the trough
@@ -333,6 +388,13 @@ class Run:
         b = min(len(env), int(round((k['end'] - t0)/FRAME)))
         seg = env[a:b]
         floor, peak = pct(env, 0.1), pct(seg, 0.9)
+        q = self.quiet() if b - a >= COVER*len(env) else None
+        if q and floor is not None:
+            # the key fills nearly all around it (one key held for the
+            # whole run): its quiet from the run's quietest stretch
+            _, _, qe = self.level(k['hz'], q[0], q[1])
+            if qe:
+                floor = min(floor, median(qe))
         if peak is None or peak < floor + 12:
             return False
         thr = max(floor + 6, peak - 30)
@@ -379,17 +441,23 @@ def interval(d):
     return '%+d' % d
 
 
-def score(run, est):
-    """per key: the dict of the docstring; follow emulated over the run"""
+def score(run, est, trace=None):
+    """per key: the dict of the docstring; follow emulated over the run.
+    trace (a list): gets per estimate a dict of the follow state after
+    it: shown, stable (the note last agreed), agree (the note agreed
+    here, DET_AGREE in a row, else None), start (the time its streak
+    began), quiet (a hold ended here by the input level)"""
     res = []
     for k in run.keys:
         res.append(dict(key=k, agreed=None, wrong=[], est=0, empty=0,
                         cents=[], drift=None, follow=None))
     seg = 0
-    sem, n = None, 0
+    sem, n, streak = None, 0, 0.0
     shown, near, heard = None, False, 0.0
     stable, stable_t, overruled = None, -1e9, None
-    loud, last_loud = run.loud([t for t, _ in est]), 0.0
+    loud, last_loud = run.loud(est), 0.0
+    if trace is None:
+        trace = []
 
     def close(i):
         """at the tap ending key i: judge follow, correct by hand"""
@@ -398,25 +466,25 @@ def score(run, est):
         if not k['valid'] or k['on'] is None:
             return
         r['follow'] = r.get('shown_at_off', shown) == k['semi']
+        near = True
+        if r['follow']:
+            # shown right at its release: no hand needed, and the note
+            # shown since may be the next key's, played before the tap
+            return
         if shown != k['semi']:
             recent = k['end'] - stable_t < CORR_RECENT
             overruled = stable if recent else None
         shown = k['semi']
-        near = True
 
-    for e, (t, hz) in enumerate(est):
-        if loud[e]:
-            last_loud = t
-        elif t - last_loud > HOLD_QUIET:
-            overruled = None	# the key released
-        while seg < len(run.keys) and t >= run.keys[seg]['end']:
-            close(seg)
-            seg += 1
+    def step(e, t, hz):
+        """one estimate; returns the note agreed in it, if any"""
+        nonlocal seg, sem, n, streak, shown, near, heard, stable, \
+            stable_t, overruled
         if seg >= len(run.keys):
-            break
+            return None
         k, r = run.keys[seg], res[seg]
         if t < k['start']:
-            continue
+            return None
         if k['off'] is not None and t > k['off'] and 'shown_at_off' not in r:
             r['shown_at_off'] = shown
         sounding = k['on'] is not None and k['on'] <= t <= k['off']
@@ -427,31 +495,53 @@ def score(run, est):
             n = 0
             if near and t - heard > NEAR_SILENCE:
                 near = False
-            continue
+            return None
         heard = t
         s = run.semi(hz)
         if sounding and s == k['semi']:
             r['cents'].append(1200*math.log2(hz/k['hz']))
         n = n + 1 if s == sem else 1
         sem = s
-        after = k['on'] is not None and t >= k['on']
-        if n == DET_AGREE and after:
+        if n == 1:
+            streak = t
+        # while the key sounds: its note agreed (the streak may have
+        # begun before its onset: the key played before the tap), or
+        # another note agreed by estimates of its own sound (a streak
+        # begun before the onset is the key before)
+        if n >= DET_AGREE and sounding:
             if s == k['semi']:
                 if r['agreed'] is None:
-                    r['agreed'] = t - k['on']
-            else:
+                    r['agreed'] = max(t - k['on'], 0.0)
+            elif n == DET_AGREE and streak >= k['on']:
                 r['wrong'].append(s - k['semi'])
-        if n >= DET_AGREE:
-            stable, stable_t = s, t
-            if s == overruled:
-                continue
-            overruled = None
-            to = s
-            if near and shown is not None:
-                to = s + 12*math.floor((shown - s)/12.0 + 0.5)
-                if abs(to - shown) > NEAR_SEMIS:
-                    continue
-            shown = to
+        if n < DET_AGREE:
+            return None
+        stable, stable_t = s, t
+        if s == overruled:
+            return s
+        overruled = None
+        to = s
+        if near and shown is not None:
+            to = s + 12*math.floor((shown - s)/12.0 + 0.5)
+            if abs(to - shown) > NEAR_SEMIS:
+                return s
+        shown = to
+        return s
+
+    for e, (t, hz) in enumerate(est):
+        quiet = False
+        if loud[e]:
+            last_loud = t
+        elif t - last_loud > HOLD_QUIET:
+            quiet = True
+            overruled = None	# the key released
+        while seg < len(run.keys) and t >= run.keys[seg]['end']:
+            close(seg)
+            seg += 1
+        agree = step(e, t, hz)
+        trace.append(dict(shown=shown, stable=stable,
+                          agree=agree if n == DET_AGREE else None,
+                          start=streak, quiet=quiet))
     while seg < len(run.keys):
         close(seg)
         seg += 1
@@ -531,13 +621,33 @@ def line(label, p):
              100.0*p['empty']/max(p['est'], 1), p['off']))
 
 
+def run_files(paths):
+    """the runs named, or in the directories named"""
+    files = []
+    for p in paths:
+        if os.path.isdir(p):
+            txt = glob.glob(os.path.join(p, '**', 'run_*.txt'),
+                            recursive=True)
+            # a run cut short by a crash has only its .timeline
+            files += sorted(txt + [
+                t for t in glob.glob(os.path.join(p, '**', 'run_*.timeline'),
+                                     recursive=True)
+                if t[:-9] + '.txt' not in txt])
+        else:
+            files.append(p)
+    return files
+
+
 def main():
+    global FLOOR_HELD, KEY_QUIET
     args = sys.argv[1:]
     verbose, modes, exes, paths = False, ['log'], [], []
     while args:
         a = args.pop(0)
         if a == '-v':
             verbose = True
+        elif a == '--floor-18.8':
+            FLOOR_HELD, KEY_QUIET = False, 1.4
         elif a == '--hints':
             modes = args.pop(0).split(',')
         elif a == '--test-pitch':
@@ -553,19 +663,7 @@ def main():
     # and Windows does not start a relative path with forward slashes
     exes = [os.path.abspath(e + '.exe' if not os.path.exists(e) and
                             os.path.exists(e + '.exe') else e) for e in exes]
-    files = []
-    for p in paths:
-        if os.path.isdir(p):
-            txt = glob.glob(os.path.join(p, '**', 'run_*.txt'),
-                            recursive=True)
-            # a run cut short by a crash has only its .timeline
-            files += sorted(txt + [
-                t for t in glob.glob(os.path.join(p, '**', 'run_*.timeline'),
-                                     recursive=True)
-                if t[:-9] + '.txt' not in txt])
-        else:
-            files.append(p)
-    runs = [Run(f) for f in files]
+    runs = [Run(f) for f in run_files(paths)]
     runs = [r for r in runs if r.keys]
     if any(r.est for r in runs):
         table('app', [(r, score(r, r.est)) for r in runs if r.est], verbose)

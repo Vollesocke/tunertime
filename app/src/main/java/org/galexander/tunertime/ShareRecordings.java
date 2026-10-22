@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,7 +84,9 @@ public class ShareRecordings {
 	public static void start(final Activity a) {
 		final ArrayList<Item> items = items(a);
 		if (items.isEmpty()) {
-			return;		/* nothing recorded */
+			Toast.makeText(a, R.string.share_none,
+					Toast.LENGTH_LONG).show();
+			return;
 		}
 		Set<String> sent = PreferenceManager.getDefaultSharedPreferences(
 				a).getStringSet(SENT, new HashSet<String>());
@@ -148,7 +151,12 @@ public class ShareRecordings {
 				final String err_ = err;
 				a.runOnUiThread(new Runnable() {
 					public void run() {
-						pd.dismiss();
+						try {
+							pd.dismiss();
+						} catch (IllegalArgumentException e) {
+							/* the screen was turned while
+							 * packing: its window is gone */
+						}
 						done(a, chosen, parts, err_);
 					} });
 			}
@@ -409,6 +417,8 @@ public class ShareRecordings {
 	private static void done(Activity a, ArrayList<Item> chosen,
 			ArrayList<String> parts, String err) {
 		if (err != null) {
+			Toast.makeText(a, a.getString(R.string.share_failed, err),
+					Toast.LENGTH_LONG).show();
 			return;
 		}
 		SharedPreferences prefs =
@@ -463,6 +473,8 @@ public class ShareRecordings {
 			"TunerTime Organ " + version + ", " + Build.MANUFACTURER +
 			" " + Build.MODEL + " (Android " +
 			Build.VERSION.RELEASE + ")\n";
+		Toast.makeText(a, a.getString(R.string.share_ready,
+				parts.size(), where), Toast.LENGTH_LONG).show();
 		try {
 			Uri u = Uri.parse(ISSUES + "?title=" +
 				URLEncoder.encode(title, "UTF-8") + "&body=" +
@@ -470,6 +482,8 @@ public class ShareRecordings {
 			a.startActivity(new Intent(Intent.ACTION_VIEW, u));
 		} catch (Exception e) {
 			/* no browser: the zips are in Downloads/TunerTime */
+			Toast.makeText(a, a.getString(R.string.share_failed,
+				e.toString()), Toast.LENGTH_LONG).show();
 		}
 	}
 

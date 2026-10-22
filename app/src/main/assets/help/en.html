@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TunerTime Organ – Manual</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+
+<h1 id="contents">TunerTime Organ – Manual</h1>
+<p class="version">Version 18.9, October 2026</p>
+
+<nav>
+<ol>
+<li><a href="#what">What the app is</a></li>
+<li><a href="#setup">Setting up</a></li>
+<li><a href="#screen">The screen</a></li>
+<li><a href="#note">Tuning a note</a></li>
+<li><a href="#follow">Follow and locked</a></li>
+<li><a href="#afreq">Setting the pitch of A</a></li>
+<li><a href="#temperament">Choosing a temperament</a></li>
+<li><a href="#presets">Your own temperaments (presets)</a></li>
+<li><a href="#mixture">Tuning a mixture</a></li>
+<li><a href="#length">Pipe length (length)</a></li>
+<li><a href="#tone">Reference tone (tone)</a></li>
+<li><a href="#tips">Tips from practice</a></li>
+<li><a href="#run">Recording a chromatic run</a></li>
+<li><a href="#debug">Debug recordings and crash reports</a></li>
+<li><a href="#github">Recordings to GitHub</a></li>
+<li><a href="#settings">The settings</a></li>
+<li><a href="#without">Without organ mode: stretch and FFT</a></li>
+<li><a href="#measure">Coming soon: measuring and matching temperaments</a></li>
+<li><a href="#links">Reporting problems, links</a></li>
+</ol>
+</nav>
+
+<section id="what">
+<h2>1. What the app is</h2>
+<p>TunerTime Organ is a strobe tuner for organ builders, developed from
+Greg Alexander's TunerTime. It is a <b>tuning aid</b>: the strobe shows
+what you hear. What is tuned and what is not, you decide by ear.</p>
+<ul>
+<li>The app recognises the note played and makes the strobe follow it
+(<span class="b">follow</span>). So with as little input as possible you
+see exactly what you hear, key by key.</li>
+<li><b>The hand always wins.</b> A note you set by hand stands, even if
+the detection hears something else.</li>
+<li>There is a strobe row for each footage, so you see octaves and
+mutations (Quinte, Terz) pure against the fundamental.</li>
+<li>Mixtures are tuned rank by rank against a reference rank
+(<a href="#mixture">Mixture</a>).</li>
+</ul>
+<p>The screen stays on while the app is open. It works in portrait and
+in landscape.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="setup">
+<h2>2. Setting up</h2>
+<ol>
+<li>At the first start Android asks for the <b>microphone</b>: allow it.
+Nothing works without it. You can allow it later in the system settings
+under Apps → TunerTime Organ → Permissions.</li>
+<li>Menu (⋮ at the top right) → <span class="b">Settings</span> →
+turn on <span class="b">Organ mode</span>. It is off after installing.
+Only organ mode has the footage rows, mixture mode and length mode.</li>
+<li>There, turn on <span class="b">German note names</span> if you want
+to read Cis, B, H and c¹ instead of C#4 (a¹ = A4 = 440 Hz). The app's
+language is under <span class="b">Language / Sprache</span>.</li>
+<li>Choose the rows under <span class="b">Footages shown</span>, up to 8.
+The default is 16′, 8′, 4′, 2 2/3′ and 2′. 8′ is the note itself.</li>
+<li>Back on the main screen, set the A in the
+<span class="b">A freq</span> tab (<a href="#afreq">Pitch of A</a>)
+and choose the temperament in the <span class="b">temperament</span> tab
+(<a href="#temperament">Temperament</a>).</li>
+<li>Tap <span class="b">locked</span> at the bottom right: the button
+then says <span class="b">follow</span>, and the strobe follows the note
+played. After installing it is on locked.</li>
+</ol>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="screen">
+<h2>3. The screen</h2>
+<h3>Title bar</h3>
+<p>"TunerTime Organ: strobe" ("TunerTime Organ: mixture" in mixture
+mode). With a temperament chosen, its name and its deviation for the note
+shown are below, e.g. "Meantone 1/4 comma +10.3c". The ⋮ menu has
+<span class="b">Record chromatic run</span>,
+<span class="b">Recordings to GitHub</span>,
+<span class="b">Settings</span>, <span class="b">Help</span> and
+<span class="b">About</span> (with the version number).</p>
+
+<h3>The strobe rows</h3>
+<p>Each row belongs to a footage, the lowest at the top. On the left are
+the footage and the row's frequency in Hz, e.g. "8' 130.8". The row shows
+how that footage's partial stands to the target:</p>
+<ul>
+<li><b>In tune</b>, the stripes run level.</li>
+<li><b>Sharp</b>, they rise to the right; <b>flat</b>, they fall. The
+steeper, the further off; far off, the picture turns vertical or
+restless.</li>
+<li><b>Wavy</b> stripes: two tones beat on this partial.</li>
+</ul>
+<p>The picture is written from left to right and then starts again on
+the left. A row too high for the phone's sample rate stays empty and
+says "too high".</p>
+
+<h3>Tapping a row: focus</h3>
+<p>Tap a row to <b>focus</b> it (blue frame); tap it again to release it.
+The focused partial helps the detection: it then looks for that partial
+and reports the key it belongs to. So you tune a 4′ stop with the 4′ row
+focused, a Quinte 2 2/3′ with the 2 2/3′ row focused, and the note shown
+stays the key played. The <span class="b">note</span> tab (with
+<span class="b">A freq</span>) and the <span class="b">mixture</span> tab
+each keep their own focus.</p>
+<p>A long press on the strobe opens the choice of footages shown.</p>
+
+<h3>Below the strobe</h3>
+<ul>
+<li>The <b>tabs</b> <span class="b">note</span>,
+<span class="b">A freq</span>, <span class="b">mixture</span> and
+<span class="b">temperament</span>. The one chosen is underlined. The
+note set stays the same across all tabs.</li>
+<li>The <b>tab's buttons</b> and readouts (see the sections below).</li>
+<li>In the corner at the top right: <span class="b">A=440.0</span> (the
+pitch of A) and <span class="b">organ</span>, in mixture mode instead the
+mixture's measured deviation, e.g. <span class="b">mix+01.5c</span>.</li>
+<li>Below them three buttons: <span class="b">follow</span> /
+<span class="b">locked</span> (<a href="#follow">Follow and locked</a>),
+<span class="b">tone</span> (<a href="#tone">Reference tone</a>) and
+<span class="b">length</span> (<a href="#length">Pipe length</a>).</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="note">
+<h2>4. Tuning a note</h2>
+<p>In the <span class="b">note</span> tab:</p>
+<ul>
+<li>The readout in the middle shows the note (the key played, at 8′
+pitch) and below it its offset in cents, set by hand. The temperament's
+deviation is in the title bar; the target is note + temperament +
+offset.</li>
+<li><span class="b">semi+</span> / <span class="b">semi-</span>: a
+semitone on. Long press: a fifth on.</li>
+<li><span class="b">oct+</span> / <span class="b">oct-</span>: an octave
+on.</li>
+<li><span class="b">cent+</span> / <span class="b">cent-</span>: change
+the offset by 1 cent, e.g. for a celeste (Unda maris, Vox coelestis).
+The offset is kept while following.</li>
+</ul>
+<p>To tune a stop:</p>
+<ol>
+<li>Draw the stop, put the phone near the pipes.</li>
+<li>For a 4′, a 2′ or a mutation, tap the row of that footage (focus);
+for an 8′ the 8′ row.</li>
+<li>Turn on <span class="b">follow</span> and hold the first key. The
+strobe moves to the key after about half a second.</li>
+<li>Tune the pipe until the stripes of its row run level.</li>
+<li>Next key. If the note shown is wrong, correct it by hand
+(<a href="#follow">Follow and locked</a>).</li>
+</ol>
+<p>Octaves and mutations are pure: the rows 4′, 2 2/3′, 2′, 1 3/5′ are
+exactly 2, 3, 4 and 5 times the 8′ frequency, without temperament.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="follow">
+<h2>5. Follow and locked</h2>
+<p>Each tap on the button at the bottom right switches between two
+states:</p>
+<ul>
+<li><span class="b">follow</span> (blue): when the detection hears the
+same note four times in a row (about 0.4 s), the note shown moves there.
+In silence the last note stays.</li>
+<li><span class="b">locked</span> (amber): the note stays where it is;
+it only changes by hand.</li>
+</ul>
+<p>In the temperament tab and during a chromatic run the button is grey
+and does nothing. While the <a href="#tone">tone</a> plays, the app does
+not follow.</p>
+
+<h3>Correcting by hand</h3>
+<p>If the app follows to a wrong note (mostly an octave off), set the
+right one with <span class="b">semi+</span>, <span class="b">semi-</span>,
+<span class="b">oct+</span> or <span class="b">oct-</span>. In mixture
+mode its key and octave buttons count the same. Then:</p>
+<ol>
+<li><b>The correction holds while the key sounds.</b> The note the
+detection had heard is not taken again until it hears another one or
+the key is released (the input stays down at the background noise for
+0.3 s).</li>
+<li><b>After that it goes on near the note shown</b>, as a stop is
+tuned key by key: each note detected is taken in the octave nearest the
+note shown, and the note shown follows only up to a fourth (500 cents)
+up or down. A 4′ stop corrected down an octave once is then shown at 8′
+pitch.</li>
+<li><b>It ends</b> after 10 s with no note detected (a new stop), or
+when a chromatic run starts. Locked and following again keep it.</li>
+</ol>
+<p>Mutations (Quinte, Terz) are not followed through this octave
+folding: tap their row, then the detection reports the key.</p>
+<p>If the detection keeps getting it wrong: switch to
+<span class="b">locked</span> and step the keys by hand with
+<span class="b">semi+</span>.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="afreq">
+<h2>6. Setting the pitch of A</h2>
+<p>In the <span class="b">A freq</span> tab:</p>
+<ul>
+<li>The readout shows the A and the note set, e.g.
+"440.0 Hz · A4 +00.0c". Tap it for a keypad (220 to 880 Hz).</li>
+<li><span class="b">+1</span> / <span class="b">-1</span> and
+<span class="b">+0.1</span> / <span class="b">-0.1</span>: the A in
+steps of 1 Hz and 0.1 Hz.</li>
+<li><span class="b">auto</span>: sets the A so that the note shown (in
+the temperament chosen) is exactly what is heard. The app takes the
+median of the detection over the last 2 s, as far as it agrees with that
+note, and rounds to 0.1 Hz. With less than about 1 s of it, nothing
+happens. It works with any note, not just A. A cent offset set by hand
+is left out.</li>
+<li><span class="b">reset</span>: A = 440.0 Hz.</li>
+</ul>
+<p>To find the pitch of an organ: hold a pipe of the reference stop for
+about 2 s, tap <span class="b">auto</span>; then adjust with the buttons
+as a compromise over several pipes (e.g. the A of every octave). There is
+no temperature correction: the pipes move by about 3 cents per degree,
+which you allow for through the A.</p>
+<p>The A freq tab shares the note and the focus with the note tab, and
+the detection follows here too.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="temperament">
+<h2>7. Choosing a temperament</h2>
+<p>The <span class="b">temperament</span> tab is a view only: it shows
+the temperament chosen as a table (note and deviation from equal in
+cents) and changes neither the note nor the focus. The strobe is hidden
+there.</p>
+<ul>
+<li><span class="b">Select</span> opens the list "Select preset". Tap a
+preset to choose it. A long press on the temperament tab opens this list
+directly, without changing tabs.</li>
+<li><span class="b">Edit</span> opens the preset chosen
+(<a href="#presets">Presets</a>).</li>
+</ul>
+<h3>The built-in temperaments</h3>
+<p>After installing, the list is empty. On the "Select preset" screen,
+menu ⋮ → <span class="b">Add historical temperament…</span> adds one of
+the built-in temperaments as a preset and chooses it:</p>
+<p class="list">Equal temperament · Pythagorean · Meantone 1/4 comma ·
+Meantone 1/6 comma · Werckmeister III · Kirnberger III ·
+Vallotti (1754) · Young II · Kellner (Bach) · Young-Sorge ·
+Near equal temperament · Gräf-Sorge · Modified Vallotti ·
+Wegscheider / Reinfeld · Johannes Lang (Freiburg) ·
+Thomas Rothert (Bayreuth) · Frischknecht II · Modified Neidhardt ·
+Neidhardt for a village (1732) · Neidhardt for a small town (1732) ·
+Neidhardt for a large town (1724) · Modified Werckmeister 1691
+(Niederrodenbach) · Werckmeister III, IV and V (Rohlf) · Lambert
+(1774)</p>
+<p>The tables of Orgelbau Rohlf number Werckmeister one off the usual
+names (Rohlf's 1691 is the usual III, his III the usual IV).
+Lambert (1774): seven fifths F–C–G–D–A–E–B–F# narrowed by 1/7
+Pythagorean comma, the rest pure. All tables have A = 0 cents, so that
+the A setting stays the A you hear.</p>
+<p>A temperament chosen applies in the note tab (and A freq) and in
+mixture mode, which rounds to its notes.</p>
+
+<h3>Wolf fifth, D#/Eb and G#/Ab</h3>
+<p>For Pythagorean and the meantone temperaments the name in the
+temperament tab is a button. It opens "Wolf fifth location or
+notes":</p>
+<ul>
+<li>one of the 12 places of the wolf fifth (by default between G# and
+Eb), or</li>
+<li><span class="b">Pick notes (also more than 12)…</span>: a list of the
+21 notes Fb to B# with their cents. For a meantone organ with split keys
+tick, say, D# and Eb, G# and Ab. Every key needs a note; if one is
+missing, the list's title says so.</li>
+</ul>
+<p>With two notes on a key, <span class="b">semi+</span> goes
+D → D# → Eb → E, in mixture mode too, and the detection takes the nearer
+of the two. The notes are then spelled D#4 and Eb4 (German: dis¹, es¹).
+The choice is kept until another temperament is chosen.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="presets">
+<h2>8. Your own temperaments (presets)</h2>
+<p>A preset with exactly one note for each of the 12 keys of the octave
+is a temperament. The "Select preset" list:</p>
+<ul>
+<li><span class="b">new preset</span>: make an empty preset.</li>
+<li>Long press on a preset: <span class="b">Edit</span>,
+<span class="b">Rename</span>, <span class="b">Duplicate</span>,
+<span class="b">Move up</span>, <span class="b">Move down</span>,
+<span class="b">Export…</span>, <span class="b">Delete</span>.</li>
+<li>Menu ⋮: <span class="b">Add historical temperament…</span>,
+<span class="b">Sort by name</span>, <span class="b">Import…</span>,
+<span class="b">Export all…</span>.</li>
+</ul>
+<h3>Editing</h3>
+<p>"Edit preset" shows the name and the notes.
+<span class="b">add note</span> adds a note; tap a note to open "Edit
+preset note": letter, <b>#</b>, octave, the <b>cents</b> field with
+<span class="b">±</span> (sign), <span class="b">-1c</span>
+<span class="b">-0.1c</span> <span class="b">+0.1c</span>
+<span class="b">+1c</span>, then <span class="b">save</span> or
+<span class="b">delete note</span>. The cents are the deviation from
+equal temperament, to 0.1 cent. Give A 0 cents, so that the A setting
+stays the A. <span class="b">delete preset</span> deletes the whole
+preset.</p>
+<h3>Import and export</h3>
+<p>Presets are exchanged as a text file (by mail or cloud, say), which
+can also be written by hand:</p>
+<pre># lines starting with # are comments
+preset My temperament
+    C4   +5.9
+    C#4  -3.9
+    ...
+    A4   +0.0
+end</pre>
+<p>Note names C D E F G A B with # or b, octaves with C4 = middle C,
+A4 = the A; cents signed, to 0.1 cent. The description is at the top of
+every exported file. If a file has an error, nothing is imported and the
+errors are shown.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="mixture">
+<h2>9. Tuning a mixture</h2>
+<p>Mixture mode assumes no target pitch. It <b>measures the reference
+rank</b> (the focused row) and puts the target where it sounds: that
+rank's row then stands still, and the other rows show how the other
+ranks stand, pure, to it.</p>
+<h3>The mixture tab</h3>
+<ul>
+<li>The readout shows the key with the measured deviation from its
+tempered note, e.g. "C5 +01.5c", next to it the note heard, and below it
+the state: "tap a strobe row", "tap measure", "measuring 2': 60%" or
+"measured on 2'".</li>
+<li><span class="b">semi+</span> / <span class="b">semi-</span> and
+<span class="b">oct+</span> / <span class="b">oct-</span>: the next key
+or octave. The measured deviation is carried along.</li>
+<li><span class="b">measure</span> (or tap the mixture tab again):
+measure again.</li>
+<li><span class="b">reset</span>: back to the tempered note with no
+deviation.</li>
+<li>Large at the top right of the strobe, the focused rank's deviation,
+e.g. "2' +01.5c"; in the corner under the A, the mixture's measured
+deviation ("mix+01.5c").</li>
+</ul>
+<h3>How to</h3>
+<ol>
+<li>Check that every footage of the mixture is shown as a row
+(Settings → Footages shown, up to 8).</li>
+<li>Tab <span class="b">mixture</span>. Tap the row of the reference
+rank. With none focused, the app measures on the 8′ row.</li>
+<li>Hold the key with the reference rank sounding. The measurement
+averages 2 s (below 8′: 3 s) and stops earlier once the result is
+steady. Then it says "measured on …".</li>
+<li>Add the next rank and tune its pipe until its row stands still. To
+read the deviation as a number, tap that rank's row: the large readout
+then shows it. (After that, <span class="b">measure</span> measures on
+that rank.)</li>
+<li>Next key. With <span class="b">follow</span> on, the app moves there
+itself and measures again, 0.5 s after the onset.</li>
+</ol>
+<h3>Notes in mixture mode</h3>
+<ul>
+<li>"beating: another pipe on this partial?": the partial measured
+beats; another pipe probably sounds on it (a rank not muted, a celeste).
+The result stands, but may be the louder of the two or between
+them.</li>
+<li>"heard over a semitone off the rows: check the key": what sounds is
+more than a semitone from every row. Then the strobe measures wrongly.
+Check the key, or a rank (after a break, say) has no row.</li>
+<li>While following, only what is within 20 cents of the mixture's
+measured pitch counts. The key and octave buttons are
+<a href="#follow">corrections by hand</a>.</li>
+<li>If the key is released before the measurement is done, what was
+measured so far counts if it was at least half the time; else the
+measurement is dropped.</li>
+<li>The measured deviation holds in the mixture tab only; leaving it, it
+is lost, and coming back the app measures again.</li>
+<li>Settings → <span class="b">Mixture: follow the reference rank</span>
+(off): the key is then detected from the focused rank and moves by a
+whole tone at most, so another rank sounding alone does not move it.
+Bigger steps by hand.</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="length">
+<h2>10. Pipe length (length)</h2>
+<p>The <span class="b">length</span> button turns on a readout below the
+strobe of how much the sounding pipe is too long or too short, e.g.
+"+12 mm (λ/2)". It is meant for setting up a pipe's range, not for fine
+tuning.</p>
+<ul>
+<li><b>+</b>: too long (flat), cut off. <b>−</b>: too short (sharp),
+lengthen. <b>±</b>: in tune (within 0.2 cent).</li>
+<li>The button beside it chooses <span class="b">open pipe</span> (λ/2)
+or <span class="b">stopped pipe</span> (λ/4). For chimney flutes the
+figure is only approximate.</li>
+<li>Colour: blue when the readout is steady; amber while it still moves;
+grey "(held)" once the pipe has stopped. "listening…": nothing heard yet.
+"unclear": what sounds is no partial of the target.</li>
+<li>With no row focused, length focuses the 8′ row. With the 4′ row
+focused, the length is that of the 4′ pipe.</li>
+<li>It is computed with the speed of sound at 18 °C. The end correction
+drops out, as only the difference counts.</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="tone">
+<h2>11. Reference tone (tone)</h2>
+<p><span class="b">tone</span> plays the target (at 8′ pitch, with
+temperament and offset) as a sine through the speaker until you tap it
+again. The button is highlighted meanwhile. While it plays, the detection
+does not follow. The tone lets you hear what the strobe aims at; it is
+also a self-test: the 8′ row must stand still.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="tips">
+<h2>12. Tips from practice</h2>
+<ul>
+<li><b>Where to put the phone:</b> near the pipes you tune, not on the
+music desk next to the blower if you can avoid it. The app learns the
+hum of the blower and the mains between keys and takes it off, but not
+right next to it. The <span class="b">Input level bar</span> (Settings)
+shows whether the input is enough: red too quiet, amber marginal, green
+good.</li>
+<li><b>Quiet Gedackts and chimney flutes</b> (Rohrflöte) are the hardest
+for the detection: nearly pure sines, often beating. The focused 8′ row
+helps, and if need be locked and semi+ by hand.</li>
+<li><b>Hold each key about 3 s.</b> The detection needs about 0.5 s,
+the mixture measurement 2 to 3 s.</li>
+<li><b>When the detection is wrong:</b> correct once by hand; the
+correction holds, and the next keys follow near it
+(<a href="#follow">Follow and locked</a>). For 4′, 2′ and mutations tap
+the row of the footage. If that does not help:
+<span class="b">locked</span> and step by hand.</li>
+<li>Talking, footsteps and knocking nearby disturb the detection
+briefly; it only takes a note after hearing it several times in a
+row.</li>
+<li>Tremulant off.</li>
+<li>Temperature changes the pipes' pitch (about 3 cents per degree):
+adjust the A by hand.</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="run">
+<h2>13. Recording a chromatic run</h2>
+<p>A run is a recording of a whole stop, key by key. As you step the
+keys by hand, the note of every key is known. With it the developers
+improve the detection on real pipes. Every run helps, above all of
+difficult stops and noisy places.</p>
+<ol>
+<li>In the note or mixture tab, set the first key as the note shown. Tap
+the row of the stop's footage; then how far each pipe is off is recorded
+too.</li>
+<li>Menu ⋮ → <span class="b">Record chromatic run</span>. Fill in:
+organ, church; stop (e.g. Rohrflöte 8′); the kind (Open flue, Stopped
+(Gedackt), Reed, Mixture, Mutation, Other); the footage; notes (phone
+position, mic, temperature…). <span class="b">Start</span>.</li>
+<li>Every key in turn: hold it about 3 s, release it, then
+<span class="b">semi+</span> (in mixture mode too).
+<span class="b">semi-</span> records a key again.</li>
+<li><span class="b">Mark</span> (in the bar at the top) notes at the
+current key: Noise, Pipe faulty, Wrong key played, or a text.</li>
+<li>Stop with <span class="b">■ Stop</span> in the bar at the top; it
+also shows the time and the number of keys.</li>
+</ol>
+<p>During the run the app does not follow (the note shown is the key
+played), but the detection runs along. The screen does not rotate,
+Settings, Help and About are hidden, the temperament tab is blocked.
+Leaving the app ends and saves the run. At most 20 minutes (about 6 MB a
+minute). Afterwards the button is on follow or locked as before.</p>
+<p><b>What is saved:</b> the whole microphone input as WAV, and a text
+file with what was entered in the dialog, the A, the temperament, the
+device and microphone, one line per key (start, end, note, target
+frequency), the marks, and the course of the detection and of what was
+done. The files are in the app's folder (Android/data/…/files/runs) and
+are sent with <a href="#github">Recordings to GitHub</a>.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="debug">
+<h2>14. Debug recordings and crash reports</h2>
+<p><b>Debug recordings</b> (Settings → Debug, on in the test builds):
+each time you correct the note by hand while following, the app saves
+7 s of microphone input (5 s before, 2 s after) as WAV with a text file:
+which note it detected and which you set, and what it heard and did
+meanwhile. These are exactly the moments the development needs. The
+newest 100 are kept.</p>
+<p><b>Crash reports</b>: if the app crashes, it writes a report; from
+Android 11 it also collects the system's reports at the next start. They
+go along with <a href="#github">Recordings to GitHub</a>.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="github">
+<h2>15. Recordings to GitHub</h2>
+<p>This is how runs, debug recordings and crash reports get from the
+phone to the developers. You need a GitHub account and to be logged in
+to it in the phone's browser.</p>
+<ol>
+<li>Menu ⋮ → <span class="b">Recordings to GitHub</span>. A list shows a
+line per run (date, stop, keys, duration, size), the debug recordings per
+day, and the crash reports. Ticked is what was not packed before;
+"(packed before)" can be ticked again.</li>
+<li><span class="b">Pack</span>. The app puts zip files into
+<b>Downloads/TunerTime</b>, each under 25 MB (GitHub's limit; big files
+are split). It deletes the zips of the time before from there
+first.</li>
+<li>The browser opens a new issue on github.com/Vollesocke/tunertime with
+a list of the zips.</li>
+<li>Tap <b>"Add Files"</b> (the paperclip) under the text. The file
+picker first shows recent files, often none: ☰ → <b>Downloads</b> →
+<b>TunerTime</b>, hold one zip, tap the others, then
+<span class="b">Select</span>. Their links appear at the top of the
+text.</li>
+<li>Add a few words if you like (organ, what you noticed), then create
+the issue.</li>
+</ol>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="settings">
+<h2>16. The settings</h2>
+<dl>
+<dt>Main</dt>
+<dd><span class="b">Organ mode</span>: footage rows, mixture and length,
+no stretch. <span class="b">German note names</span>: Cis, B, H;
+C₁ C c c¹ c². <span class="b">Language / Sprache</span>: System default,
+English, Deutsch.</dd>
+<dt>Audio</dt>
+<dd><span class="b">Audio source</span>: best <b>Auto</b>. The app picks
+the microphone itself (the one with the best signal).</dd>
+<dt>Strobe</dt>
+<dd><span class="b">Colors</span> (Batlow, Slate / White, Red / Green,
+Black / White, Blue / Yellow, Red / Blue).
+<span class="b">Input level bar</span> (off): along the strobe's right
+edge, the input level; red too quiet to be read, amber marginal, green
+good; the white tick is where detection starts.
+<span class="b">Footages shown</span>: up to 8 out of 32′ to 1/8′,
+including 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
+<dt>Debug</dt>
+<dd><span class="b">Mixture: follow the reference rank</span>
+(<a href="#mixture">Mixture</a>). <span class="b">Debug recordings</span>
+(<a href="#debug">Debug recordings</a>).</dd>
+</dl>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="without">
+<h2>17. Without organ mode: stretch and FFT</h2>
+<p>Without organ mode, TunerTime is Greg Alexander's tuner, e.g. for
+pianos:</p>
+<ul>
+<li>The rows show harmonics (1, 2, 4, 6, 8; Settings → Harmonics shown).
+Tapping pauses the strobe (<b>paused</b>).</li>
+<li>Instead of mixture there is the <span class="b">stretch</span> tab
+(cents per octave, for string instruments).</li>
+<li>Instead of length there is <span class="b">FFT</span>: a
+spectrogram. <span class="b">N+</span> / <span class="b">N-</span>
+changes the block size (bigger: more precise, smaller: faster),
+<span class="b">scale</span> / <span class="b">Hz</span> the legend; zoom
+with two fingers, scroll with one, tap to pause.
+<span class="b">strobe</span> goes back.</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="measure" class="soon">
+<h2>18. Coming soon: measuring and matching temperaments</h2>
+<p class="notice"><b>Not in this version yet.</b> Planned for version
+19.0; details may still change.</p>
+<p>It measures an organ's temperament and compares it with the known
+ones. Under temperament → Edit, two buttons are added:</p>
+<ul>
+<li><b>Measure notes</b> ("Töne messen"): first the page "Set the A":
+strobe with octave rows 8′ to 1/4′, no tabs and no detection; you set the
+A by ear over the A pipes of all octaves. "Set" takes it. Then "Enter
+note": you set each of the 12 notes C to B with cent ±1 and ±0.1 until
+its row stands still, and tap "Save note"; the app goes on to the next.
+After the twelfth it goes back. If A is not at 0 cents, the table is
+shifted to A = 0 at the end.</li>
+<li><b>Matching</b>: a table with the 12 notes, the preset measured, and
+the two nearest known temperaments (all built-in ones and your own
+presets), with their mean deviation. Differences over 2 cents in yellow,
+over 4 cents in red.</li>
+</ul>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+<section id="links">
+<h2>19. Reporting problems, links</h2>
+<p>Please report bugs, crashes and wishes as an issue on GitHub, with
+<a href="#github">recordings</a> if you can:<br>
+<a href="https://github.com/Vollesocke/tunertime/issues">github.com/Vollesocke/tunertime/issues</a></p>
+<p>Source code of TunerTime Organ:<br>
+<a href="https://github.com/Vollesocke/tunertime">github.com/Vollesocke/tunertime</a></p>
+<p>The original TunerTime by Greg Alexander, with his description of the
+strobe and the FFT:<br>
+<a href="http://galexander.org/software/tunertime/">galexander.org/software/tunertime</a></p>
+<p>TunerTime and TunerTime Organ are free software under the GNU GPL,
+version 2.</p>
+<p class="top"><a href="#contents">↑ Contents</a></p>
+</section>
+
+</body>
+</html>

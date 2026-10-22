@@ -38,6 +38,7 @@ public class temperaments {
 		"Werckmeister IV (Rohlf)",
 		"Werckmeister V (Rohlf)",
 		"Werckmeister III (Rohlf)",
+		"Lambert (1774)",
 	};
 
 	public static final String[] about = {
@@ -66,6 +67,7 @@ public class temperaments {
 		"Rohlf's numbering; usually called Werckmeister V",
 		"Rohlf's numbering",
 		"Rohlf's numbering; 1/3 comma, usually called Werckmeister IV",
+		"1774; seven fifths F-C-G-D-A-E-B-F# 1/7 Pythagorean comma narrow, the rest pure",
 	};
 
 	private static final double[][] cents = {
@@ -97,6 +99,16 @@ public class temperaments {
 		{ 0, -3.9,  3.9,  0.0, -3.9,  3.9,  0.0,  2.0, -7.8,  0.0,  2.0, -2.0 },
 		{ 0, -9.8, -12.8, -2.5, -5.6, -2.0, -5.0, -1.4, -7.8, -7.5, -0.6, -3.6 },
 		{ 0, -17.6, -3.9, -5.9, -7.8, -2.0, -11.7, -5.9, -15.6, -9.8, 3.9, -13.7 },
+		/* Lambert (1774), asked for by Onno (22 Oct): from
+		 * http://www.instrument-tuner.com/temperaments_de.html, there
+		 * with A = 0 (C 4.190, C# -2.234, ... B -2.793), shifted to
+		 * C = 0.  The same to 0.001 c in the Scala archive's
+		 * lambert.scl, "Lambert's temperament (1774) 1/7 Pyth. comma, 5
+		 * pure" (e.g. github.com/cuthbertLab/music21,
+		 * music21/scale/scala/scl), and as computed: the fifths
+		 * F-C-G-D-A-E-B-F# 1/7 Pythagorean comma narrow, F#-C#-G#-D#
+		 * and Eb-Bb-F pure */
+		{ 0, -6.42, -2.79, -2.51, -5.59, 1.40, -8.38, -1.40, -4.47, -4.19, -0.56, -6.98 },
 	};
 
 	/* the 12 notes C4..B4 in preset units (tenths of a cent, 48000 = A4),

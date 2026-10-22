@@ -53,12 +53,27 @@
 		android:onClick="A_decr1" />
 	</LinearLayout>
     </LinearLayout>
-    <Button
-	style="@style/Tuner.Button.Panel"
+    <!-- auto: the A that puts the note heard on its target (Onno, 22
+	 Oct); reset: 440 Hz -->
+    <LinearLayout
 	android:layout_width="1dp"
 	android:layout_height="fill_parent"
 	android:layout_weight="1"
-	android:text="@string/reset"
-	android:textColor="@color/warn"
-	android:onClick="reset_afreq" />
+	android:orientation="vertical">
+	<Button android:id="@+id/auto_afreq"
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1"
+	    android:text="@string/auto"
+	    android:onClick="auto_afreq" />
+	<Button
+	    style="@style/Tuner.Button.Panel"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1"
+	    android:text="@string/reset"
+	    android:textColor="@color/warn"
+	    android:onClick="reset_afreq" />
+    </LinearLayout>
 </LinearLayout>

@@ -115,6 +115,17 @@ public class FollowTest {
 				else if (what.equals("mix-")) a.mixture_semi_decr(null);
 				else if (what.equals("mixture"))
 					a.stretch_clicked(null);
+				else if (what.equals("A auto"))
+					a.auto_afreq(null);
+				else if (what.equals("auto"))
+					a.do_auto(null);
+				else if (what.equals("tab note"))
+					a.note_clicked(null);
+				else if (what.equals("tab A"))
+					a.afreq_clicked(null);
+				else if (what.equals("tab preset"))
+					a.preset_clicked(null);
+				else throw new IllegalArgumentException(what);
 			} });
 	}
 
@@ -244,6 +255,136 @@ public class FollowTest {
 		assertEquals(2.0d, parms.focus_ratio, 0.0d);
 		hear(hz(E4 + 1, 0));			/* followed */
 		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+	}
+
+	/* the A tab's auto: the A that puts the note shown (D4 in meantone)
+	 * on the pipe heard, 3 c sharp, from the estimates agreeing on it.
+	 * Fewer than about 1 s of them do nothing; again, the same A */
+	@Test
+	public void a_auto() {
+		main(new Runnable() {
+			public void run() {
+				a.afreq_clicked(null);
+			} });
+		final double f = hz(D4, 0) * Math.pow(2.0, 3.0/1200.0);
+		feed(f, 5);
+		tap("A auto");
+		assertEquals("too few", 4400, parms.A_freq);
+		feed(f, 10);
+		tap("A auto");
+		assertEquals(D4, note_key());
+		assertEquals((int)Math.round(4400*Math.pow(2.0, 3.0/1200.0)),
+			     parms.A_freq);
+		tap("A auto");
+		assertEquals("again", 4408, parms.A_freq);
+	}
+
+	/* the auto button has two states, a tap toggles them: follow and
+	 * locked.  Locked leaves the note alone and keeps continuity: after
+	 * following again an F5 heard is taken as the F4 next to the Es set
+	 * by hand */
+	@Test
+	public void auto_toggle() {
+		assertTrue(parms.auto_note);
+		assertEquals(a.getString(R.string.auto_follow), auto_text());
+		hear(hz(E4, 0));
+		assertEquals(E4, note_key());
+		tap("semi-");				/* E -> Es: continuity */
+		tap("auto");
+		assertTrue("locked", !parms.auto_note);
+		assertEquals(a.getString(R.string.auto_locked), auto_text());
+		hear(hz(E4 + 3, 0));
+		assertEquals("locked", DS4, note_key());
+		tap("auto");
+		assertTrue("follow", parms.auto_note);
+		assertEquals(a.getString(R.string.auto_follow), auto_text());
+		hear(2.0*hz(E4 + 1, 0));		/* F5 */
+		assertEquals("continuity kept", E4 + 1, note_key());
+	}
+
+	private String auto_text() {
+		final String[] s = new String[1];
+		main(new Runnable() {
+			public void run() {
+				s[0] = ((TextView)a.findViewById(
+					R.id.auto_button)).getText().toString();
+			} });
+		return s[0];
+	}
+
+	/* the note survives a round trip over all tabs, Es picked by hand
+	 * included: the temperament tab is a view only (leaving it took
+	 * note mode back to its own note, C, before) */
+	@Test
+	public void note_round_trip() {
+		tap("auto");				/* locked: the mic */
+		assertTrue(!parms.auto_note);
+		tap("semi+");
+		tap("semi+");				/* D -> Dis -> Es */
+		assertEquals(DS4, note_key());
+		assertEquals(1, parms.note_alt);
+		final int cents = parms.note_cents, target = parms.strobe_cents;
+		String[] tabs = { "tab A", "mixture", "tab preset", "tab note",
+			"tab preset", "mixture", "tab A", "tab preset", "tab A",
+			"tab note" };
+		for (String t : tabs) {
+			tap(t);
+			assertEquals(t, cents, parms.note_cents);
+			assertEquals(t, 1, parms.note_alt);
+		}
+		assertEquals(target, parms.strobe_cents);
+		assertTrue(!parms.preset_mode && !parms.mixture_mode);
+	}
+
+	/* the focused row: one for note mode and the A tab, one for mixture
+	 * mode, each kept while the other is used, also across a restart;
+	 * none on the temperament tab */
+	@Test
+	public void focus_per_mode() {
+		tap("auto");
+		set_focus(2.0d);			/* 4' in note mode */
+		tap("mixture");
+		assertEquals("mixture: 8', none of its own", 1.0d,
+			     parms.focus_ratio, 0.0d);
+		set_focus(4.0d);			/* 2' */
+		tap("tab note");
+		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+		tap("tab A");
+		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+		tap("tab preset");
+		assertEquals(0.0d, parms.focus_ratio, 0.0d);
+		tap("mixture");
+		assertEquals(4.0d, parms.focus_ratio, 0.0d);
+		set_focus(0.5d);			/* 16' */
+		tap("tab preset");
+		tap("tab note");
+		assertEquals(2.0d, parms.focus_ratio, 0.0d);
+		scenario.recreate();
+		scenario.onActivity(new ActivityScenario.ActivityAction<TunerTime>() {
+			public void perform(TunerTime t) {
+				a = t;
+			} });
+		inst.waitForIdleSync();
+		assertEquals("restart", 2.0d, parms.focus_ratio, 0.0d);
+		tap("mixture");
+		assertEquals("restart", 0.5d, parms.focus_ratio, 0.0d);
+	}
+
+	private void set_focus(final double r) {
+		main(new Runnable() {
+			public void run() {
+				parms.focus_ratio = r;
+			} });
+	}
+
+	/* estimates in a row, n of them */
+	private void feed(final double f, final int n) {
+		main(new Runnable() {
+			public void run() {
+				for (int i = 0; i < n; i++) {
+					a.pitch_detected(f);
+				}
+			} });
 	}
 
 	/* mixture mode follows to Es (rejected before: 41 cents from Dis)

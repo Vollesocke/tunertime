@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -332,7 +333,8 @@ public class PresetSelectActivity extends Activity {
 		try {
 			startActivityForResult(i, req);
 		} catch (android.content.ActivityNotFoundException ex) {
-			/* no file picker on this phone: nothing happens */
+			Toast.makeText(this, R.string.no_file_picker,
+					Toast.LENGTH_LONG).show();
 		}
 	}
 

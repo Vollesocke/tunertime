@@ -1,9 +1,12 @@
 # Handoff: TunerTime Organ
 
-**UI rule: no popups, ever** (Onno, 21 Oct). No Toasts, not for hints,
-results or errors (v18.7 removed all of them): a refused action does
-nothing or is not offered, what must be said goes into the screen or the
-dialog itself. Dialogs the user opens are fine.
+**UI rule (Onno, 22 Oct; replaces "no popups, ever" of 21 Oct):** no
+popups for everyday hints. The one after a manual correction ("follow:
+only within a fourth") was "really annoying" and stays out, as do the
+auto hint and preset added/imported/exported. Error messages are wanted
+(A out of range, row too high, no file picker, a tab refused in a run,
+packing failed), and so are the messages about recordings (run
+started/saved/failed, GitHub packing). Dialogs the user opens are fine.
 
 **What it is for (Onno, 21 Oct):** a tuning aid. The organ builder always
 decides by ear what he tunes and what not. Its main use is to keep the
@@ -11,11 +14,83 @@ strobe following so that, with as little input as possible, he sees
 exactly what he hears. So the hand always wins over the detector, and the
 app does not explain or warn where he already knows.
 
-Status as of 22 Oct 2026, midday: release
-[**v18.8-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.8-organ)
-(code 28) is on `main`: crash reports, and "Recordings to GitHub" with a
-choice of what to send. **Start with "22 Oct: crashes in mixture mode"
-below.**
+**Season plan (Onno, 22 Oct):** "the tracking is really good now". Finish
+the features and UI until everything runs plausibly, then pause until
+the next tuning season (from the end of May 2027). Real tuning (work on
+the pipe changes its sound) can only be tested then. Meanwhile he may
+recruit other testers: the app has to be stable and documented. Quiet
+Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
+work well. Noise beds differ per organ (>20 organs needed to learn from
+them), so no noise library and no sample simulator for now.
+
+Status as of 22 Oct 2026, evening: release
+[**v18.9-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v18.9-organ)
+(code 29) is on `main`. Package B of Onno's spec (measuring a
+temperament, matching) is on branch `spec-b` for v19.0. **Start with
+"22 Oct evening: v18.9" below.**
+
+## 22 Oct evening: v18.9
+
+**The mixture-mode crashes (issue #8, Onno's `dumpsys dropbox`)**, two bugs:
+- All four 18.7 crashes: `ArrayIndexOutOfBoundsException` in
+  `note.class_name`. With "Mixture: follow the reference rank" on (his
+  setting), pitch.c divides the partial by a high focused row's ratio, the
+  pitch lands under C0, and `note()` took Java's negative remainder as an
+  index. `note()` floors now; `on_pitch` drops estimates under 15 Hz.
+- The 18.3 crash in the same log (null TextView in `on_pitch`):
+  `layout-land/mixture_buttons.xml` never had `mixture_pitch`, so in
+  landscape the first note heard in mixture mode closed the app, untouched.
+  Commit 349e91d says it was fixed in 18.4: wrong, it was still in 18.8;
+  fixed now (7314618), shown as a caption so the buttons keep 48dp.
+- The crash hunt (branch `crash-hunt`) also fixed: strobe.c writing outside
+  the bitmap when the surface is lower than the rows, ShareRecordings on
+  rotation while packing, Help without a browser, PresetNoteActivity after
+  Delete. Checked clean: 4.27 M note-arithmetic cases (NaN, Inf, 1 Hz to
+  200 kHz, A 220-880), layout ids of both variants, JNI refs, buffer bounds,
+  threading, preset import.
+
+**Work noise (Onno: next step after "the tracking is really good")**, on
+the Rinteln runs of 22 Oct (issue #7, `tools/field/data/runs-2026-10-22`;
+the Gedackt 8 + Rohrfloete 4 run is "a normal pass in real life"):
+- Detector and follow already ignore it: 142 bursts in 1271 s of held keys
+  (`tools/field/noise_score.py`): 0 wrong agreements, the note never moved,
+  no hold ended. No burst rejection added to pitch.c.
+- The floor crept up to soft pipes in a long pass (65 -> 280 in 270 s), and
+  follow took them for released. `pitch_floor()` now rises only after 0.7 s
+  with no note; `KEY_QUIET` 1.4 -> 1.6. Taken for released while sounding
+  16 -> 6; eval.sh otherwise unchanged (bench 537/537, runs 191, warped 398).
+- Strobe: a knock no longer darkens the upper rows (up to 0.8 s -> ~0.1 s)
+  or gaps the drift (gaps >= 0.5 s 19 -> 0), so a knock no longer looks like
+  a key release to the mixture measurement. `tools/strobe_replay.c`,
+  `tools/field/strobe_knocks.py`. Left: a knock's start can shift the drift
+  of a weak upper row by up to 2.4 c; knocks raise the sim's worst mixture
+  error (0.58 -> 0.74 c).
+- run_score.py: wrong agreements only while the key sounds and from its
+  onset; a key held through the whole run is not "silent". Gedackt 8 +
+  Rohrfloete 4: ok 26 -> 30 of 30, wrong 12 -> 2 (both real: the 4' alone at
+  E5, an F#6 while a pipe was being tuned). sim_organ: "Field work noise"
+  scenarios.
+
+**Onno's spec of 21 Oct**: `doc/plan-onno-spec-2026-10-21.md`, with his
+answers. Package A in v18.9: A tab Auto/Reset (median of 2 s on the shown
+note), Temperierung tab a view only, the note kept over all tabs, a
+focused row per mode (`parms.note_focus` for Ton and Kammerton,
+`parms.mixture_focus`), the auto button Folgen/Fixiert by tap (off and
+locked differed only in clearing continuity), Lambert (1774). Package B
+(branch `spec-b`, an agent was building it at release time): "Toene
+messen" and "Matching" from the preset edit page.
+
+**Manual**: Help opens `app/src/main/assets/help/{de,en}.html` offline
+(HelpActivity), light or dark with the phone. Its section 18 announces
+package B for 19.0: update it when B merges. Questions for Onno from it:
+light help page in a light phone theme ok?; the tips (about 3 c per
+degree, tremulant off, Rohrfloete lengths only approximate, cent+ for an
+Unda maris); recommend German note names?
+
+**Tests for 18.9:** FollowTest 11/11 and UiLayoutTest main_normal and
+main_organ on tt_galaxy_s25 (the first run there); JVM tests 8/8. Package
+A's agent ran FollowTest and the main-screen layout tests on
+tt_fairphone4 before the merges.
 
 ## 22 Oct: crashes in mixture mode, the GitHub share (v18.8)
 
