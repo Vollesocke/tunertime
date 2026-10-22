@@ -135,3 +135,42 @@ keys silent, as its key level is taken at the target Hz. Hmth 202's
 noise lines (a 49.25 Hz blower series, not the mains) stand at -12 dB
 against its Gedackt's keys, Hmth 204's at -33 dB; the Hmth 204 Gedackt
 with `--hum -14` scores as the Hmth 202 one (79% ok, 34% empty).
+
+## Strobe and work noise
+
+`tools/strobe_replay.c` plays a WAV through the real `jni/strobe.c`,
+1024 samples per buffer as the app reads them, with each key of a run's
+.txt set as by its tap. Per buffer and row it prints the brightness the
+row draws (caught from the pixels), the band-passed signal's peak and
+its phase at the row frequency, and the focused row's drift (`-F`, the
+focus ratio).
+
+`strobe_knocks.py` measures what the knocks of tuning work do to the
+strobe: nine real knocks cut from the Gedackt 8' + Rohrfloete 4' run of
+22 Oct (Rinteln), the pipes under them subtracted, put onto every key
+held 3 s or more of that run and the four of 21 Oct, at their recorded
+level against the pipe and 12 dB louder; each build replays the runs
+with and without them, so the difference is the knock alone.
+
+```sh
+cc -O2 -Ijni -Itools/hostjni -o old tools/strobe_replay.c -lm  # before a change
+cc -O2 -Ijni -Itools/hostjni -o new tools/strobe_replay.c -lm  # after it
+python tools/field/strobe_knocks.py old new
+```
+
+The replays are kept in `tools/field/build/knocks` by build name (~1 min
+for two builds); delete them after rebuilding one.
+
+It prints per build and level: how long the pattern is drawn darker
+(8'/4' rows and the upper ones), how long the knock and the filter's
+ringing stand in for the pipe ("disturbed"), the drift error of a 2 s
+measurement around the knock per focused row, and the usable drift lost
+(gaps of 0.5 s and more: mixture.java takes a 1 s gap for a release);
+for two builds also how much their display differs on the clean runs
+and the time from each onset to the first usable drift.
+
+On the runs as recorded (22 Oct), the knocks hardly reach the 8' and 4'
+rows: their energy lies far above the pipe's band (the big one in E5,
+33 dB over the pipe broadband, raised the 4' row 3 dB). They darkened
+the weak upper rows, where the pipe has little, for up to 0.8 s; since
+`strobe_gain()` (jni/strobe.c) about 0.1 s.
