@@ -3,8 +3,10 @@
 A fork of [TunerTime](http://galexander.org/), the Android strobe tuner by
 Greg Alexander. Upstream lives at `http://galexander.org/git/tunertime.git`.
 The `upstream` branch here mirrors its `master` as of this fork, and `main`
-holds the changes below. The user manual is in `doc/index.html`, and the
-author's development log is `NOTES`.
+holds the changes below. Greg's user manual is in `doc/index.html`, and the
+author's development log is `NOTES`. This fork's manual, German and
+English, is bundled in `app/src/main/assets/help` and shown offline by
+Help (`HelpActivity`, in the app's language).
 
 TunerTime is free software under the GNU GPL v2 (see `COPYING`), and so is
 this fork.

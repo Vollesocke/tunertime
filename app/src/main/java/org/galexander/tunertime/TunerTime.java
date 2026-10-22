@@ -1487,14 +1487,10 @@ public class TunerTime extends Activity
 		set_mode(preset_buttons, false);
 	}
 
+	/* the manual in the app (assets/help), offline: a church may have
+	 * no network.  It links to Greg's site and the GitHub issues */
 	private void do_help() {
-		Intent i = new Intent(Intent.ACTION_VIEW);
-		i.setData(Uri.parse("http://galexander.org/software/tunertime/"));
-		try {
-			startActivity(i);
-		} catch (android.content.ActivityNotFoundException e) {
-			/* no browser on this phone: nothing happens */
-		}
+		startActivity(new Intent(this, HelpActivity.class));
 	}
 
 	private String my_version() {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Help (HelpActivity): a long text reads best as the phone's
+	     theme has it, light here, dark in values-night; the manual's
+	     CSS follows it (prefers-color-scheme) -->
+	<style name="Tuner.Help" parent="@android:style/Theme.Material.Light.DarkActionBar">
+		<item name="android:colorPrimary">@color/surface</item>
+		<item name="android:colorPrimaryDark">@color/bg</item>
+		<item name="android:colorAccent">@color/accent</item>
+		<item name="android:statusBarColor">@color/bg</item>
+		<item name="android:actionOverflowButtonStyle">@style/Tuner.Overflow</item>
+		<item name="android:actionBarStyle">@style/Tuner.ActionBar</item>
+	</style>
+</resources>
