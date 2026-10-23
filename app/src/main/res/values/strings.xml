@@ -50,7 +50,6 @@
 	<!-- status in the corner: A, stretch -->
 	<string name="status_a">A=%1$s</string>
 	<string name="status_organ">organ</string>
-	<string name="status_mix">mix%1$s</string>
 
 	<!-- panels -->
 	<string name="semi_plus">semi+</string>
@@ -132,7 +131,7 @@
 	<!-- entering a temperament by ear (Onno, 21 Oct): page 1 sets the
 	     A over the A pipes of all octaves, page 2 the 12 notes -->
 	<string name="measure_notes">measure notes</string>
-	<string name="title_measure_a">Set concert pitch</string>
+	<string name="title_measure_a">Set standard A</string>
 	<string name="measure_set">set</string>
 	<string name="title_measure_note">Enter note: %1$s</string>
 	<string name="measure_store">store note</string>
@@ -285,6 +284,7 @@
 	<string name="harmonics_summary">%1$s: one strobe row each, lowest first (up to 8)</string>
 	<string name="footages">Footages shown</string>
 	<string name="footages_summary">%1$s: one strobe row each, 8\' being the note (up to 8)</string>
+	<string name="cat_mixture">Mixture</string>
 	<string name="cat_debug">Debug</string>
 	<string name="level_bar">Input level bar</string>
 	<string name="level_bar_summary">Along the strobe\'s right edge: red too quiet to be read, amber marginal, green good; the white tick is where detection starts.</string>

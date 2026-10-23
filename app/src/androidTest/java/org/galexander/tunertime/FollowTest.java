@@ -344,7 +344,7 @@ public class FollowTest {
 		tap("auto");
 		set_focus(2.0d);			/* 4' in note mode */
 		tap("mixture");
-		assertEquals("mixture: 8', none of its own", 1.0d,
+		assertEquals("mixture: 4', none of its own (Onno, 23 Oct)", 2.0d,
 			     parms.focus_ratio, 0.0d);
 		set_focus(4.0d);			/* 2' */
 		tap("tab note");

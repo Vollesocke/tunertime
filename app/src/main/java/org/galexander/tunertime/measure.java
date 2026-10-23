@@ -12,7 +12,7 @@ import android.widget.TextView;
 /* Entering a temperament by measuring it (Onno's spec of 21 Oct, "Töne
  * messen"): pages of TunerTime without the tab bar, opened from the
  * preset editor with EXTRA_PRESET, the id of the preset edited.
- *  1. "Set concert pitch" (Kammerton einstellen): the strobe rows 8' to
+ *  1. "Set standard A" (Kammerton einstellen): the strobe rows 8' to
  *     1/4' on A, the A buttons and Reset; no detection and no Auto (Onno,
  *     22 Oct: the A is set by ear over the A pipes of all octaves).
  *     "Set" takes the A for the measurement and opens page 2.
