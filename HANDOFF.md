@@ -72,6 +72,23 @@ drag to reorder presets) he wants. His manual wording "Abweichung ... von
 dessen ermittelten Tonhöhe" was made exact: for the reference rank from
 its measured pitch, for others from the pure interval to it.
 
+**Onno's answers (23 Oct):** the Temperierung tab stays as it is: no
+strobe and no follow button at all (`controls_frame`, which holds
+`mode_holder`, is GONE in preset mode; `auto_button.setEnabled(false)`
+there greys an invisible button, so "follow is grey" was my mistake). He
+deleted those lines because the manual should not describe what isn't
+there or what is expected anyway. The strobe-slope section is "super":
+the text stays, the strobe is not changed. Still open: the
+Kammerton-offset alternative and the "up for debate" points.
+
+**Manual consistency pass (23 Oct, Volker: "remove everything not
+requested by Onno"):** `de.html` is now Onno's `de_2.html` plus only
+what he asked for (v19.2 changes, the slope section). My own reasons
+and rewordings are gone: "selten gewollt", "Subsemitonien"/"berechnen",
+"vom reinen Intervall", "eingeschaltet", "den Versatz". `en.html`
+follows; both match paragraph for paragraph. Rule for later edits: see
+memory tunertime-manual-style.
+
 ## 22 Oct night: v19.1
 
 Onno on 19.0: "einziges Haar in der Suppe".
