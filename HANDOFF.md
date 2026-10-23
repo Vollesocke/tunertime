@@ -96,8 +96,9 @@ main_normal, measure on tt_fairphone4; the buttons tapped on the emulator.
    meantone/Pythagorean (measuring greyed there), "C#" fine, the tips stay
    (his manual kept them), no recommendation of German note names. The
    light help theme he did not answer.
-2. **Issues #7, #8 and #9** have no reply on GitHub; Volker decides
-   whether to post one linking the releases.
+2. **Issue #9** has a short reply (23 Oct) linking v19.2 and pointing to
+   the questions in its release notes; watch it for his answers. Issues
+   #7 and #8 have no reply; Volker decides whether to post one.
 3. **Crash reports from 18.8+:** the next "Aufnahmen an GitHub" share can
    carry `files/crashes`. If he still sees the app close, ask for one.
 4. **Small leftovers**, none urgent:
