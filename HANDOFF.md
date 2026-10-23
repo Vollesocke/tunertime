@@ -23,13 +23,54 @@ Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
 work well. Noise beds differ per organ (>20 organs needed to learn from
 them), so no noise library and no sample simulator for now.
 
-Status as of 22 Oct 2026, night: release
-[**v19.1-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.1-organ)
-(code 31) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
-and B) plus Onno's two wishes on it (below). After it, per Onno's season
-plan: only what testers need (stability, the manual, his answers below),
-detector work again from May 2027. **Start with "22 Oct late: v19.0"
-below.**
+Status as of 23 Oct 2026: release
+[**v19.2-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.2-organ)
+(code 32) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
+and B), his two wishes of 22 Oct (v19.1) and his issue #9 (v19.2, below).
+After it, per Onno's season plan: only what testers need (stability, the
+manual, his answers), detector work again from May 2027. **Start with
+"23 Oct: v19.2" below.**
+
+## 23 Oct: v19.2 (issue #9)
+
+Onno reviewed the German manual (his LibreOffice export `de_2.html` is in
+`tools/field/data/issue9`, git-ignored; its text edits were merged into
+our `de.html` by hand, and into `en.html`) and asked for:
+- **Mixture: no 20-cent rule.** `on_pitch` no longer drops a detection
+  more than 20 c from the mixture's measured pitch; the nearest step
+  (with Dis/Es) is taken. sim_organ never had the rule.
+- **Mixture focus defaults to 4'**: `mixture_measure` with nothing
+  focused takes 4', else 8', else the lowest row; `parms.load` defaults
+  `mixture_focus` to 2.0 when the pref is missing (installs that saved one
+  keep it). FollowTest.focus_per_mode expects 4'.
+- **Corner "Mix+01.5c" removed**: it was `mixture_offset_str()`, the same
+  number as the mixture display beside the key. The corner shows "Orgel"
+  in every organ mode; `status_mix` deleted.
+- **Offset without the tenth** in the Ton tab (`note.whole_cents_str`);
+  `parms.load` rounds `note_cents` to whole cents (the legacy default took
+  the temperament's tenths). The Kammerton tab shows the offset only when
+  it is not 0, bold amber. His alternative (ignore it there, reset on
+  going back to Ton) is open; he is still thinking.
+- **"Mixtur: dem Bezugschor folgen"** in its own category "Mixtur" in the
+  settings, out of Debug.
+- **"Töne messen" greyed** for presets matching Pythagorean or a meantone
+  (`preset.wolf_template() >= 1`): calculated, not measured.
+- English B1 title "Set standard A".
+- Manual: new section "Wie steil die Streifen laufen" from strobe.c: a row
+  draws a column per cycle of its frequency, `multiplier =
+  floor(1 + f/width)` cycles per column, so up to about the screen width in
+  Hz (1080 px portrait: ~1 kHz) a cent looks equally steep everywhere and
+  all rows of one pipe lean alike; above, steeper in steps. Onno's note
+  said higher partials always lean more: asked him (release notes).
+
+**Ask Onno (in the v19.2 notes):** is the strobe-slope text what he sees,
+or should the slope follow the beat rate everywhere; does deleting "im
+Reiter Temperierung" / "Strobe ausgeblendet" mean he wants strobe and
+follow in that tab; the open Kammerton-offset alternative; which of the
+"up for debate" points (speaker icon for Signal, Preset vs. Temperierung,
+drag to reorder presets) he wants. His manual wording "Abweichung ... von
+dessen ermittelten Tonhöhe" was made exact: for the reference rank from
+its measured pitch, for others from the pure interval to it.
 
 ## 22 Oct night: v19.1
 
@@ -47,14 +88,16 @@ Onno on 19.0: "einziges Haar in der Suppe".
 Tests: JVM tests, MeasureTest, FollowTest, UiLayoutTest main_organ,
 main_normal, measure on tt_fairphone4; the buttons tapped on the emulator.
 
-## Pick up here (22 Oct, night)
+## Pick up here (23 Oct)
 
-1. **Onno's answers** to the open questions (listed under "22 Oct late"
-   below): package B's English labels, Back from "Ton eingeben", one note
-   replacing Dis and Es, "C#" with German UI; the manual's light theme,
-   its tips, German note names. Apply what he decides.
-2. **Issues #7 and #8** (his recordings, his crash log) have no reply yet;
-   Volker decides whether to post one linking v18.9/v19.0.
+1. **Onno's answers** to the questions in the v19.2 notes (above). His
+   answers in #9 to the earlier ones: "set standard A" (he reviews the
+   English UI later), Back B2 -> B1 is right, Dis/Es only matter for
+   meantone/Pythagorean (measuring greyed there), "C#" fine, the tips stay
+   (his manual kept them), no recommendation of German note names. The
+   light help theme he did not answer.
+2. **Issues #7, #8 and #9** have no reply on GitHub; Volker decides
+   whether to post one linking the releases.
 3. **Crash reports from 18.8+:** the next "Aufnahmen an GitHub" share can
    carry `files/crashes`. If he still sees the app close, ask for one.
 4. **Small leftovers**, none urgent:
