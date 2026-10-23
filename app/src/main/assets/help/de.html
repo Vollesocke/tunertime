@@ -9,7 +9,7 @@
 <body>
 
 <h1 id="inhalt">TunerTime Organ – Handbuch</h1>
-<p class="version">Stand: Version 19.0, Oktober 2026</p>
+<p class="version">Stand: Version 19.2, Oktober 2026</p>
 
 <nav>
 <ol>
@@ -113,6 +113,30 @@ daneben wird das Bild senkrecht oder unruhig.</li>
 wieder links. Eine Zeile, die für die Abtastrate des Telefons zu hoch
 liegt, bleibt leer und zeigt „zu hoch“.</p>
 
+<h3>Wie steil die Streifen laufen</h3>
+<p>Jede Zeile schreibt eine Spalte je Schwingung ihrer eigenen Frequenz.
+Ein Streifen steigt oder fällt um die ganze Zeilenhöhe, wenn der
+Teilton eine Schwingung gegenüber der Zeile gewinnt oder verliert. Hohe
+Zeilen schreiben, damit das Bild nicht zu schnell läuft, nur jede 2., 3.
+… Schwingung; ab wann, hängt von der Breite des Bildschirms ab: im
+Hochformat etwa ab 1000 Hz (um c³), im Querformat höher.</p>
+<ul>
+<li>Bis dahin zeigt die gleiche Verstimmung in Cent in jeder Tonlage
+gleich steil. Das Ohr hört sie verschieden: Gegen eine reine Pfeife
+schwebt 1 Cent am großen C etwa alle 26 s einmal, am c¹ alle 7 s, am
+c³ alle 1,7 s. Ein steiler Streifen im Bass ist also eine
+langsame Schwebung, ein flacher in der Höhe schon eine deutliche.</li>
+<li>Darüber werden die Streifen bei gleicher Verstimmung in Cent in
+Stufen steiler (bei doppelter Frequenz etwa doppelt so steil), ungefähr
+so, wie die Schwebung schneller wird.</li>
+<li>Die Zeilen einer Pfeife: Liegt ihr Grundton etwas daneben, liegen
+alle ihre Teiltöne um gleich viele Cent daneben, in Hertz aber der
+doppelte Teilton doppelt so weit, der dreifache dreimal so weit. Bis
+etwa 1000 Hz laufen alle ihre Zeilen gleich schräg, darüber die hohen
+Zeilen stärker. Stehen alle Zeilen einer Pfeife still, passen ihre
+Teiltöne zum Sollton.</li>
+</ul>
+
 <h3>Eine Zeile antippen: Fokus</h3>
 <p>Tippen Sie eine Zeile an, wird sie <b>fokussiert</b> (blauer Rahmen);
 nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft
@@ -135,9 +159,7 @@ erhalten.</li>
 <li>Die <b>Knöpfe des Reiters</b> mit ihren Anzeigen (siehe die
 folgenden Abschnitte).</li>
 <li>Rechts oben in der Ecke: <span class="b">A=440.0</span> (der
-Kammerton) und <span class="b">Orgel</span>, im Mixturmodus statt
-dessen die gemessene Abweichung der Mixtur, etwa
-<span class="b">Mix+01.5c</span>.</li>
+Kammerton) und <span class="b">Orgel</span>.</li>
 <li>Rechts darunter drei Knöpfe: <span class="b">Folgen</span> /
 <span class="b">Fixiert</span> (<a href="#folgen">Folgen und
 Fixiert</a>), <span class="b">Signal</span>
@@ -152,8 +174,8 @@ Fixiert</a>), <span class="b">Signal</span>
 <p>Im Reiter <span class="b">Ton</span>:</p>
 <ul>
 <li>Die Anzeige in der Mitte zeigt den Ton (die gespielte Taste in der
-8′-Lage) und darunter seinen Versatz in Cent, den Sie von Hand
-einstellen. Die Abweichung der Temperierung steht in der Titelzeile; der
+8′-Lage) und darunter einen zusätzlichen Versatz in ganzen Cent, etwa
+„+3c“, den Sie von Hand einstellen. Die Abweichung der Temperierung steht in der Titelzeile; der
 Sollton ist Ton + Temperierung + Versatz.</li>
 <li><span class="b">Ton+</span> / <span class="b">Ton-</span>: einen
 Halbton weiter. Lang drücken: eine Quinte weiter.</li>
@@ -173,12 +195,12 @@ halten. Der Strobe springt nach etwa einer halben Sekunde auf die
 Taste.</li>
 <li>Die Pfeife stimmen, bis die Streifen ihrer Zeile waagerecht
 stehen.</li>
-<li>Nächste Taste. Stimmt der angezeigte Ton nicht, von Hand
+<li>Nächste Taste. Stimmt der angezeigte Ton nicht mit der gedrückten
+Taste überein, von Hand
 korrigieren (<a href="#folgen">Folgen und Fixiert</a>).</li>
 </ol>
 <p>Oktaven und Aliquoten sind rein: Die Zeilen 4′, 2 2/3′, 2′, 1 3/5′
-liegen genau auf dem 2-, 3-, 4- und 5-fachen der 8′-Frequenz, ohne
-Temperierung.</p>
+liegen genau auf dem 2-, 3-, 4- und 5-fachen der 8′-Frequenz.</p>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
 
@@ -193,7 +215,7 @@ dorthin. In der Stille bleibt der letzte Ton stehen.</li>
 <li><span class="b">Fixiert</span> (gelb): Der Ton bleibt, wo er ist;
 er ändert sich nur von Hand.</li>
 </ul>
-<p>Im Reiter Temperierung und während eines chromatischen Laufs ist der
+<p>Während eines chromatischen Laufs ist der
 Knopf grau und ohne Wirkung. Während das <a href="#signal">Signal</a>
 spielt, folgt die App nicht.</p>
 
@@ -230,14 +252,18 @@ Sie ihre Zeile an, dann meldet die Erkennung die Taste.</p>
 <h2>6. Den Kammerton einstellen</h2>
 <p>Im Reiter <span class="b">Kammerton</span>:</p>
 <ul>
-<li>Die Anzeige zeigt das A und den eingestellten Ton, etwa
-„440.0 Hz · a¹ +00.0c“. Antippen öffnet ein Zahlenfeld für das A (220 bis
+<li>Die Anzeige zeigt den Kammerton und den für die Strobe-Anzeige
+eingestellten Ton, etwa „440.0 Hz · a¹“. Einen Versatz aus dem Reiter
+Ton zeigt sie nur, wenn er nicht 0 ist, und dann gelb hervorgehoben,
+etwa „440.0 Hz · a¹ +3c“: Beim Einstellen des Kammertons ist er selten
+gewollt. Antippen öffnet ein Zahlenfeld für den Kammerton (220 bis
 880 Hz).</li>
 <li><span class="b">+1</span> / <span class="b">-1</span> und
-<span class="b">+0.1</span> / <span class="b">-0.1</span>: das A in
-Schritten von 1 Hz und 0,1 Hz.</li>
-<li><span class="b">Auto</span>: setzt das A so, dass der angezeigte Ton
-(in der gewählten Temperierung) genau auf das Gehörte passt. Dazu nimmt
+<span class="b">+0.1</span> / <span class="b">-0.1</span>: den Kammerton
+in Schritten von 1 Hz und 0,1 Hz anpassen.</li>
+<li><span class="b">Auto</span>: setzt den Kammerton so, dass der
+angezeigte Ton (in der gewählten Temperierung) genau auf den klingenden
+Ton passt. Dazu nimmt
 die App den Mittelwert (Median) der Erkennung aus den letzten 2 s, soweit
 sie auf diesen Ton passt, und rundet auf 0,1 Hz. Hat sie davon weniger
 als etwa 1 s gehört, geschieht nichts. Das geht mit jedem Ton, nicht nur
@@ -250,18 +276,16 @@ Bezugsregisters etwa 2 s halten, <span class="b">Auto</span> tippen;
 dann mit den Knöpfen als Kompromiss aus mehreren Pfeifen (etwa den A
 aller Oktaven) nachstellen. Eine Temperaturkorrektur gibt es nicht:
 Die Pfeifen ändern sich um etwa 3 Cent je Grad, das gleichen Sie über
-das A aus.</p>
+den Kammerton oder den Versatz aus.</p>
 <p>Der Reiter Kammerton teilt Ton und Fokus mit dem Reiter Ton, und die
-Erkennung folgt auch hier.</p>
+Erkennung folgt auch hier, wenn eingeschaltet.</p>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
 
 <section id="temperierung">
 <h2>7. Eine Temperierung wählen</h2>
-<p>Der Reiter <span class="b">Temperierung</span> ist eine reine
-Ansicht: Er zeigt die gewählte Temperierung als Tabelle (Ton und
-Abweichung von gleichstufig in Cent) und ändert weder den Ton noch den
-Fokus. Der Strobe ist hier ausgeblendet.</p>
+<p>Die Tabelle ist eine reine Ansicht: Sie zeigt die gewählte
+Temperierung (Ton und Abweichung von gleichstufig in Cent).</p>
 <ul>
 <li><span class="b">Auswahl</span> öffnet die Liste „Preset wählen“.
 Ein Preset antippen wählt es. Langes Drücken auf den Reiter
@@ -359,7 +383,7 @@ nichts importiert und die Fehler werden angezeigt.</p>
 <h2>9. Eine Mixtur stimmen</h2>
 <p>Im Mixturmodus nimmt die App keinen Sollton an. Sie <b>misst den
 Bezugschor</b> (die fokussierte Zeile) und legt den Sollton dorthin,
-wo er klingt: Dessen Zeile steht dann still, und die anderen Zeilen
+wo dieser klingt: Dessen Zeile steht dann still, und die anderen Zeilen
 zeigen, wie die übrigen Chöre rein zu ihm stehen.</p>
 <h3>Der Reiter Mixtur</h3>
 <ul>
@@ -374,16 +398,18 @@ Taste oder Oktave. Die gemessene Abweichung wird mitgenommen.</li>
 antippen): neu messen.</li>
 <li><span class="b">Reset</span>: zurück auf den temperierten Ton ohne
 Abweichung.</li>
-<li>Rechts oben im Strobe groß die Abweichung des fokussierten Chors,
-etwa „2' +01.5c“; in der Ecke unter dem A die gemessene Abweichung der
-Mixtur („Mix+01.5c“).</li>
+<li>Rechts oben im Strobe groß die Abweichung des fokussierten Chors
+von seinem Sollton, etwa „2' +01.5c“: beim Bezugschor von dessen
+gemessener Tonhöhe, bei jedem anderen Chor vom reinen Intervall zu
+ihr.</li>
 </ul>
 <h3>So geht es</h3>
 <ol>
 <li>Prüfen, ob alle Fußtonlagen der Mixtur als Zeilen angezeigt werden
 (Einstellungen → Angezeigte Fußtonlagen, höchstens 8).</li>
 <li>Reiter <span class="b">Mixtur</span>. Die Zeile des Bezugschors
-antippen. Ist keine fokussiert, misst die App an der 8′-Zeile.</li>
+antippen. Ist keine fokussiert, misst die App an der 4′-Zeile (ohne
+4′-Zeile an der 8′-Zeile).</li>
 <li>Die Taste mit dem Bezugschor halten. Die Messung mittelt 2 s
 (unter 8′: 3 s) und hört früher auf, sobald das Ergebnis ruhig ist.
 Dann steht „gemessen an …“.</li>
@@ -404,8 +430,7 @@ der beiden sein oder dazwischen liegen.</li>
 liegt mehr als einen Halbton neben jeder Zeile. Dann misst der Strobe
 falsch. Taste prüfen, oder ein Chor (etwa nach einer Repetition) hat
 keine Zeile.</li>
-<li>Beim Folgen gilt nur, was höchstens 20 Cent neben dem gemessenen Ton
-der Mixtur liegt. Ton- und Oktavknöpfe gelten als
+<li>Beim Folgen gelten die Ton- und Oktavknöpfe als
 <a href="#folgen">Korrektur von Hand</a>.</li>
 <li>Wird die Taste losgelassen, bevor die Messung fertig ist, gilt, was
 bis dahin gemessen wurde, wenn es mindestens die halbe Zeit war; sonst
@@ -424,14 +449,14 @@ sie nicht verschiebt. Größere Schritte von Hand.</li>
 <h2>10. Pfeifenlänge (Länge)</h2>
 <p>Der Knopf <span class="b">Länge</span> schaltet unter dem Strobe eine
 Anzeige ein, um wie viel die klingende Pfeife zu lang oder zu kurz ist,
-etwa „+12 mm (λ/2)“. Das ist zum Einrichten des Tonumfangs gedacht,
+etwa „+12 mm (λ/2)“. Das ist zum Einrichten des Stimmbereichs gedacht,
 nicht zum Feinstimmen.</p>
 <ul>
 <li><b>+</b>: zu lang (zu tief), abschneiden. <b>−</b>: zu kurz (zu
 hoch), verlängern. <b>±</b>: stimmt (innerhalb 0,2 Cent).</li>
 <li>Der Knopf links daneben wählt <span class="b">offen</span> (λ/2)
-oder <span class="b">gedackt</span> (λ/4). Für Rohrflöten ist die
-Angabe nur ungefähr.</li>
+oder <span class="b">gedackt</span> (λ/4). Für Rohrflöten und
+konische Pfeifen ist die Angabe nur ungefähr.</li>
 <li>Farbe: blau, wenn die Anzeige ruhig ist; gelb, solange sie sich noch
 bewegt; grau „(gehalten)“, wenn die Pfeife verstummt ist.
 „warte auf Ton…“: noch nichts gehört. „unklar“: Was klingt, ist kein
@@ -479,7 +504,7 @@ kurz; sie übernimmt einen Ton erst, wenn sie ihn mehrmals hintereinander
 gehört hat.</li>
 <li>Tremulant aus.</li>
 <li>Die Temperatur ändert die Tonhöhe der Pfeifen (etwa 3 Cent je Grad):
-den Kammerton von Hand anpassen.</li>
+den Kammerton oder den Versatz von Hand anpassen.</li>
 </ul>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
@@ -573,6 +598,9 @@ Issue anlegen.</li>
 und Länge, keine Spreizung. <span class="b">Deutsche Tonnamen</span>:
 Cis, B, H; C₁ C c c¹ c². <span class="b">Language / Sprache</span>:
 Systemsprache, English, Deutsch.</dd>
+<dt>Mixtur</dt>
+<dd><span class="b">Mixtur: dem Bezugschor folgen</span>
+(<a href="#mixtur">Mixtur</a>).</dd>
 <dt>Audio</dt>
 <dd><span class="b">Audioquelle</span>: am besten
 <b>Automatisch</b>. Das Mikrofon wählt die App selbst (das mit dem
@@ -586,8 +614,7 @@ weiße Strich ist die Schwelle der Erkennung.
 <span class="b">Angezeigte Fußtonlagen</span>: bis zu 8 aus 32′ bis
 1/8′, auch 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
 <dt>Debug</dt>
-<dd><span class="b">Mixtur: dem Bezugschor folgen</span>
-(<a href="#mixtur">Mixtur</a>). <span class="b">Debug-Aufnahmen</span>
+<dd><span class="b">Debug-Aufnahmen</span>
 (<a href="#debug">Debug-Aufnahmen</a>).</dd>
 </dl>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
@@ -633,7 +660,7 @@ Ton (innerhalb der Oktave), Cent ±1 und ±0,1 verschieben ihn, bis seine
 Zeilen stehen. <b>Ton speichern</b> legt ihn im Preset ab und geht zum
 nächsten noch nicht gespeicherten. Oben zeigt „n/12“, wie viele es sind;
 ein gespeicherter Ton wird blau. Hat das Preset schon Töne, beginnt die
-Seite mit ihren Werten.</li>
+Seite mit diesen Werten.</li>
 <li>Nach dem zwölften Ton geht es zurück zum Bearbeiten, und
 <b>Matching</b> ist hervorgehoben. Hatte das A dabei nicht 0 Cent, wird
 die ganze Tabelle so verschoben, dass A = 0 Cent ist.</li>
@@ -642,8 +669,9 @@ die ganze Tabelle so verschoben, dass A = 0 Cent ist.</li>
 Bearbeiten; was schon gespeichert ist, bleibt (noch ohne die
 Verschiebung auf A = 0). Ihre Einstellungen im Hauptbildschirm (Ton,
 Kammerton, Zeilen, Fokus, Folgen/Fixiert) ändert die Messung nicht.
-Gemessen werden nur die 12 Halbtöne, auch bei Temperierungen mit Dis/Es
-oder Gis/As.</p>
+Gemessen werden nur die 12 Halbtöne. Bei Pythagoreisch und den
+mitteltönigen Stimmungen ist <b>Töne messen</b> grau: Sie lassen sich
+berechnen, und nur sie brauchen Dis und Es getrennt (Subsemitonien).</p>
 <h3>Matching</h3>
 <p>Geht, sobald das Preset genau einen Ton je Halbton hat. Die Tabelle
 zeigt für C bis H die Centwerte des Presets und daneben die nächsten

@@ -47,7 +47,6 @@
 
 	<string name="status_a">A=%1$s</string>
 	<string name="status_organ">Orgel</string>
-	<string name="status_mix">Mix%1$s</string>
 
 	<string name="semi_plus">Ton+</string>
 	<string name="semi_minus">Ton-</string>
@@ -264,6 +263,7 @@
 	<string name="harmonics_summary">%1$s: je eine Strobe-Zeile, der tiefste oben (h&#246;chstens 8)</string>
 	<string name="footages">Angezeigte Fu&#223;tonlagen</string>
 	<string name="footages_summary">%1$s: je eine Strobe-Zeile, 8\' ist der Ton selbst (h&#246;chstens 8)</string>
+	<string name="cat_mixture">Mixtur</string>
 	<string name="cat_debug">Debug</string>
 	<string name="level_bar">Pegelanzeige</string>
 	<string name="level_bar_summary">Am rechten Rand des Strobe: rot zu leise zum Erkennen, gelb knapp, gr&#252;n gut; der wei&#223;e Strich ist die Erkennungsschwelle.</string>

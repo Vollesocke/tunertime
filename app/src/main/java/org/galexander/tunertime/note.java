@@ -198,6 +198,13 @@ public class note {
 			(a/U) + "." + (a%U) + "c";
 	}
 
+		/* tenths of a cent -> "+3c", rounded: an offset set in whole
+		 * cents (Onno, 23 Oct) */
+	public static String whole_cents_str(int c) {
+		int w = (int)Math.round(c / (double)U);
+		return ((w < 0) ? "-" : "+") + Math.abs(w) + "c";
+	}
+
 		/* tenths of a cent -> "3.5" (for editing) */
 	public static String cents_edit_str(int c) {
 		int a = Math.abs(c);

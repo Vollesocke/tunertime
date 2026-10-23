@@ -9,7 +9,7 @@
 <body>
 
 <h1 id="contents">TunerTime Organ – Manual</h1>
-<p class="version">Version 19.0, October 2026</p>
+<p class="version">Version 19.2, October 2026</p>
 
 <nav>
 <ol>
@@ -107,6 +107,29 @@ restless.</li>
 the left. A row too high for the phone's sample rate stays empty and
 says "too high".</p>
 
+<h3>How steep the stripes run</h3>
+<p>Each row draws one column per cycle of its own frequency. A stripe
+rises or falls by the whole row height when the partial gains or loses
+one cycle on the row. High rows, so that the picture does not run too
+fast, draw only every 2nd, 3rd … cycle; where that starts depends on
+the screen's width: in portrait at about 1000 Hz (around C6), in
+landscape higher.</p>
+<ul>
+<li>Below that, the same mistuning in cents looks equally steep in every
+range. The ear hears it differently: against a pure pipe, 1 cent beats
+about once every 26 s at C2, every 7 s at C4, every 1.7 s at C6. A
+steep stripe in the bass is a slow beat, a shallow one in the treble
+already a clear one.</li>
+<li>Above it, the same mistuning in cents makes the stripes steeper in
+steps (about twice as steep at twice the frequency), roughly as the beat
+gets faster.</li>
+<li>The rows of one pipe: if its fundamental is a little off, all its
+partials are off by the same number of cents, but in hertz the second
+partial twice as far, the third three times. Below about 1000 Hz all
+its rows run equally slanted, above it the high rows more. When all rows
+of a pipe stand still, its partials fit the target.</li>
+</ul>
+
 <h3>Tapping a row: focus</h3>
 <p>Tap a row to <b>focus</b> it (blue frame); tap it again to release it.
 The focused partial helps the detection: it then looks for that partial
@@ -125,8 +148,7 @@ each keep their own focus.</p>
 note set stays the same across all tabs.</li>
 <li>The <b>tab's buttons</b> and readouts (see the sections below).</li>
 <li>In the corner at the top right: <span class="b">A=440.0</span> (the
-pitch of A) and <span class="b">organ</span>, in mixture mode instead the
-mixture's measured deviation, e.g. <span class="b">mix+01.5c</span>.</li>
+pitch of A) and <span class="b">organ</span>.</li>
 <li>Below them three buttons: <span class="b">follow</span> /
 <span class="b">locked</span> (<a href="#follow">Follow and locked</a>),
 <span class="b">tone</span> (<a href="#tone">Reference tone</a>) and
@@ -140,7 +162,8 @@ mixture's measured deviation, e.g. <span class="b">mix+01.5c</span>.</li>
 <p>In the <span class="b">note</span> tab:</p>
 <ul>
 <li>The readout in the middle shows the note (the key played, at 8′
-pitch) and below it its offset in cents, set by hand. The temperament's
+pitch) and below it an additional offset in whole cents, e.g. "+3c",
+set by hand. The temperament's
 deviation is in the title bar; the target is note + temperament +
 offset.</li>
 <li><span class="b">semi+</span> / <span class="b">semi-</span>: a
@@ -159,11 +182,12 @@ for an 8′ the 8′ row.</li>
 <li>Turn on <span class="b">follow</span> and hold the first key. The
 strobe moves to the key after about half a second.</li>
 <li>Tune the pipe until the stripes of its row run level.</li>
-<li>Next key. If the note shown is wrong, correct it by hand
+<li>Next key. If the note shown is not the key pressed, correct it by
+hand
 (<a href="#follow">Follow and locked</a>).</li>
 </ol>
 <p>Octaves and mutations are pure: the rows 4′, 2 2/3′, 2′, 1 3/5′ are
-exactly 2, 3, 4 and 5 times the 8′ frequency, without temperament.</p>
+exactly 2, 3, 4 and 5 times the 8′ frequency.</p>
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
 
@@ -178,7 +202,7 @@ In silence the last note stays.</li>
 <li><span class="b">locked</span> (amber): the note stays where it is;
 it only changes by hand.</li>
 </ul>
-<p>In the temperament tab and during a chromatic run the button is grey
+<p>During a chromatic run the button is grey
 and does nothing. While the <a href="#tone">tone</a> plays, the app does
 not follow.</p>
 
@@ -212,13 +236,15 @@ folding: tap their row, then the detection reports the key.</p>
 <h2>6. Setting the pitch of A</h2>
 <p>In the <span class="b">A freq</span> tab:</p>
 <ul>
-<li>The readout shows the A and the note set, e.g.
-"440.0 Hz · A4 +00.0c". Tap it for a keypad (220 to 880 Hz).</li>
+<li>The readout shows the A and the note set for the strobe, e.g.
+"440.0 Hz · A4". An offset from the note tab shows only when it is not
+0, and then highlighted in amber, e.g. "440.0 Hz · A4 +3c": setting the
+A, it is rarely wanted. Tap it for a keypad (220 to 880 Hz).</li>
 <li><span class="b">+1</span> / <span class="b">-1</span> and
-<span class="b">+0.1</span> / <span class="b">-0.1</span>: the A in
-steps of 1 Hz and 0.1 Hz.</li>
+<span class="b">+0.1</span> / <span class="b">-0.1</span>: adjust the A
+in steps of 1 Hz and 0.1 Hz.</li>
 <li><span class="b">auto</span>: sets the A so that the note shown (in
-the temperament chosen) is exactly what is heard. The app takes the
+the temperament chosen) is exactly the note sounding. The app takes the
 median of the detection over the last 2 s, as far as it agrees with that
 note, and rounds to 0.1 Hz. With less than about 1 s of it, nothing
 happens. It works with any note, not just A. A cent offset set by hand
@@ -229,18 +255,16 @@ is left out.</li>
 about 2 s, tap <span class="b">auto</span>; then adjust with the buttons
 as a compromise over several pipes (e.g. the A of every octave). There is
 no temperature correction: the pipes move by about 3 cents per degree,
-which you allow for through the A.</p>
+which you allow for through the A or the offset.</p>
 <p>The A freq tab shares the note and the focus with the note tab, and
-the detection follows here too.</p>
+the detection follows here too, when turned on.</p>
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
 
 <section id="temperament">
 <h2>7. Choosing a temperament</h2>
-<p>The <span class="b">temperament</span> tab is a view only: it shows
-the temperament chosen as a table (note and deviation from equal in
-cents) and changes neither the note nor the focus. The strobe is hidden
-there.</p>
+<p>The table is a view only: it shows the temperament chosen (note and
+deviation from equal in cents).</p>
 <ul>
 <li><span class="b">Select</span> opens the list "Select preset". Tap a
 preset to choose it. A long press on the temperament tab opens this list
@@ -350,16 +374,17 @@ or octave. The measured deviation is carried along.</li>
 measure again.</li>
 <li><span class="b">reset</span>: back to the tempered note with no
 deviation.</li>
-<li>Large at the top right of the strobe, the focused rank's deviation,
-e.g. "2' +01.5c"; in the corner under the A, the mixture's measured
-deviation ("mix+01.5c").</li>
+<li>Large at the top right of the strobe, the focused rank's deviation
+from its target, e.g. "2' +01.5c": for the reference rank from its
+measured pitch, for any other rank from the pure interval to it.</li>
 </ul>
 <h3>How to</h3>
 <ol>
 <li>Check that every footage of the mixture is shown as a row
 (Settings → Footages shown, up to 8).</li>
 <li>Tab <span class="b">mixture</span>. Tap the row of the reference
-rank. With none focused, the app measures on the 8′ row.</li>
+rank. With none focused, the app measures on the 4′ row (without a
+4′ row on the 8′ row).</li>
 <li>Hold the key with the reference rank sounding. The measurement
 averages 2 s (below 8′: 3 s) and stops earlier once the result is
 steady. Then it says "measured on …".</li>
@@ -379,8 +404,7 @@ them.</li>
 <li>"heard over a semitone off the rows: check the key": what sounds is
 more than a semitone from every row. Then the strobe measures wrongly.
 Check the key, or a rank (after a break, say) has no row.</li>
-<li>While following, only what is within 20 cents of the mixture's
-measured pitch counts. The key and octave buttons are
+<li>While following, the key and octave buttons are
 <a href="#follow">corrections by hand</a>.</li>
 <li>If the key is released before the measurement is done, what was
 measured so far counts if it was at least half the time; else the
@@ -399,14 +423,14 @@ Bigger steps by hand.</li>
 <h2>10. Pipe length (length)</h2>
 <p>The <span class="b">length</span> button turns on a readout below the
 strobe of how much the sounding pipe is too long or too short, e.g.
-"+12 mm (λ/2)". It is meant for setting up a pipe's range, not for fine
+"+12 mm (λ/2)". It is meant for setting up the tuning range, not for fine
 tuning.</p>
 <ul>
 <li><b>+</b>: too long (flat), cut off. <b>−</b>: too short (sharp),
 lengthen. <b>±</b>: in tune (within 0.2 cent).</li>
 <li>The button beside it chooses <span class="b">open pipe</span> (λ/2)
-or <span class="b">stopped pipe</span> (λ/4). For chimney flutes the
-figure is only approximate.</li>
+or <span class="b">stopped pipe</span> (λ/4). For chimney flutes and
+conical pipes the figure is only approximate.</li>
 <li>Colour: blue when the readout is steady; amber while it still moves;
 grey "(held)" once the pipe has stopped. "listening…": nothing heard yet.
 "unclear": what sounds is no partial of the target.</li>
@@ -452,7 +476,7 @@ briefly; it only takes a note after hearing it several times in a
 row.</li>
 <li>Tremulant off.</li>
 <li>Temperature changes the pipes' pitch (about 3 cents per degree):
-adjust the A by hand.</li>
+adjust the A or the offset by hand.</li>
 </ul>
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
@@ -542,6 +566,9 @@ the issue.</li>
 no stretch. <span class="b">German note names</span>: Cis, B, H;
 C₁ C c c¹ c². <span class="b">Language / Sprache</span>: System default,
 English, Deutsch.</dd>
+<dt>Mixture</dt>
+<dd><span class="b">Mixture: follow the reference rank</span>
+(<a href="#mixture">Mixture</a>).</dd>
 <dt>Audio</dt>
 <dd><span class="b">Audio source</span>: best <b>Auto</b>. The app picks
 the microphone itself (the one with the best signal).</dd>
@@ -554,8 +581,7 @@ good; the white tick is where detection starts.
 <span class="b">Footages shown</span>: up to 8 out of 32′ to 1/8′,
 including 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
 <dt>Debug</dt>
-<dd><span class="b">Mixture: follow the reference rank</span>
-(<a href="#mixture">Mixture</a>). <span class="b">Debug recordings</span>
+<dd><span class="b">Debug recordings</span>
 (<a href="#debug">Debug recordings</a>).</dd>
 </dl>
 <p class="top"><a href="#contents">↑ Contents</a></p>
@@ -588,7 +614,7 @@ and open <b>Edit</b>. At the bottom are two buttons: <b>measure notes</b>
 and <b>matching</b>.</p>
 <h3>Measure notes</h3>
 <ol>
-<li><b>Set concert pitch.</b> A strobe with octave rows only, 8′ to 1/4′
+<li><b>Set standard A.</b> A strobe with octave rows only, 8′ to 1/4′
 on the A (110 to 3520 Hz), no tabs and no detection. Set the A with ±1
 and ±0.1 as it is right over the A pipes of all octaves; Reset sets
 440.0 Hz. <b>set</b> takes this A for the measurement.</li>
@@ -603,11 +629,12 @@ from their values.</li>
 highlighted. If the A was not at 0 cents, the whole table is shifted so
 that A = 0 cents.</li>
 </ol>
-<p>Back goes from "Enter note" to the concert pitch page and from there
+<p>Back goes from "Enter note" to "Set standard A" and from there
 to Edit; what is stored stays (not yet shifted to A = 0). The
 measurement does not change your main screen's settings (note, A, rows,
-focus, follow/locked). Only the 12 semitones are measured, also in
-temperaments with D#/Eb or G#/Ab.</p>
+focus, follow/locked). Only the 12 semitones are measured. For Pythagorean and the meantone
+temperaments <b>measure notes</b> is grey: they can be calculated, and
+only they need D# and Eb apart (split keys).</p>
 <h3>Matching</h3>
 <p>Available once the preset has exactly one note per semitone. The table
 shows the preset's cents for C to B and beside them the nearest known

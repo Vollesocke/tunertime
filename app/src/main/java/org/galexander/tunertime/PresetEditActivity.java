@@ -18,7 +18,7 @@ public class PresetEditActivity extends Activity {
 	private EditText name_view = null;
 	private ListView list = null;
 	private static final int REQ_MEASURE = 1;
-	private View match_button = null;
+	private View match_button = null, measure_button = null;
 	/* all 12 notes were just measured: matching is offered, its button
 	 * selected (no popup) */
 	private boolean offer_match = false;
@@ -38,6 +38,7 @@ public class PresetEditActivity extends Activity {
 		list = (ListView)findViewById(R.id.note_list);
 		list.setEmptyView(findViewById(R.id.list_empty));
 		match_button = findViewById(R.id.matching);
+		measure_button = findViewById(R.id.measure_notes);
 		if (savedInstanceState != null) {
 			offer_match = savedInstanceState.getBoolean(
 					"offer_match", false);
@@ -68,6 +69,11 @@ public class PresetEditActivity extends Activity {
 		match_button.setAlpha(t ? 1.0f : 0.4f);
 		match_button.setSelected(offer_match &&
 					 match_button.isEnabled());
+		/* Pythagorean and meantone are calculated, not measured,
+		 * and need their Dis and Es apart (Onno, 23 Oct) */
+		boolean m = (get_preset().wolf_template() < 1);
+		measure_button.setEnabled(m);
+		measure_button.setAlpha(m ? 1.0f : 0.4f);
 		super.onResume();
 	}
 
@@ -131,6 +137,9 @@ public class PresetEditActivity extends Activity {
 	 * (TunerTime's measure pages, on top of this one) */
 	public void do_measure(View v) {
 		preset p = get_preset();
+		if (p.wolf_template() >= 1) {
+			return;
+		}
 		EventLog.ui("preset edit: measure notes of " + p.name);
 		startActivityForResult(new Intent(this, TunerTime.class)
 			.putExtra(measure.EXTRA_PRESET, p.id), REQ_MEASURE);

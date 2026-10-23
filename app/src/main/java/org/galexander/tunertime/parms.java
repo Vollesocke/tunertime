@@ -270,6 +270,12 @@ public class parms {
 					preset.UNITS_PER_CENT;
 		}
 		note_cents = prefs.getInt("note_cents10", strobe_cents);
+		/* the note's offset is set in whole cents (cent+, cent-;
+		 * Onno 23 Oct: shown without the tenth), but the legacy
+		 * default above has the temperament's tenths */
+		note_cents = (int)Math.round(note_cents /
+				(double)preset.UNITS_PER_CENT) *
+				preset.UNITS_PER_CENT;
 		note_alt = (prefs.getInt("note_alt", 0) == 1) ? 1 : 0;
 		/* follow or locked; v18.8's third state, off, is locked now
 		 * (both had auto_note false) */
@@ -290,10 +296,10 @@ public class parms {
 		mixture_ref = prefs.getFloat("mixture_ref", 0.0f);
 		/* TunerTime.organ_resume() drops it if the row is not shown */
 		focus_ratio = prefs.getFloat("focus_ratio", 0.0f);
-		/* before v18.9 one for all modes: each starts from it */
+		/* before v18.9 one for all modes: note mode starts from it */
 		note_focus = prefs.getFloat("note_focus", (float)focus_ratio);
-		mixture_focus = prefs.getFloat("mixture_focus",
-						(float)focus_ratio);
+		/* a mixture starts on its 4' (Onno, 23 Oct) */
+		mixture_focus = prefs.getFloat("mixture_focus", 2.0f);
 		if (organ_mode) {
 			load_rows("organ_footages", FOOTAGE_DEFAULT,
 					64*FOOTAGE_DIV);	/* 1/8' */

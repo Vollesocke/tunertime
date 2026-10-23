@@ -735,14 +735,12 @@ public class TunerTime extends Activity
 			alt = nn[1];
 		}
 		if (parms.mixture_mode) {
-			/* Mixture ranks on the same key should stay within 20 cents
-			 * of its tempered note.  Choose the nearest temperament step,
-			 * and reject outliers before they can move the target.
-			 * Both notes where the pitch class has two: Es heard
-			 * on a mixture at Dis was rejected (41 cents in 1/4
-			 * comma meantone), and once measured there its 41
-			 * cents went to every key after it as the organ's
-			 * pitch, so that all of them were rejected */
+			/* the nearest temperament step, with both notes where
+			 * the pitch class has two (Dis, Es).  Up to v19.1
+			 * whatever was more than 20 cents from it was not
+			 * followed; Onno (23 Oct): it solved nothing and got
+			 * in the way, a pitch that far off is heard anyway.
+			 * tools/sim_organ.c never had it */
 			int best = k;
 			int best_error = Integer.MAX_VALUE;
 			for (int candidate = Math.max(0, k-1);
@@ -757,10 +755,6 @@ public class TunerTime extends Activity
 						best_error = error;
 					}
 				}
-			}
-			if (best_error > 20*U) {
-				det_count = 0;
-				return;
 			}
 			k = best;
 		}
@@ -1282,15 +1276,13 @@ public class TunerTime extends Activity
 			return;
 		}
 		if (fr < 0) {
-			/* nothing focused: the 8' row, else the lowest */
-			int i;
-			for (i = 0; i < parms.num_strobes; i++) {
-				if (parms.row_ratio(i) == 1.0d) {
-					break;
-				}
+			/* nothing focused: the 4' row (Onno, 23 Oct), else
+			 * the 8', else the lowest */
+			int i = parms.row_of(2.0d);
+			if (i < 0) {
+				i = parms.row_of(1.0d);
 			}
-			parms.focus_ratio = parms.row_ratio(
-					(i < parms.num_strobes) ? i : 0);
+			parms.focus_ratio = parms.row_ratio((i >= 0) ? i : 0);
 		}
 		mix.start(settle);
 		update_status();
@@ -1481,10 +1473,6 @@ public class TunerTime extends Activity
 							n.name_oct) + " " +
 			note.cents_str(parms.mixture_cents - step_cents(k));
 	}
-	private String mixture_offset_str() {
-		return note.cents_str(parms.mixture_cents -
-				step_cents(nearest_step(parms.mixture_cents)));
-	}
 
 	private void update_mixture_status() {
 		mixture_display.setText(mixture_str());
@@ -1613,7 +1601,7 @@ public class TunerTime extends Activity
 		note_semi_display.setText((chain != parms.NO_CHAIN) ?
 			nn.spelled(chain) :
 			parms.organ_mode ? nn.organ_name() : nn.name_oct);
-		note_cent_display.setText(nn.cents_str);
+		note_cent_display.setText(note.whole_cents_str(nn.cents));
 		if (!parms.fft_mode && !parms.preset_mode &&
 		    !parms.mixture_mode && (meas == null)) {
 			set_title(getString(R.string.title_strobe), temper_str);
@@ -1624,21 +1612,41 @@ public class TunerTime extends Activity
 		String center_str = string_int10(parms.A_freq);
 		center_display.setText(getString(R.string.status_a, center_str));
 		/* with the note set, as the A tab hides the note's buttons
-		 * (Onno) */
-		afreq_center_display.setText(getString(R.string.afreq_note,
-			center_str, parms.mixture_mode ? mixture_str() :
-			note_semi_display.getText() + " " + nn.cents_str));
+		 * (Onno).  Its offset only where it is not 0, marked: it is
+		 * rarely wanted there (Onno, 23 Oct) */
+		if (parms.mixture_mode) {
+			afreq_center_display.setText(getString(
+				R.string.afreq_note, center_str, mixture_str()));
+		} else {
+			android.text.SpannableStringBuilder sb =
+				new android.text.SpannableStringBuilder(
+					getString(R.string.afreq_note, center_str,
+						  note_semi_display.getText()));
+			int w = (int)Math.round(nn.cents / (double)U);
+			if (w != 0) {
+				sb.append(" ");
+				int from = sb.length();
+				sb.append(note.whole_cents_str(nn.cents));
+				sb.setSpan(new android.text.style.
+					ForegroundColorSpan(getResources()
+					.getColor(R.color.warn)), from,
+					sb.length(), 0);
+				sb.setSpan(new android.text.style.StyleSpan(
+					android.graphics.Typeface.BOLD), from,
+					sb.length(), 0);
+			}
+			afreq_center_display.setText(sb);
+		}
 
 		String stretch_str = ((parms.cents_per_octave >= 0) ? "+" : "-") +
 				string_int10(Math.abs(parms.cents_per_octave));
 		stretch_display.setText(stretch_str);
 		stretch_stretch_display.setText(stretch_str);
 		if (parms.organ_mode) {
-			/* no stretch: the mixture offset, if any */
-			stretch_display.setText(parms.mixture_mode ?
-				getString(R.string.status_mix,
-					  mixture_offset_str()) :
-				getString(R.string.status_organ));
+			/* no stretch.  Up to v19.1 the mixture's offset in
+			 * mixture mode, the same as in its tab's display
+			 * (Onno, 23 Oct: redundant) */
+			stretch_display.setText(R.string.status_organ);
 			update_mixture_status();
 		}
 
