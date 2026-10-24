@@ -23,15 +23,16 @@ Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
 work well. Noise beds differ per organ (>20 organs needed to learn from
 them), so no noise library and no sample simulator for now.
 
-Status as of 23 Oct 2026: release
-[**v19.2-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.2-organ)
-(code 32) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
-and B), his two wishes of 22 Oct (v19.1) and his issue #9 (v19.2, below).
+Status as of 24 Oct 2026: release
+[**v19.3-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.3-organ)
+(code 33) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
+and B), his two wishes of 22 Oct (v19.1), his issue #9 (v19.2) and
+dragging presets into order (v19.3, below).
 After it, per Onno's season plan: only what testers need (stability, the
 manual, his answers), detector work again from May 2027. **Start with
-"23 Oct: v19.2" below.**
+"24 Oct: v19.3" and "23 Oct: v19.2" below.**
 
-## 24 Oct: drag to reorder presets (not released)
+## 24 Oct: v19.3, drag to reorder presets
 
 Feedback relayed by Volker: an easier way to reorder the preset list,
 "Grifffläche und ziehen"; "Nach oben/unten" in the long-press menu can
@@ -42,7 +43,15 @@ edge scrolls. The order is saved on lifting the finger. The drag
 runs in `PresetSelectActivity.dispatchTouchEvent`, because the row it
 started on is rebound as presets move. The "Move up/down" entries and
 strings are gone, and manual section 8 is updated in de and en.
-Not yet tried on a device: this machine has no emulator.
+A name may now take three lines instead of two, since the grip
+narrows the row; UiLayoutTest found the long test name ellipsized at
+font scale 1.3 otherwise.
+
+Tests: JVM tests; UiLayoutTest preset_select; on tt_fairphone4 (set up
+anew on this machine) dragging down, up and to the bottom edge
+(auto-scroll), the highlight, the order after an app restart, a tap still
+selects, the long-press menu without Move up/down, a long press on the
+grip opens nothing.
 
 ## 23 Oct: v19.2 (issue #9)
 
