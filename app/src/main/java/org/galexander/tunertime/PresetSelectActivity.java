@@ -7,15 +7,18 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -24,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.text.Collator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +39,15 @@ public class PresetSelectActivity extends Activity {
 	private static final int MAX_IMPORT = 1024*1024;
 
 	private static final int CM_EDIT = 1, CM_RENAME = 2, CM_DUP = 3,
-		CM_UP = 4, CM_DOWN = 5, CM_EXPORT = 6, CM_DELETE = 7;
+		CM_EXPORT = 6, CM_DELETE = 7;
+
+		/* position of the preset being dragged by its grip, -1 when
+		 * none is.  It moves through preset.presets as the finger
+		 * passes other rows, and is stored when the finger lifts */
+	private int drag_pos = -1;
+	private float drag_y;
+	private final Runnable drag_scroll = new Runnable() {
+		public void run() { drag_scroll(); } };
 
 		/* id of the preset being exported, -1 for all of them.
 		 * kept across the file picker in case we get recreated */
@@ -87,14 +97,137 @@ public class PresetSelectActivity extends Activity {
 	}
 
 	public void onPause() {
+		end_drag();
 		parms.save();
 		super.onPause();
 	}
 
+		/* keeps the scroll position, so a dropped preset stays
+		 * where it was dragged to */
 	private void refresh() {
-		list.setAdapter(new SimpleAdapter(this, presets_list(),
-			R.layout.list_entry, new String[] { "text" },
-			new int[] { R.id.list_entry_text }));
+		if (list.getAdapter() == adapter) {
+			adapter.notifyDataSetChanged();
+		} else {
+			list.setAdapter(adapter);
+		}
+	}
+
+	private final BaseAdapter adapter = new BaseAdapter() {
+		public int getCount() { return preset.presets.size(); }
+		public Object getItem(int pos) {
+			return preset.presets.get(pos);
+		}
+		public long getItemId(int pos) { return pos; }
+		public View getView(int pos, View v, ViewGroup parent) {
+			if (v == null) {
+				v = LayoutInflater.from(PresetSelectActivity.this)
+					.inflate(R.layout.preset_entry, parent,
+						false);
+				v.findViewById(R.id.preset_grip)
+					.setOnTouchListener(grip_touch);
+			}
+			((TextView)v.findViewById(R.id.list_entry_text))
+				.setText(preset.presets.get(pos).name);
+			v.findViewById(R.id.preset_grip).setTag(pos);
+			v.setBackgroundColor((pos == drag_pos) ?
+				getResources().getColor(R.color.surface_pressed) :
+				0);
+			return v;
+		}
+	};
+
+		/* a finger down on a grip starts the drag; the rest of the
+		 * gesture goes to dispatchTouchEvent(), since the row it
+		 * started on is rebound to other presets as they move */
+	private final View.OnTouchListener grip_touch =
+						new View.OnTouchListener() {
+		public boolean onTouch(View v, MotionEvent ev) {
+			if ((ev.getActionMasked() != MotionEvent.ACTION_DOWN) ||
+			    (drag_pos >= 0) || !(v.getTag() instanceof Integer)) {
+				return false;
+			}
+			drag_pos = (Integer)v.getTag();
+			drag_y = ev.getRawY();
+			adapter.notifyDataSetChanged();
+			return true;
+		} };
+
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		if (drag_pos < 0) {
+			return super.dispatchTouchEvent(ev);
+		}
+		switch (ev.getActionMasked()) {
+		case MotionEvent.ACTION_MOVE:
+			drag_y = ev.getRawY();
+			drag_to(drag_y);
+			drag_scroll();
+			break;
+		case MotionEvent.ACTION_UP:
+		case MotionEvent.ACTION_CANCEL:
+			end_drag();
+			/* let the grip and the list end their gesture too */
+			MotionEvent c = MotionEvent.obtain(ev);
+			c.setAction(MotionEvent.ACTION_CANCEL);
+			super.dispatchTouchEvent(c);
+			c.recycle();
+			changed();
+			break;
+		}
+		return true;
+	}
+
+	private void end_drag() {
+		list.removeCallbacks(drag_scroll);
+		drag_pos = -1;
+	}
+
+		/* y on the screen to y in the list */
+	private float list_y(float raw_y) {
+		int[] at = new int[2];
+		list.getLocationOnScreen(at);
+		return raw_y - at[1];
+	}
+
+	private void drag_to(float raw_y) {
+		int y = (int)list_y(raw_y);
+		int n = preset.presets.size();
+		int to = list.pointToPosition(list.getWidth()/2, y);
+		if (to == AdapterView.INVALID_POSITION) {
+			/* above the first row or below the last one */
+			to = (y < 0) ? list.getFirstVisiblePosition()
+					: list.getLastVisiblePosition();
+		}
+		to = Math.max(0, Math.min(to, n-1));
+		if ((to == drag_pos) || (drag_pos >= n)) {
+			return;
+		}
+		preset p = preset.presets.remove(drag_pos);
+		preset.presets.add(to, p);
+		drag_pos = to;
+		adapter.notifyDataSetChanged();
+	}
+
+		/* scroll while the finger is held near the top or the
+		 * bottom of the list, so a preset can go further than
+		 * one screen */
+	private void drag_scroll() {
+		list.removeCallbacks(drag_scroll);
+		if (drag_pos < 0) {
+			return;
+		}
+		float y = list_y(drag_y);
+		float edge = 48 * getResources().getDisplayMetrics().density;
+		int step = (int)(edge / 4);
+		if ((y < edge) && list.canScrollList(-1)) {
+			list.scrollListBy(-step);
+		} else if ((y > list.getHeight() - edge) &&
+			   list.canScrollList(1)) {
+			list.scrollListBy(step);
+		} else {
+			return;
+		}
+		drag_to(drag_y);
+		list.postDelayed(drag_scroll, 16);
 	}
 
 		/* store a change right away, so that it survives the
@@ -102,18 +235,6 @@ public class PresetSelectActivity extends Activity {
 	private void changed() {
 		parms.save();
 		refresh();
-	}
-
-	private List<HashMap<String, String> > presets_list() {
-		List<HashMap<String, String> > ret =
-			new ArrayList<HashMap<String, String> >();
-		for (preset p : preset.presets) {
-			HashMap<String, String> t =
-				new HashMap<String, String>();
-			t.put("text", p.name);
-			ret.add(t);
-		}
-		return ret;
 	}
 
 	public void do_new(View v) {
@@ -133,10 +254,6 @@ public class PresetSelectActivity extends Activity {
 		menu.add(Menu.NONE, CM_EDIT, Menu.NONE, R.string.cm_edit);
 		menu.add(Menu.NONE, CM_RENAME, Menu.NONE, R.string.cm_rename);
 		menu.add(Menu.NONE, CM_DUP, Menu.NONE, R.string.cm_duplicate);
-		menu.add(Menu.NONE, CM_UP, Menu.NONE, R.string.cm_move_up)
-			.setEnabled(pos > 0);
-		menu.add(Menu.NONE, CM_DOWN, Menu.NONE, R.string.cm_move_down)
-			.setEnabled(pos < preset.presets.size()-1);
 		menu.add(Menu.NONE, CM_EXPORT, Menu.NONE, R.string.cm_export);
 		menu.add(Menu.NONE, CM_DELETE, Menu.NONE, R.string.cm_delete);
 	}
@@ -166,18 +283,6 @@ public class PresetSelectActivity extends Activity {
 			l.add(pos+1, n);
 			changed();
 			return true; }
-		case CM_UP:
-			if (pos > 0) {
-				Collections.swap(l, pos, pos-1);
-				changed();
-			}
-			return true;
-		case CM_DOWN:
-			if (pos < l.size()-1) {
-				Collections.swap(l, pos, pos+1);
-				changed();
-			}
-			return true;
 		case CM_EXPORT:
 			start_export(p);
 			return true;
