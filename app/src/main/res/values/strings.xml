@@ -154,8 +154,7 @@
 	<string name="cm_edit">Edit</string>
 	<string name="cm_rename">Rename</string>
 	<string name="cm_duplicate">Duplicate</string>
-	<string name="cm_move_up">Move up</string>
-	<string name="cm_move_down">Move down</string>
+	<string name="drag_to_move">Drag to move</string>
 	<string name="cm_export">Export&#8230;</string>
 	<string name="cm_delete">Delete</string>
 	<string name="confirm">Confirm</string>

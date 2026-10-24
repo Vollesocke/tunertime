@@ -31,6 +31,19 @@ After it, per Onno's season plan: only what testers need (stability, the
 manual, his answers), detector work again from May 2027. **Start with
 "23 Oct: v19.2" below.**
 
+## 24 Oct: drag to reorder presets (not released)
+
+Feedback relayed by Volker: an easier way to reorder the preset list,
+"Grifffläche und ziehen"; "Nach oben/unten" in the long-press menu can
+go. Each row of "Preset wählen" now has a grip on the right
+(`preset_entry.xml`, `drag_handle.xml`). Holding it and dragging moves
+the preset live through the list, and holding near the top or bottom
+edge scrolls. The order is saved on lifting the finger. The drag
+runs in `PresetSelectActivity.dispatchTouchEvent`, because the row it
+started on is rebound as presets move. The "Move up/down" entries and
+strings are gone, and manual section 8 is updated in de and en.
+Not yet tried on a device: this machine has no emulator.
+
 ## 23 Oct: v19.2 (issue #9)
 
 Onno reviewed the German manual (his LibreOffice export `de_2.html` is in

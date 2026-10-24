@@ -137,8 +137,7 @@
 	<string name="cm_edit">Bearbeiten</string>
 	<string name="cm_rename">Umbenennen</string>
 	<string name="cm_duplicate">Duplizieren</string>
-	<string name="cm_move_up">Nach oben</string>
-	<string name="cm_move_down">Nach unten</string>
+	<string name="drag_to_move">Zum Verschieben ziehen</string>
 	<string name="cm_export">Exportieren&#8230;</string>
 	<string name="cm_delete">L&#246;schen</string>
 	<string name="confirm">Bitte best&#228;tigen</string>

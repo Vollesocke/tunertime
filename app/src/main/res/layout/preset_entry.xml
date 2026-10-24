@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a row of the preset list: the name, and on the right the grip that
+     drags the preset to another place in the list -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <TextView android:id="@+id/list_entry_text"
+	android:layout_width="0dp"
+	android:layout_height="wrap_content"
+	android:layout_weight="1"
+	android:minHeight="56dp"
+	android:paddingLeft="16dp"
+	android:paddingRight="8dp"
+	android:paddingTop="12dp"
+	android:paddingBottom="12dp"
+	android:textAppearance="?android:attr/textAppearanceLarge"
+	android:textColor="@color/text"
+	android:gravity="center_vertical"
+	android:maxLines="3"
+	android:ellipsize="end" />
+    <ImageView android:id="@+id/preset_grip"
+	android:layout_width="56dp"
+	android:layout_height="fill_parent"
+	android:minHeight="56dp"
+	android:scaleType="center"
+	android:src="@drawable/drag_handle"
+	android:contentDescription="@string/drag_to_move" />
+</LinearLayout>
