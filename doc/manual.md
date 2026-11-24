@@ -70,7 +70,7 @@ Each row draws one column per cycle of its own frequency. A stripe rises or fall
 
 ### Tapping a row: focus
 
-Tap a row to **focus** it (a frame in the focus color, set under Settings → Strobe → **Focus color**); tap it again to release it. The focused partial helps the detection: it then looks for that partial and reports the key it belongs to. So you tune a 4′ stop with the 4′ row focused, a Quinte 2 2/3′ with the 2 2/3′ row focused, and the note shown stays the key played. The **note** tab (with **A freq**) and the **mixture** tab each keep their own focus.
+Tap a row to **focus** it (a frame in the focus color, set under Settings → Strobe → **Focus color**; it also colors the row's label and readout); tap it again to release it. The focused partial helps the detection: it then looks for that partial and reports the key it belongs to. So you tune a 4′ stop with the 4′ row focused, a Quinte 2 2/3′ with the 2 2/3′ row focused, and the note shown stays the key played. The **note** tab (with **A freq**) and the **mixture** tab each keep their own focus.
 
 A long press on the strobe opens the choice of footages shown.
 
@@ -166,16 +166,16 @@ A preset with exactly one note for each of the 12 keys of the octave is a temper
 
 - **new preset**: make an empty preset.
 - Long press on a preset: **Edit**, **Rename**, **Duplicate**, **Export…**, **Delete**.
-- Hold the grip ≡ on the right of a preset for about half a second, until it lights up blue (the phone ticks), then drag: move the preset to another place in the list.
+- Hold the grip ≡ on the right of a preset for about half a second, still until the row lifts and the grip turns blue (the phone vibrates briefly), then drag: move the preset to another place in the list. If you move early, the list just scrolls. A long press on the name opens the menu as before.
 - Menu ⋮: **Add historical temperament…**, **Sort by name**, **Import…**, **Export all…**.
 
 ### Editing
 
-"Edit preset" shows the name and the notes, with the cent values in a column. **add note** adds a note; tap a note to open "Edit preset note":
+"Edit preset" shows the name and the notes, with the cent values in a column: the name without octave on the left, the cents on the right (two notes on one key show as D#/Eb). **add note** adds a note, starting at the lowest key still missing from C; tap a note to open "Edit preset note":
 
-- A piano keyboard of one octave (C to B) picks the note. There is no choice of octave: an entry applies to all octaves. A dot on a key shows that the preset already has that note. Tapping another key moves the note there and keeps its cents.
-- The number pad below is always shown and types into the **cents** field (decimal point, **±** for the sign, backspace), from −50.0 to +49.9 cents. For a new note the field is empty (0 cents); **add note** starts at the lowest note from C that is still missing.
-- **save** stores the note and goes straight on to the note a semitone higher; after the 12th note it returns to the note list. **delete note** deletes the note.
+- A piano keyboard of one octave (C to B) picks the note; the chosen key is filled blue. A small dot on a key shows that the preset already has that note. There is no choice of octave: an entry applies to all octaves. If you tap another key, the note moves there and the value you typed stays.
+- The number pad below (7 8 9 / 4 5 6 / 1 2 3 / ± 0 comma, and backspace) is always shown and types into the **cents** field; the phone's own keyboard never appears. For a new note the field is empty (0). Allowed are -50.0 to +49.9 cents, one decimal.
+- **save** stores the note and goes straight on to the note a semitone higher (B is followed by C): if the preset has it you edit it, otherwise you add it. When all 12 notes are there and the note was new or was B, it returns to the note list. **delete note** deletes the note.
 
 The cents are the deviation from equal temperament, to 0.1 cent. Give A 0 cents, so that the A setting stays the A. **delete preset** deletes the whole preset.
 
@@ -236,7 +236,7 @@ The **length** button turns on a readout below the strobe of how much the soundi
 
 ## 11. Reference tone (tone)
 
-The **speaker** button (tone) plays the target (at 8′ pitch, with temperament and offset) as a sine through the speaker until you tap it again. The button is highlighted meanwhile. While it plays, the detection does not follow. The tone lets you hear what the strobe aims at; it is also a self-test: the 8′ row must stand still.
+The **speaker** button (tone) plays the target (at 8′ pitch, with temperament and offset) as a sine through the speaker until you tap it again. The speaker is blue meanwhile. While it plays, the detection does not follow. The tone lets you hear what the strobe aims at; it is also a self-test: the 8′ row must stand still.
 
 ## 12. Tips from practice
 
@@ -290,7 +290,7 @@ This is how runs, debug recordings and crash reports get from the phone to the d
 **Audio source**: best **Auto**. The app picks the microphone itself (the one with the best signal).
 
 **Strobe**
-**Colors** (Batlow, Slate / White, Red / Green, Black / White, Blue / Yellow, Red / Blue). **Focus color**: the frame around the focused row, 16 colors. **Input level bar** (off): along the strobe's right edge, the input level; red too quiet to be read, amber marginal, green good; the white tick is where detection starts. **Footages shown**: up to 8 out of 32′ to 1/8′, including 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.
+**Colors** (Batlow, Slate / White, Red / Green, Black / White, Blue / Yellow, Red / Blue). **Focus color**: frame, label and readout of the focused row, 16 colors (blue by default, light blue, cyan, teal, green, lime, yellow, amber, orange, red, pink, magenta, purple, violet, white, light grey). **Input level bar** (off): along the strobe's right edge, the input level; red too quiet to be read, amber marginal, green good; the white tick is where detection starts. **Footages shown**: up to 8 out of 32′ to 1/8′, including 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.
 
 **Debug**
 **Debug recordings** ([Debug recordings](#14-debug-recordings-and-crash-reports)). Only when this is on are **Record chromatic run** and **Recordings to GitHub** in the menu.
