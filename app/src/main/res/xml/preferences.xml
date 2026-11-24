@@ -39,6 +39,13 @@
 		android:entries="@array/color_name"
 		android:entryValues="@array/color_value"
 		android:defaultValue="batlow" />
+	<ListPreference
+		android:key="focus_color"
+		android:title="@string/focus_color"
+		android:summary="%s"
+		android:entries="@array/focus_color_name"
+		android:entryValues="@array/focus_color_value"
+		android:defaultValue="#4C8DFF" />
 	<CheckBoxPreference
 		android:key="level_bar"
 		android:title="@string/level_bar"

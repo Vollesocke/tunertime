@@ -354,4 +354,21 @@
 		<item>Text&#8230;</item>
 	</string-array>
 	<string name="drag_to_move_hold">Hold, then drag to move</string>
+	<string name="focus_color">Focus colour</string>
+	<string name="fc_blue">Blue</string>
+	<string name="fc_lightblue">Light blue</string>
+	<string name="fc_cyan">Cyan</string>
+	<string name="fc_teal">Teal</string>
+	<string name="fc_green">Green</string>
+	<string name="fc_lime">Lime</string>
+	<string name="fc_yellow">Yellow</string>
+	<string name="fc_amber">Amber</string>
+	<string name="fc_orange">Orange</string>
+	<string name="fc_red">Red</string>
+	<string name="fc_pink">Pink</string>
+	<string name="fc_magenta">Magenta</string>
+	<string name="fc_purple">Purple</string>
+	<string name="fc_violet">Violet</string>
+	<string name="fc_white">White</string>
+	<string name="fc_lightgrey">Light grey</string>
 </resources>

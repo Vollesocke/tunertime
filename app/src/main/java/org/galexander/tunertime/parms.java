@@ -76,6 +76,9 @@ public class parms {
 	static public volatile boolean mixture_focus_follow = false;
 		/* Settings: the input level bar on the strobe (off) */
 	static public volatile boolean level_bar = false;
+	/* the focused row's frame, label and readout (Settings) */
+	static public final int FOCUS_COLOR_DEFAULT = 0xff4c8dff;
+	static public volatile int focus_color = FOCUS_COLOR_DEFAULT;
 	static public int mixture_cents = 48000;
 		/* the footage (row ratio, like focus_ratio) mixture_cents was
 		 * last measured on; 0 = not measured since the last reset or
@@ -317,6 +320,12 @@ public class parms {
 		}
 		german_names = prefs.getBoolean("german_names", false);
 		level_bar = prefs.getBoolean("level_bar", false);
+		try {
+			focus_color = android.graphics.Color.parseColor(
+				prefs.getString("focus_color", "#4C8DFF"));
+		} catch (IllegalArgumentException e) {
+			focus_color = FOCUS_COLOR_DEFAULT;
+		}
 		fft_mode = prefs.getBoolean("fft_mode", false);
 		fft_size = prefs.getInt("fft_size", 2048);
 		fft_width = prefs.getInt("fft_width", Strobe.FFT_RANGE_MULT/4);
