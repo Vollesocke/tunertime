@@ -6,7 +6,10 @@ The `upstream` branch here mirrors its `master` as of this fork, and `main`
 holds the changes below. Greg's user manual is in `doc/index.html`, and the
 author's development log is `NOTES`. This fork's manual, German and
 English, is bundled in `app/src/main/assets/help` and shown offline by
-Help (`HelpActivity`, in the app's language).
+Help (`HelpActivity`, in the app's language). The same text can be read
+on GitHub: [Handbuch (Deutsch)](doc/Handbuch.md) and
+[manual (English)](doc/manual.md), generated from the in-app help by
+`tools/help_to_md.py` (run it after editing the HTML).
 
 TunerTime is free software under the GNU GPL v2 (see `COPYING`), and so is
 this fork.

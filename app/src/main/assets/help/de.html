@@ -93,10 +93,12 @@ gespielten Ton. Nach der Installation steht er auf Fixiert.</li>
 <p>„TunerTime Organ: Strobe“ (im Mixturmodus „TunerTime Organ: Mixtur“).
 Ist eine Temperierung gewählt, steht darunter ihr Name und ihre
 Abweichung für den angezeigten Ton, etwa „Mitteltönig 1/4 Komma
-+10.3c“. Das Menü ⋮ enthält <span class="b">Lauf aufnehmen</span>,
-<span class="b">Aufnahmen an GitHub</span>,
-<span class="b">Einstellungen</span>, <span class="b">Hilfe</span> und
-<span class="b">Über TunerTime Organ</span> (mit der Versionsnummer).</p>
++10.3c“. Das Menü ⋮ enthält <span class="b">Einstellungen</span>, <span class="b">Hilfe</span> und
+<span class="b">Über TunerTime Organ</span> (mit der Versionsnummer).
+<span class="b">Lauf aufnehmen</span> und
+<span class="b">Aufnahmen an GitHub</span> stehen nur dann im Menü, wenn
+unter Einstellungen → Debug <span class="b">Debug-Aufnahmen</span>
+eingeschaltet ist (<a href="#lauf">Lauf</a>).</p>
 
 <h3>Die Strobe-Zeilen</h3>
 <p>Jede Zeile gehört zu einer Fußtonlage, die tiefste oben. Links steht
@@ -138,7 +140,8 @@ Teiltöne zum Sollton.</li>
 </ul>
 
 <h3>Eine Zeile antippen: Fokus</h3>
-<p>Tippen Sie eine Zeile an, wird sie <b>fokussiert</b> (blauer Rahmen);
+<p>Tippen Sie eine Zeile an, wird sie <b>fokussiert</b> (Rahmen in der Fokusfarbe, einstellbar unter Einstellungen → Strobe →
+<span class="b">Fokusfarbe</span>);
 nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft
 der Erkennung: Sie sucht dann diesen Teilton und meldet die Taste, zu der
 er gehört. So stimmen Sie ein 4′-Register mit fokussierter 4′-Zeile,
@@ -162,7 +165,7 @@ folgenden Abschnitte).</li>
 Kammerton) und <span class="b">Orgel</span>.</li>
 <li>Rechts darunter drei Knöpfe: <span class="b">Folgen</span> /
 <span class="b">Fixiert</span> (<a href="#folgen">Folgen und
-Fixiert</a>), <span class="b">Signal</span>
+Fixiert</a>), der <b>Lautsprecher</b>
 (<a href="#signal">Vergleichston</a>) und
 <span class="b">Länge</span> (<a href="#laenge">Pfeifenlänge</a>).</li>
 </ul>
@@ -216,7 +219,7 @@ dorthin. In der Stille bleibt der letzte Ton stehen.</li>
 er ändert sich nur von Hand.</li>
 </ul>
 <p>Während eines chromatischen Laufs ist der
-Knopf grau und ohne Wirkung. Während das <a href="#signal">Signal</a>
+Knopf grau und ohne Wirkung. Während der <a href="#signal">Vergleichston</a>
 spielt, folgt die App nicht.</p>
 
 <h3>Von Hand korrigieren</h3>
@@ -283,7 +286,8 @@ Erkennung folgt auch hier, wenn aktiviert.</p>
 
 <section id="temperierung">
 <h2>7. Eine Temperierung wählen</h2>
-<p>Die Tabelle ist eine reine Ansicht: Sie zeigt die gewählte
+<p>Zurück im Reiter Temperierung führt zum vorigen Reiter, die App
+schließt dabei nicht. Die Tabelle ist eine reine Ansicht: Sie zeigt die gewählte
 Temperierung (Ton und Abweichung von gleichstufig in Cent).</p>
 <ul>
 <li><span class="b">Auswahl</span> öffnet die Liste „Preset wählen“.
@@ -343,23 +347,29 @@ eine Temperierung. Die Liste „Preset wählen“:</p>
 <li>Lang auf ein Preset drücken: <span class="b">Bearbeiten</span>,
 <span class="b">Umbenennen</span>, <span class="b">Duplizieren</span>,
 <span class="b">Exportieren…</span>, <span class="b">Löschen</span>.</li>
-<li>Die Griffleiste ☰ rechts an einem Preset gedrückt halten und ziehen:
-das Preset an eine andere Stelle der Liste schieben.</li>
+<li>Den Griff ≡ rechts an einem Preset etwa eine halbe Sekunde gedrückt
+halten, bis er blau leuchtet (das Telefon tickt), dann ziehen: das Preset
+an eine andere Stelle der Liste schieben.</li>
 <li>Menü ⋮: <span class="b">Stimmung hinzufügen…</span>,
 <span class="b">Nach Namen sortieren</span>,
 <span class="b">Importieren…</span>,
 <span class="b">Alle exportieren…</span>.</li>
 </ul>
 <h3>Bearbeiten</h3>
-<p>„Preset bearbeiten“ zeigt den Namen und die Töne.
-<span class="b">Ton hinzufügen</span> fügt einen Ton an, ein Ton
-antippen öffnet „Preset-Ton bearbeiten“: Tonbuchstabe, <b>#</b>, Oktave,
-das Feld <b>Cent</b> mit <span class="b">±</span> (Vorzeichen),
-<span class="b">-1c</span> <span class="b">-0.1c</span>
-<span class="b">+0.1c</span> <span class="b">+1c</span>, dann
-<span class="b">Speichern</span> oder
-<span class="b">Ton löschen</span>. Die Cent sind die Abweichung von
-gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton
+<p>„Preset bearbeiten“ zeigt den Namen und die Töne, die Cent-Werte
+untereinander in einer Spalte. <span class="b">Ton hinzufügen</span> fügt
+einen Ton an, ein Ton antippen öffnet „Preset-Ton bearbeiten“:</p>
+<ul>
+<li>Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton. Eine
+Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven.</li>
+<li>Das Zahlenfeld darunter ist immer da und schreibt in das Feld
+<b>Cent</b> (Komma, <b>±</b> für das Vorzeichen, Rückschritt). Bei einem
+neuen Ton ist das Feld leer.</li>
+<li><span class="b">Speichern</span> legt den Ton ab und geht gleich zum
+Ton einen Halbton höher weiter; nach dem zwölften Ton geht es zurück zur
+Liste der Töne. <span class="b">Ton löschen</span> löscht den Ton.</li>
+</ul>
+<p>Die Cent sind die Abweichung von gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton
 das A bleibt. <span class="b">Preset löschen</span> löscht das ganze
 Preset.</p>
 <h3>Import und Export</h3>
@@ -469,10 +479,10 @@ Mündungskorrektur fällt heraus, da nur der Unterschied zählt.</li>
 
 <section id="signal">
 <h2>11. Vergleichston (Signal)</h2>
-<p><span class="b">Signal</span> spielt den Sollton (die 8′-Lage, mit
+<p>Der <b>Lautsprecher</b>-Knopf (Signal) spielt den Sollton (die 8′-Lage, mit
 Temperierung und Versatz) als Sinuston über den Lautsprecher, bis Sie
 nochmals tippen. Der Knopf ist dann hervorgehoben. Solange er spielt,
-folgt die Erkennung nicht. Mit dem Signal hören Sie, wohin der Strobe
+folgt die Erkennung nicht. Mit dem Vergleichston hören Sie, wohin der Strobe
 zielt; zugleich ist es ein Selbsttest: Die 8′-Zeile muss dabei waagerecht
 stehen.</p>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
@@ -518,7 +528,9 @@ und lauten Orten.</p>
 <li>Im Reiter Ton oder Mixtur die erste Taste als angezeigten Ton
 einstellen. Die Zeile der Fußtonlage des Registers antippen, dann wird
 auch aufgezeichnet, wie weit jede Pfeife verstimmt ist.</li>
-<li>Menü ⋮ → <span class="b">Lauf aufnehmen</span>. Ausfüllen:
+<li>Menü ⋮ → <span class="b">Lauf aufnehmen</span> (nur sichtbar, wenn
+Einstellungen → Debug → <span class="b">Debug-Aufnahmen</span> an ist).
+Ausfüllen:
 Orgel, Kirche; Register (z. B. Rohrflöte 8′); die Art (Offen (Labial),
 Gedackt, Zungenregister, Mixtur, Aliquot, Anderes); die Fußlage;
 Notizen (Handyposition, Mikrofon, Temperatur…).
@@ -568,7 +580,8 @@ des Systems nach. Sie gehen mit
 den Entwicklern. Sie brauchen ein Konto bei GitHub und müssen im Browser
 des Telefons angemeldet sein.</p>
 <ol>
-<li>Menü ⋮ → <span class="b">Aufnahmen an GitHub</span>. Eine Liste
+<li>Menü ⋮ → <span class="b">Aufnahmen an GitHub</span> (ebenfalls nur
+mit <span class="b">Debug-Aufnahmen</span> an). Eine Liste
 zeigt je Lauf eine Zeile (Datum, Register, Tasten, Dauer, Größe), je Tag
 die Debug-Aufnahmen und die Absturzberichte. Angekreuzt ist, was noch
 nicht gepackt wurde; „(schon gepackt)“ lässt sich wieder ankreuzen.</li>
@@ -606,6 +619,8 @@ besten Signal).</dd>
 <dt>Strobe</dt>
 <dd><span class="b">Farben</span> (Batlow, Schiefer / Weiß, Rot / Grün,
 Schwarz / Weiß, Blau / Gelb, Rot / Blau).
+<span class="b">Fokusfarbe</span>: der Rahmen um die fokussierte Zeile,
+16 Farben.
 <span class="b">Pegelanzeige</span> (aus): am rechten Rand des Strobe der
 Eingangspegel; rot zu leise zum Erkennen, gelb knapp, grün gut; der
 weiße Strich ist die Schwelle der Erkennung.
@@ -613,7 +628,9 @@ weiße Strich ist die Schwelle der Erkennung.
 1/8′, auch 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
 <dt>Debug</dt>
 <dd><span class="b">Debug-Aufnahmen</span>
-(<a href="#debug">Debug-Aufnahmen</a>).</dd>
+(<a href="#debug">Debug-Aufnahmen</a>). Nur wenn das an ist, stehen
+<span class="b">Lauf aufnehmen</span> und
+<span class="b">Aufnahmen an GitHub</span> im Menü.</dd>
 </dl>
 <p class="top"><a href="#inhalt">↑ Inhalt</a></p>
 </section>
