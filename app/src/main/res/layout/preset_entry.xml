@@ -25,5 +25,5 @@
 	android:minHeight="56dp"
 	android:scaleType="center"
 	android:src="@drawable/drag_handle"
-	android:contentDescription="@string/drag_to_move" />
+	android:contentDescription="@string/drag_to_move_hold" />
 </LinearLayout>

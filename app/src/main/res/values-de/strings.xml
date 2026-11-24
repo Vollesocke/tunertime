@@ -330,4 +330,5 @@
 		<item>Falsche Taste gespielt</item>
 		<item>Text&#8230;</item>
 	</string-array>
+	<string name="drag_to_move_hold">Halten, dann zum Verschieben ziehen</string>
 </resources>
