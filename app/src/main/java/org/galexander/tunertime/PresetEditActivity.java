@@ -60,8 +60,9 @@ public class PresetEditActivity extends Activity {
 	public void onResume() {
 		parms.load();
 		list.setAdapter(new SimpleAdapter(this, notes_list(),
-			R.layout.list_entry, new String[] { "text" },
-			new int[] { R.id.list_entry_text }));
+			R.layout.note_row, new String[] { "name", "cents" },
+			new int[] { R.id.note_row_name,
+				    R.id.note_row_cents }));
 		name_view.setText(get_preset().name);
 		/* only a temperament, one note per pitch class, is matched */
 		boolean t = (matching.table(get_preset().notes) != null);
@@ -113,24 +114,70 @@ public class PresetEditActivity extends Activity {
 			new ArrayList<HashMap<String, String> >();
 		preset p = get_preset();
 		p.sort_notes();
-		for (Integer i : p.notes) {
-			note n = new note(i);
+		for (int k = 0; k < p.notes.size(); k++) {
+			note n = new note(p.notes.get(k));
 			HashMap<String, String> t =
 				new HashMap<String, String>();
-			t.put("text", n.full_str);
+			t.put("name", row_name(p.notes, k));
+			t.put("cents", n.cents_str);
 			ret.add(t);
 		}
 		return ret;
 	}
 
+	/* the name of note k without octave (the tuning uses the pitch class
+	 * only).  Two notes on one pitch class (Dis and Es in meantone) get
+	 * their chain-of-fifths spellings, the sharp one the lower */
+	private static String row_name(List<Integer> notes, int k) {
+		note n = new note(notes.get(k));
+		int same = 0, lower = 0;
+		for (int j = 0; j < notes.size(); j++) {
+			if (new note(notes.get(j)).note_idx == n.note_idx) {
+				same++;
+				if (notes.get(j) < notes.get(k)) {
+					lower++;
+				}
+			}
+		}
+		if (same != 2) {
+			return n.note_str;
+		}
+		/* chain positions n with A = 0 on this pitch class */
+		int hi = Integer.MIN_VALUE, lo = Integer.MAX_VALUE;
+		for (int c = temperaments.CHAIN_LOW;
+		     c <= temperaments.CHAIN_HIGH; c++) {
+			if ((((9 + 7*c) % 12) + 12) % 12 == n.note_idx) {
+				hi = Math.max(hi, c);
+				lo = Math.min(lo, c);
+			}
+		}
+		if (hi == lo) {
+			return n.note_str;
+		}
+		return note.chain_name((lower == 0) ? hi : lo);
+	}
+
 	public void do_new(View v) {
+		/* the sequence starts at the lowest missing pitch class from
+		 * C, with an empty field; all twelve there: another C */
 		List<Integer> notes = get_preset().notes;
+		boolean[] have = new boolean[12];
+		for (int i : notes) {
+			have[new note(i).note_idx] = true;
+		}
+		int pc = 0;
+		while ((pc < 11) && have[pc]) {
+			pc++;
+		}
+		if (have[pc]) {
+			pc = 0;
+		}
 		int n = notes.size();
-		notes.add((n >= 1) ? notes.get(n-1)
-					    : 4800*preset.UNITS_PER_CENT);
+		notes.add(PresetNoteActivity.stored(pc, 0));
 		parms.preset_note = n;
 		startActivity(new Intent(v.getContext(),
-				PresetNoteActivity.class));
+				PresetNoteActivity.class)
+			.putExtra(PresetNoteActivity.EXTRA_NEW, true));
 	}
 
 	/* the notes by ear on the strobe: the A, then the 12 notes

@@ -353,4 +353,5 @@
 		<item>Wrong key played</item>
 		<item>Text&#8230;</item>
 	</string-array>
+	<string name="pn_backspace">backspace</string>
 </resources>

@@ -4,34 +4,41 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import java.util.List;
 
+/* Edit one note of a preset: pick its pitch class on one octave of keys,
+ * type the cents on the built-in number pad.  The octave a note is stored
+ * in does not matter (the tuning uses the pitch class only), so every note
+ * is stored in octave 4 as soon as it is touched here. */
 public class PresetNoteActivity extends Activity {
+	/* the note was just added (empty field, not yet typed into) */
+	public static final String EXTRA_NEW = "new_note";
+
 	private TextView pn_text;
 	private EditText pn_cents;
-	private View[] pn_notes = new View[7];
-	private final static int[] pn_note_vals = new int[] { 0,2,4,5,7,9,11 };
-	private View pn_sharp;
-	private View[] pn_octs = new View[9];
+	private PianoKeyboard pn_keys;
 
 	private List<Integer> notes;
 	private int note_idx;
+	private int pc;		/* picked pitch class, 0 = C */
+	private boolean created;	/* added by this screen (empty until typed) */
+	private boolean silent;	/* setting the field from code */
 
 		/* notes are in tenths of a cent */
 	private static final int U = preset.UNITS_PER_CENT;
+	private static final int MAX_CENTS = 50*U;
+	private static final int OCTAVE_C = 3900*U;	/* C4; A4 = 4800 */
 
-	/*        C  C# D  D# E  F  F# G  G# A  A# B */
-	private static final int[] is_sharp = new int[]
-		{ 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0 };
-	private static final int[] can_sharpen = new int[]
-		{ 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0 };
-	private static final int[] sharp_swap = new int[]
-		{ 1, 0, 3, 2, 4, 6, 5, 8, 7, 10,9, 11};
-	private static final int[] no_sharps = new int[]
-		{ 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
+		/* pitch class pc (0 = C), c tenths of a cent off, in octave 4 */
+	public static int stored(int pc, int c) {
+		return OCTAVE_C + pc*100*U + c;
+	}
 
 	protected void attachBaseContext(android.content.Context base) {
 		super.attachBaseContext(Lang.wrap(base));
@@ -42,52 +49,36 @@ public class PresetNoteActivity extends Activity {
 
 		parms.init(this);
 		setTitle(R.string.title_preset_note);
+		/* the built-in pad is the keyboard */
+		getWindow().setSoftInputMode(
+			WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.preset_note);
+		created = (savedInstanceState != null) ?
+			savedInstanceState.getBoolean("created", false) :
+			getIntent().getBooleanExtra(EXTRA_NEW, false);
 		pn_text = (TextView)findViewById(R.id.pn_text);
 		pn_cents = (EditText)findViewById(R.id.pn_cents);
-		pn_cents.setOnEditorActionListener(new SubmitListener() {
-			public void onSubmit(String s) {
-				try {
-					double d = Double.parseDouble(
-						s.trim().replace(',', '.'));
-					set_cents((int)Math.round(d*U));
-				} catch (Exception x) { }
+		pn_cents.setShowSoftInputOnFocus(false);
+		pn_cents.addTextChangedListener(new TextWatcher() {
+			public void beforeTextChanged(CharSequence s, int a,
+						      int b, int c) { }
+			public void onTextChanged(CharSequence s, int a,
+						  int b, int c) { }
+			public void afterTextChanged(Editable e) {
+				if (!silent) {
+					typed();
+				}
 			} });
-		pn_notes[0] = findViewById(R.id.pn_note_0);
-		pn_notes[1] = findViewById(R.id.pn_note_1);
-		pn_notes[2] = findViewById(R.id.pn_note_2);
-		pn_notes[3] = findViewById(R.id.pn_note_3);
-		pn_notes[4] = findViewById(R.id.pn_note_4);
-		pn_notes[5] = findViewById(R.id.pn_note_5);
-		pn_notes[6] = findViewById(R.id.pn_note_6);
-		pn_sharp = findViewById(R.id.pn_sharp);
-		pn_octs[0] = findViewById(R.id.pn_oct_0);
-		pn_octs[1] = findViewById(R.id.pn_oct_1);
-		pn_octs[2] = findViewById(R.id.pn_oct_2);
-		pn_octs[3] = findViewById(R.id.pn_oct_3);
-		pn_octs[4] = findViewById(R.id.pn_oct_4);
-		pn_octs[5] = findViewById(R.id.pn_oct_5);
-		pn_octs[6] = findViewById(R.id.pn_oct_6);
-		pn_octs[7] = findViewById(R.id.pn_oct_7);
-		pn_octs[8] = findViewById(R.id.pn_oct_8);
+		pn_keys = (PianoKeyboard)findViewById(R.id.pn_keys);
+		pn_keys.setListener(new PianoKeyboard.Listener() {
+			public void onKey(int k) {
+				do_key(k);
+			} });
 	}
 
-	/* flip the sign of the cents field and apply it */
-	public void do_negate(View v) {
-		String s = pn_cents.getText().toString().trim();
-		if (s.startsWith("-")) {
-			s = s.substring(1);
-		} else if (s.startsWith("+")) {
-			s = "-" + s.substring(1);
-		} else {
-			s = "-" + s;
-		}
-		pn_cents.setText(s);
-		pn_cents.setSelection(s.length());
-		try {
-			double d = Double.parseDouble(s.replace(',', '.'));
-			set_cents((int)Math.round(d*U));
-		} catch (Exception x) { }
+	protected void onSaveInstanceState(Bundle b) {
+		super.onSaveInstanceState(b);
+		b.putBoolean("created", created);
 	}
 
 	public void onResume() {
@@ -104,13 +95,7 @@ public class PresetNoteActivity extends Activity {
 			finish();
 			return;
 		}
-		/* "B" or German "H"; with "#" the sharp of A is B or German B */
-		((TextView)pn_notes[6]).setText(note.class_name(11));
-		/* 0..8, or with German names C2 (subscript) .. c5 */
-		for (int i = 0; i < pn_octs.length; i++) {
-			((TextView)pn_octs[i]).setText(note.octave_name(i));
-		}
-		update();
+		load_note();
 	}
 
 	public void onPause() {
@@ -119,112 +104,165 @@ public class PresetNoteActivity extends Activity {
 		notes = null;
 	}
 
-		/* selected button: accent outline (drawable/mode_button) */
-	private void set_brightness(View v, boolean bright) {
-		v.setSelected(bright);
+		/* the field shows the cents of note_idx; the focus stays there */
+	private void load_note() {
+		note n = new note(notes.get(note_idx));
+		pc = n.note_idx;
+		set_field((created && (n.cents == 0)) ? "" : fmt(n.cents));
+		pn_cents.requestFocus();
+		update();
+	}
+
+		/* 30 -> "3", -35 -> "-3.5" (comma with German names) */
+	private static String fmt(int c) {
+		int a = Math.abs(c);
+		return ((c < 0) ? "-" : "") + (a/U) +
+			(((a%U) != 0) ? (sep() + Integer.toString(a%U)) : "");
+	}
+
+	private static char sep() {
+		return note.german() ? ',' : '.';
+	}
+
+	private void set_field(String s) {
+		silent = true;
+		pn_cents.setText(s);
+		pn_cents.setSelection(s.length());
+		silent = false;
+	}
+
+		/* the field in tenths of a cent, empty is 0, at most +-50c: more
+		 * would be another pitch class */
+	private int field_cents() {
+		String s = pn_cents.getText().toString().trim()
+				.replace(',', '.');
+		double d = 0;
+		try {
+			d = Double.parseDouble(s);
+		} catch (Exception x) { }
+		long c = Math.round(d*U);
+		return (int)Math.max(-MAX_CENTS, Math.min(MAX_CENTS, c));
+	}
+
+		/* the field changed: store the note live */
+	private void typed() {
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
+		String s = pn_cents.getText().toString().trim()
+				.replace(',', '.');
+		int c = field_cents();
+		try {
+			if (Math.abs(Double.parseDouble(s)*U) > MAX_CENTS) {
+				set_field(fmt(c));
+			}
+		} catch (Exception x) { }
+		notes.set(note_idx, stored(pc, c));
+		update();
 	}
 
 	private void update() {
-		int cents = notes.get(note_idx);
-		if (cents < 0) {
-			cents = 0;
-			notes.set(note_idx, cents);
-		} else if (cents > 9600*U) {
-			cents = 9600*U;
-			notes.set(note_idx, cents);
-		}
-
-		note n = new note(cents);
-		pn_text.setText(n.full_str);
-		pn_cents.setText(note.cents_edit_str(n.cents));
-
-		int t = no_sharps[n.note_idx];
-		for (int i = 0; i < pn_notes.length; i++) {
-			set_brightness(pn_notes[i], (t == i));
-		}
-		set_brightness(pn_sharp, (is_sharp[n.note_idx] != 0));
-		for (int i = 0; i < pn_octs.length; i++) {
-			set_brightness(pn_octs[i], (n.octave == i));
-		}
-	}
-
-	public void do_note(View v) {
-		if (notes == null) {
-			return;		/* deleted, finishing */
-		}
-		int idx = 0;
-		for (int i = 0; i < pn_notes.length; i++) {
-			if (v == pn_notes[i]) {
-				idx = pn_note_vals[i];
-				break;
+		int c = field_cents();
+		pn_text.setText(note.class_name(pc) + " " + note.cents_str(c));
+		pn_keys.setSelectedKey(pc);
+		boolean[] have = new boolean[12];
+		for (int i = 0; i < notes.size(); i++) {
+			if (i != note_idx) {
+				have[new note(notes.get(i)).note_idx] = true;
 			}
 		}
-		note n = new note(notes.get(note_idx));
-		notes.set(note_idx, (n.octave*1200*U) +
-			((idx+can_sharpen[idx]*is_sharp[n.note_idx])*100*U) +
-			n.cents - 900*U);
-		update();
+		pn_keys.setPresent(have);
 	}
 
-	public void do_sharp(View v) {
+		/* A key moves this note to that pitch class.  The cents stay as
+		 * they are: an empty field of a new note stays empty, the value
+		 * of an existing note is kept. */
+	private void do_key(int k) {
 		if (notes == null) {
 			return;		/* deleted, finishing */
 		}
-		note n = new note(notes.get(note_idx));
-		notes.set(note_idx, (n.octave*1200*U) +
-			(sharp_swap[n.note_idx]*100*U) + n.cents - 900*U);
+		pc = k;
+		notes.set(note_idx, stored(pc, field_cents()));
 		update();
 	}
 
-	public void do_oct(View v) {
+		/* a key of the number pad; its tag is what it types */
+	public void do_pad(View v) {
 		if (notes == null) {
-			return;		/* deleted, finishing */
+			return;
 		}
-		int oct = 4;
-		for (int i = 0; i < pn_octs.length; i++) {
-			if (v == pn_octs[i]) {
-				oct = i;
-				break;
+		String t = (String)v.getTag();
+		String s = pn_cents.getText().toString().trim();
+		boolean neg = s.startsWith("-");
+		String body = neg ? s.substring(1) : s;
+		int dot = Math.max(body.indexOf('.'), body.indexOf(','));
+		if (t.equals("<")) {
+			if (body.length() == 0) {
+				neg = false;
+			} else {
+				body = body.substring(0, body.length()-1);
 			}
+		} else if (t.equals("+-")) {
+			neg = !neg;
+		} else if (t.equals(",")) {
+			if (dot < 0) {
+				body = ((body.length() == 0) ? "0" : body) + sep();
+			}
+		} else if (dot >= 0) {
+			if (body.length() - dot - 1 < 1) {	/* tenths only */
+				body += t;
+			}
+		} else if (body.equals("0")) {
+			body = t;
+		} else if (body.length() < 2) {
+			body += t;
 		}
-		note n = new note(notes.get(note_idx));
-		notes.set(note_idx,
-			(oct*1200*U) + (n.note_idx*100*U) + n.cents - 900*U);
-		update();
+		set_field((neg ? "-" : "") + body);
+		typed();
 	}
-
-		/* c in tenths of a cent */
-	private void set_cents(int c) {
-		if (notes == null) {
-			return;		/* deleted, finishing */
-		}
-		int prev = notes.get(note_idx);
-		note n = new note(prev);
-		int next = (n.octave*1200*U) + (n.note_idx*100*U) + c - 900*U;
-		if (prev != next) {
-			notes.set(note_idx, next);
-			update();
-		}
-	}
-
-		/* cent steps; crossing +-50c moves on to the next note */
-	private void step_cents(int delta) {
-		if (notes == null) {
-			return;		/* deleted, finishing */
-		}
-		notes.set(note_idx, notes.get(note_idx) + delta);
-		update();
-	}
-	public void do_cent_incr(View v)  { step_cents( 1*U); }
-	public void do_cent_decr(View v)  { step_cents(-1*U); }
-	public void do_tenth_incr(View v) { step_cents( 1); }
-	public void do_tenth_decr(View v) { step_cents(-1); }
 
 	public void do_save(View v) {
-		finish();
+		if (notes == null) {
+			return;		/* deleted, finishing */
+		}
+		notes.set(note_idx, stored(pc, field_cents()));
+		boolean[] have = new boolean[12];
+		int count = 0;
+		for (int i : notes) {
+			int k = new note(i).note_idx;
+			if (!have[k]) {
+				have[k] = true;
+				count++;
+			}
+		}
+		/* the 12th pitch class completed, or past the H of a complete
+		 * preset: back to the list */
+		if ((count == 12) && (created || (pc == 11))) {
+			finish();
+			return;
+		}
+		/* on with the semitone above: edit that note, or add it */
+		int next = (pc + 1) % 12;
+		int idx = -1;
+		for (int i = 0; (idx < 0) && (i < notes.size()); i++) {
+			if (new note(notes.get(i)).note_idx == next) {
+				idx = i;
+			}
+		}
+		created = (idx < 0);
+		if (created) {
+			notes.add(stored(next, 0));
+			idx = notes.size() - 1;
+		}
+		note_idx = idx;
+		parms.preset_note = idx;
+		load_note();
 	}
 
 	public void do_delete(View v) {
+		if (notes == null) {
+			return;
+		}
 		DialogInterface.OnClickListener listener =
 			new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface d, int which) {
@@ -238,7 +276,8 @@ public class PresetNoteActivity extends Activity {
 		new AlertDialog.Builder(this)
 			.setTitle(R.string.confirm)
 			.setMessage(getString(R.string.really_delete,
-				new note(notes.get(note_idx)).full_str))
+				note.class_name(pc) + " " +
+				note.cents_str(field_cents())))
 			.setPositiveButton(R.string.delete, listener)
 			.setNegativeButton(R.string.cancel, listener)
 			.show();

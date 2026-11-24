@@ -330,4 +330,5 @@
 		<item>Falsche Taste gespielt</item>
 		<item>Text&#8230;</item>
 	</string-array>
+	<string name="pn_backspace">R&#252;cktaste</string>
 </resources>
