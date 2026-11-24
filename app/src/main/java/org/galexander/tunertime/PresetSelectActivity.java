@@ -46,6 +46,13 @@ public class PresetSelectActivity extends Activity {
 		 * passes other rows, and is stored when the finger lifts */
 	private int drag_pos = -1;
 	private float drag_y;
+		/* a finger is on a grip, waiting to arm the drag; -1 when
+		 * none is.  It arms after holding still for ARM_MS */
+	private int arm_pos = -1;
+	private float arm_x, arm_y;
+	private static final int ARM_MS = 500;
+	private final Runnable arm_drag = new Runnable() {
+		public void run() { arm_drag(); } };
 	private final Runnable drag_scroll = new Runnable() {
 		public void run() { drag_scroll(); } };
 
@@ -129,30 +136,97 @@ public class PresetSelectActivity extends Activity {
 			((TextView)v.findViewById(R.id.list_entry_text))
 				.setText(preset.presets.get(pos).name);
 			v.findViewById(R.id.preset_grip).setTag(pos);
-			v.setBackgroundColor((pos == drag_pos) ?
+			boolean lifted = (pos == drag_pos);
+			v.setBackgroundColor(lifted ?
 				getResources().getColor(R.color.surface_pressed) :
 				0);
+			/* the lifted row: shadow, a little larger, grip in
+			 * the accent colour */
+			float dp = getResources().getDisplayMetrics().density;
+			v.setElevation(lifted ? 8*dp : 0);
+			v.setScaleX(lifted ? 1.03f : 1f);
+			v.setScaleY(lifted ? 1.03f : 1f);
+			android.widget.ImageView grip = (android.widget.ImageView)
+				v.findViewById(R.id.preset_grip);
+			if (lifted) {
+				grip.setColorFilter(getResources()
+					.getColor(R.color.accent),
+					android.graphics.PorterDuff.Mode.SRC_IN);
+			} else {
+				grip.clearColorFilter();
+			}
 			return v;
 		}
 	};
 
-		/* a finger down on a grip starts the drag; the rest of the
+		/* a finger down on a grip starts waiting; after ARM_MS
+		 * without moving the drag is armed.  The rest of the
 		 * gesture goes to dispatchTouchEvent(), since the row it
 		 * started on is rebound to other presets as they move */
 	private final View.OnTouchListener grip_touch =
 						new View.OnTouchListener() {
 		public boolean onTouch(View v, MotionEvent ev) {
 			if ((ev.getActionMasked() != MotionEvent.ACTION_DOWN) ||
-			    (drag_pos >= 0) || !(v.getTag() instanceof Integer)) {
+			    (drag_pos >= 0) || (arm_pos >= 0) ||
+			    scroll_pass || !(v.getTag() instanceof Integer)) {
 				return false;
 			}
-			drag_pos = (Integer)v.getTag();
-			drag_y = ev.getRawY();
-			adapter.notifyDataSetChanged();
+			arm_pos = (Integer)v.getTag();
+			arm_x = ev.getRawX();
+			arm_y = ev.getRawY();
+			drag_y = arm_y;
+			list.postDelayed(arm_drag, ARM_MS);
 			return true;
 		} };
 
+		/* the finger left the grip before the drag armed: this
+		 * gesture scrolls the list instead */
+	private boolean scroll_pass = false;
+
+	private void arm_drag() {
+		if (arm_pos < 0) {
+			return;
+		}
+		drag_pos = Math.min(arm_pos, preset.presets.size()-1);
+		arm_pos = -1;
+		list.performHapticFeedback(
+			android.view.HapticFeedbackConstants.LONG_PRESS);
+		adapter.notifyDataSetChanged();
+	}
+
 	public boolean dispatchTouchEvent(MotionEvent ev) {
+		int act = ev.getActionMasked();
+		if (act == MotionEvent.ACTION_DOWN) {
+			scroll_pass = false;
+		}
+		if (arm_pos >= 0) {
+			float slop = android.view.ViewConfiguration.get(this)
+						.getScaledTouchSlop();
+			if ((act == MotionEvent.ACTION_MOVE) &&
+			    (Math.hypot(ev.getRawX()-arm_x, ev.getRawY()-arm_y)
+								> slop)) {
+				/* moved early: hand the gesture to the list,
+				 * as if it had started here */
+				list.removeCallbacks(arm_drag);
+				arm_pos = -1;
+				scroll_pass = true;
+				MotionEvent d = MotionEvent.obtain(ev);
+				d.setAction(MotionEvent.ACTION_DOWN);
+				super.dispatchTouchEvent(d);
+				d.recycle();
+				return super.dispatchTouchEvent(ev);
+			} else if ((act == MotionEvent.ACTION_UP) ||
+				   (act == MotionEvent.ACTION_CANCEL)) {
+				/* a quick tap does nothing */
+				list.removeCallbacks(arm_drag);
+				arm_pos = -1;
+				MotionEvent c = MotionEvent.obtain(ev);
+				c.setAction(MotionEvent.ACTION_CANCEL);
+				super.dispatchTouchEvent(c);
+				c.recycle();
+			}
+			return true;
+		}
 		if (drag_pos < 0) {
 			return super.dispatchTouchEvent(ev);
 		}
@@ -178,6 +252,8 @@ public class PresetSelectActivity extends Activity {
 
 	private void end_drag() {
 		list.removeCallbacks(drag_scroll);
+		list.removeCallbacks(arm_drag);
+		arm_pos = -1;
 		drag_pos = -1;
 	}
 
