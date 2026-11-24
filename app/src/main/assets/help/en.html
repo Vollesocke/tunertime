@@ -9,7 +9,7 @@
 <body>
 
 <h1 id="contents">TunerTime Organ – Manual</h1>
-<p class="version">Version 19.2, October 2026</p>
+<p class="version">Version 19.4, November 2026</p>
 
 <nav>
 <ol>
@@ -337,10 +337,14 @@ a column. <span class="b">add note</span> adds a note; tap a note to open
 "Edit preset note":</p>
 <ul>
 <li>A piano keyboard of one octave (C to B) picks the note. There is no
-choice of octave: an entry applies to all octaves.</li>
+choice of octave: an entry applies to all octaves. A dot on a key shows
+that the preset already has that note. Tapping another key moves the note
+there and keeps its cents.</li>
 <li>The number pad below is always shown and types into the
-<b>cents</b> field (comma, <b>±</b> for the sign, backspace). For a new
-note the field is empty.</li>
+<b>cents</b> field (decimal point, <b>±</b> for the sign, backspace),
+from −50.0 to +49.9 cents. For a new note the field is empty (0 cents);
+<span class="b">add note</span> starts at the lowest note from C that is
+still missing.</li>
 <li><span class="b">save</span> stores the note and goes straight on to
 the note a semitone higher; after the 12th note it returns to the note
 list. <span class="b">delete note</span> deletes the note.</li>

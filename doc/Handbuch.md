@@ -2,7 +2,7 @@
 
 _Dieses Handbuch wird aus der Hilfe der App erzeugt (`app/src/main/assets/help/de.html`, mit `tools/help_to_md.py`). Änderungen bitte dort machen, nicht hier._ [English version: manual.md](manual.md)
 
-_Stand: Version 19.2, Oktober 2026_
+_Stand: Version 19.4, November 2026_
 
 1. [Was die App ist](#1-was-die-app-ist)
 2. [Einrichten](#2-einrichten)
@@ -173,8 +173,8 @@ Ein Preset mit genau einem Ton für jede der 12 Tasten der Oktave ist eine Tempe
 
 „Preset bearbeiten“ zeigt den Namen und die Töne, die Cent-Werte untereinander in einer Spalte. **Ton hinzufügen** fügt einen Ton an, ein Ton antippen öffnet „Preset-Ton bearbeiten“:
 
-- Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton. Eine Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven.
-- Das Zahlenfeld darunter ist immer da und schreibt in das Feld **Cent** (Komma, **±** für das Vorzeichen, Rückschritt). Bei einem neuen Ton ist das Feld leer.
+- Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton. Eine Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven. Ein Punkt auf einer Taste zeigt, dass das Preset diesen Ton schon hat. Eine andere Taste antippen legt den Ton dorthin und behält den Cent-Wert.
+- Das Zahlenfeld darunter ist immer da und schreibt in das Feld **Cent** (Komma, **±** für das Vorzeichen, Rückschritt), von −50,0 bis +49,9 Cent. Bei einem neuen Ton ist das Feld leer (0 Cent); **Ton hinzufügen** beginnt beim tiefsten Ton ab C, der noch fehlt.
 - **Speichern** legt den Ton ab und geht gleich zum Ton einen Halbton höher weiter; nach dem zwölften Ton geht es zurück zur Liste der Töne. **Ton löschen** löscht den Ton.
 
 Die Cent sind die Abweichung von gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton das A bleibt. **Preset löschen** löscht das ganze Preset.

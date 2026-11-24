@@ -2,7 +2,7 @@
 
 _This manual is generated from the in-app help (`app/src/main/assets/help/en.html`, with `tools/help_to_md.py`). Please edit it there, not here._ [Deutsche Fassung: Handbuch.md](Handbuch.md)
 
-_Version 19.2, October 2026_
+_Version 19.4, November 2026_
 
 1. [What the app is](#1-what-the-app-is)
 2. [Setting up](#2-setting-up)
@@ -173,8 +173,8 @@ A preset with exactly one note for each of the 12 keys of the octave is a temper
 
 "Edit preset" shows the name and the notes, with the cent values in a column. **add note** adds a note; tap a note to open "Edit preset note":
 
-- A piano keyboard of one octave (C to B) picks the note. There is no choice of octave: an entry applies to all octaves.
-- The number pad below is always shown and types into the **cents** field (comma, **±** for the sign, backspace). For a new note the field is empty.
+- A piano keyboard of one octave (C to B) picks the note. There is no choice of octave: an entry applies to all octaves. A dot on a key shows that the preset already has that note. Tapping another key moves the note there and keeps its cents.
+- The number pad below is always shown and types into the **cents** field (decimal point, **±** for the sign, backspace), from −50.0 to +49.9 cents. For a new note the field is empty (0 cents); **add note** starts at the lowest note from C that is still missing.
 - **save** stores the note and goes straight on to the note a semitone higher; after the 12th note it returns to the note list. **delete note** deletes the note.
 
 The cents are the deviation from equal temperament, to 0.1 cent. Give A 0 cents, so that the A setting stays the A. **delete preset** deletes the whole preset.
