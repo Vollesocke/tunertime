@@ -134,4 +134,40 @@
 		<item>12</item>
 		<item>16</item>
 	</string-array>
+	<string-array name="focus_color_name">
+		<item>@string/fc_blue</item>
+		<item>@string/fc_lightblue</item>
+		<item>@string/fc_cyan</item>
+		<item>@string/fc_teal</item>
+		<item>@string/fc_green</item>
+		<item>@string/fc_lime</item>
+		<item>@string/fc_yellow</item>
+		<item>@string/fc_amber</item>
+		<item>@string/fc_orange</item>
+		<item>@string/fc_red</item>
+		<item>@string/fc_pink</item>
+		<item>@string/fc_magenta</item>
+		<item>@string/fc_purple</item>
+		<item>@string/fc_violet</item>
+		<item>@string/fc_white</item>
+		<item>@string/fc_lightgrey</item>
+	</string-array>
+	<string-array name="focus_color_value">
+		<item>#4C8DFF</item>
+		<item>#80D8FF</item>
+		<item>#00E5FF</item>
+		<item>#00BFA5</item>
+		<item>#3DDC57</item>
+		<item>#C6FF00</item>
+		<item>#FFEB3B</item>
+		<item>#FFC107</item>
+		<item>#FF9100</item>
+		<item>#FF4D4D</item>
+		<item>#FF80AB</item>
+		<item>#FF2BD6</item>
+		<item>#B84DFF</item>
+		<item>#8C7BFF</item>
+		<item>#FFFFFF</item>
+		<item>#B0B7C0</item>
+	</string-array>
 </resources>

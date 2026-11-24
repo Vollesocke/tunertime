@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewConfiguration;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.widget.FrameLayout;
@@ -77,7 +78,7 @@ public class TunerTime extends Activity
 	private Button note_button, afreq_button, stretch_button, preset_button;
 	private View strobe_mode_buttons;
 	private View fft_mode_buttons;
-	private Button tone_button;
+	private ImageButton tone_button;
 	private Button auto_button;
 	private Button mode_button;
 	private View length_panel;
@@ -231,7 +232,7 @@ public class TunerTime extends Activity
 
 		strobe_mode_buttons = fl8r.inflate(
 				R.layout.strobe_mode, mode_holder, false);
-		tone_button = (Button)strobe_mode_buttons.findViewById(
+		tone_button = (ImageButton)strobe_mode_buttons.findViewById(
 				R.id.tone_button);
 		auto_button = (Button)strobe_mode_buttons.findViewById(
 				R.id.auto_button);
@@ -310,6 +311,9 @@ public class TunerTime extends Activity
 
 	public void onBackPressed() {
 		if ((meas != null) && meas.back()) {
+			return;
+		}
+		if (preset_back()) {
 			return;
 		}
 		super.onBackPressed();
@@ -419,6 +423,7 @@ public class TunerTime extends Activity
 		}
 		buttons_holder.removeAllViews();
 		buttons_holder.addView(buttons);
+		cur_buttons = buttons;
 		parms.fft_mode = fft_mode_;
 		place_strobe_extras();
 		mode_holder.removeAllViews();
@@ -427,6 +432,7 @@ public class TunerTime extends Activity
 		parms.changed = true;
 		set_title(title, subtitle);
 		if (parms.fft_mode) ToneGenerator.stop_tone();
+		back_update();
 
 		cause = why;
 		update_status();
@@ -1508,13 +1514,68 @@ public class TunerTime extends Activity
 	}
 	public void preset_clicked(View v) {
 		cause = "tab preset";
+		if ((cur_buttons != preset_buttons) && (cur_buttons != null) &&
+		    (cur_buttons != fft_buttons)) {
+			before_preset = cur_buttons;
+		}
 		set_mode(preset_buttons, false);
+	}
+
+	/* Back in the temperament tab returns to the tab shown before it
+	 * (note mode if the app started there) */
+	private View cur_buttons = null;
+	private View before_preset = null;
+	private boolean preset_back() {
+		if (!parms.preset_mode || (meas != null)) {
+			return false;
+		}
+		cause = "back from tab preset";
+		set_mode(((before_preset != null) &&
+			  (before_preset != preset_buttons))
+				? before_preset : note_buttons, false);
+		return true;
+	}
+	private android.window.OnBackInvokedCallback back_cb = null;
+	private void back_update() {
+		if (android.os.Build.VERSION.SDK_INT < 33) {
+			return;
+		}
+		android.window.OnBackInvokedDispatcher d =
+				getOnBackInvokedDispatcher();
+		if (parms.preset_mode && (back_cb == null)) {
+			back_cb = new android.window.OnBackInvokedCallback() {
+				public void onBackInvoked() {
+					if ((meas != null) && meas.back()) {
+						return;
+					}
+					if (!preset_back()) {
+						back_update();
+						finish();
+					}
+				} };
+			d.registerOnBackInvokedCallback(
+				android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+				back_cb);
+		} else if (!parms.preset_mode && (back_cb != null)) {
+			d.unregisterOnBackInvokedCallback(back_cb);
+			back_cb = null;
+		}
 	}
 
 	/* the manual in the app (assets/help), offline: a church may have
 	 * no network.  It links to Greg's site and the GitHub issues */
 	private void do_help() {
-		startActivity(new Intent(this, HelpActivity.class));
+		String lang = Lang.get(this);
+		boolean de = lang.equals("de") || (lang.equals("system") &&
+			Locale.getDefault().getLanguage().equals("de"));
+		String base = "https://github.com/Vollesocke/tunertime/blob/main/doc/";
+		try {
+			startActivity(new Intent(Intent.ACTION_VIEW,
+				Uri.parse(base + (de ? "Handbuch.md" : "manual.md"))));
+		} catch (Exception e) {
+			/* no browser: the manual in the app */
+			startActivity(new Intent(this, HelpActivity.class));
+		}
 	}
 
 	private String my_version() {
@@ -1656,8 +1717,9 @@ public class TunerTime extends Activity
 
 		/* highlighted while the tone plays */
 		tone_button.setSelected(ToneGenerator.playing);
-		tone_button.setTextColor(getResources().getColor(
-			ToneGenerator.playing ? R.color.accent : R.color.text));
+		tone_button.setImageTintList(android.content.res.ColorStateList.valueOf(
+			getResources().getColor(ToneGenerator.playing
+				? R.color.accent : R.color.text)));
 
 		auto_button.setEnabled(auto_applies());
 		auto_button.setText(parms.auto_note ? R.string.auto_follow
@@ -2168,9 +2230,10 @@ public class TunerTime extends Activity
 
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		boolean on = RunRecorder.active();
-		menu.findItem(R.id.action_run).setVisible(!on &&
+		boolean dbg = DebugRecorder.enabled(this);
+		menu.findItem(R.id.action_run).setVisible(dbg && !on &&
 			!parms.fft_mode && !parms.preset_mode);
-		menu.findItem(R.id.action_share).setVisible(!on);
+		menu.findItem(R.id.action_share).setVisible(dbg && !on);
 		/* each would leave the screen, which ends the run */
 		menu.findItem(R.id.action_settings).setVisible(!on);
 		menu.findItem(R.id.action_help).setVisible(!on);

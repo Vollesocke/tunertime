@@ -215,7 +215,7 @@ public class Strobe extends Thread {
 	private Paint frame_p = null;
 	private void draw_focus(Canvas c, int y, int h) {
 		if (frame_p == null) {
-			int accent = ui.getResources().getColor(R.color.accent);
+			int accent = parms.focus_color;
 			frame_p = new Paint();
 			frame_p.setColor(accent);
 			frame_p.setStyle(Paint.Style.STROKE);
@@ -313,8 +313,7 @@ public class Strobe extends Thread {
 	private Paint focus_readout_paint(String s) {
 		if (focus_read_p == null) {
 			focus_read_p = new Paint(pianoname_p);
-			focus_read_p.setColor(
-				ui.getResources().getColor(R.color.accent));
+			focus_read_p.setColor(parms.focus_color);
 			focus_read_p.setShadowLayer(4.0f, 0.0f, 0.0f, 0xff000000);
 		}
 		float hi = height/10.0f;
