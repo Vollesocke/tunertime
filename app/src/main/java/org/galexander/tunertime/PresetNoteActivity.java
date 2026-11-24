@@ -141,7 +141,9 @@ public class PresetNoteActivity extends Activity {
 			d = Double.parseDouble(s);
 		} catch (Exception x) { }
 		long c = Math.round(d*U);
-		return (int)Math.max(-MAX_CENTS, Math.min(MAX_CENTS, c));
+		/* +50.0c would round to the next pitch class at -50.0c
+		 * (note()), so the top is 49.9c */
+		return (int)Math.max(-MAX_CENTS, Math.min(MAX_CENTS-1, c));
 	}
 
 		/* the field changed: store the note live */
@@ -153,7 +155,7 @@ public class PresetNoteActivity extends Activity {
 				.replace(',', '.');
 		int c = field_cents();
 		try {
-			if (Math.abs(Double.parseDouble(s)*U) > MAX_CENTS) {
+			if (Math.round(Double.parseDouble(s)*U) != c) {
 				set_field(fmt(c));
 			}
 		} catch (Exception x) { }
