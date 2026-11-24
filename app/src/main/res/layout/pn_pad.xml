@@ -44,7 +44,7 @@
 	    android:layout_weight="1">
 	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="+-" android:text="&#177;" android:onClick="do_pad" />
 	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="0" android:text="0" android:onClick="do_pad" />
-	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="," android:text="," android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:id="@+id/pn_decimal" android:tag="," android:text="," android:onClick="do_pad" />
 	</LinearLayout>
     </LinearLayout>
     <Button style="@style/Tuner.Button.Big"

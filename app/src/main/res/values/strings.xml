@@ -354,7 +354,7 @@
 		<item>Text&#8230;</item>
 	</string-array>
 	<string name="drag_to_move_hold">Hold, then drag to move</string>
-	<string name="focus_color">Focus colour</string>
+	<string name="focus_color">Focus color</string>
 	<string name="fc_blue">Blue</string>
 	<string name="fc_lightblue">Light blue</string>
 	<string name="fc_cyan">Cyan</string>

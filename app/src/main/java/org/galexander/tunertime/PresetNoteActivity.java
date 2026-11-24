@@ -89,6 +89,9 @@ public class PresetNoteActivity extends Activity {
 			finish();
 			return;
 		}
+		/* the decimal key shows what it types: "," with German names */
+		((TextView)findViewById(R.id.pn_decimal))
+			.setText(String.valueOf(sep()));
 		notes = p.notes;
 		note_idx = parms.preset_note;
 		if ((note_idx < 0) || (note_idx >= notes.size())) {
