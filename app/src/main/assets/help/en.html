@@ -87,10 +87,12 @@ played. After installing it is on locked.</li>
 <p>"TunerTime Organ: strobe" ("TunerTime Organ: mixture" in mixture
 mode). With a temperament chosen, its name and its deviation for the note
 shown are below, e.g. "Meantone 1/4 comma +10.3c". The ⋮ menu has
-<span class="b">Record chromatic run</span>,
-<span class="b">Recordings to GitHub</span>,
 <span class="b">Settings</span>, <span class="b">Help</span> and
-<span class="b">About</span> (with the version number).</p>
+<span class="b">About</span> (with the version number).
+<span class="b">Record chromatic run</span> and
+<span class="b">Recordings to GitHub</span> are in the menu only when
+<span class="b">Debug recordings</span> is on under Settings → Debug
+(<a href="#run">run</a>).</p>
 
 <h3>The strobe rows</h3>
 <p>Each row belongs to a footage, the lowest at the top. On the left are
@@ -131,7 +133,8 @@ of a pipe stand still, its partials fit the target.</li>
 </ul>
 
 <h3>Tapping a row: focus</h3>
-<p>Tap a row to <b>focus</b> it (blue frame); tap it again to release it.
+<p>Tap a row to <b>focus</b> it (a frame in the focus color, set under Settings → Strobe →
+<span class="b">Focus color</span>); tap it again to release it.
 The focused partial helps the detection: it then looks for that partial
 and reports the key it belongs to. So you tune a 4′ stop with the 4′ row
 focused, a Quinte 2 2/3′ with the 2 2/3′ row focused, and the note shown
@@ -203,7 +206,7 @@ In silence the last note stays.</li>
 it only changes by hand.</li>
 </ul>
 <p>During a chromatic run the button is grey
-and does nothing. While the <a href="#tone">tone</a> plays, the app does
+and does nothing. While the <a href="#tone">reference tone</a> plays, the app does
 not follow.</p>
 
 <h3>Correcting by hand</h3>
@@ -262,7 +265,7 @@ the detection follows here too, when enabled.</p>
 
 <section id="temperament">
 <h2>7. Choosing a temperament</h2>
-<p>The table is a view only: it shows the temperament chosen (note and
+<p>Back on the temperament tab returns to the previous tab; the app does not close. The table is a view only: it shows the temperament chosen (note and
 deviation from equal in cents).</p>
 <ul>
 <li><span class="b">Select</span> opens the list "Select preset". Tap a
@@ -321,21 +324,28 @@ is a temperament. The "Select preset" list:</p>
 <li>Long press on a preset: <span class="b">Edit</span>,
 <span class="b">Rename</span>, <span class="b">Duplicate</span>,
 <span class="b">Export…</span>, <span class="b">Delete</span>.</li>
-<li>Hold the grip ☰ on the right of a preset and drag: move the preset
-to another place in the list.</li>
+<li>Hold the grip ≡ on the right of a preset for about half a second,
+until it lights up blue (the phone ticks), then drag: move the preset to
+another place in the list.</li>
 <li>Menu ⋮: <span class="b">Add historical temperament…</span>,
 <span class="b">Sort by name</span>, <span class="b">Import…</span>,
 <span class="b">Export all…</span>.</li>
 </ul>
 <h3>Editing</h3>
-<p>"Edit preset" shows the name and the notes.
-<span class="b">add note</span> adds a note; tap a note to open "Edit
-preset note": letter, <b>#</b>, octave, the <b>cents</b> field with
-<span class="b">±</span> (sign), <span class="b">-1c</span>
-<span class="b">-0.1c</span> <span class="b">+0.1c</span>
-<span class="b">+1c</span>, then <span class="b">save</span> or
-<span class="b">delete note</span>. The cents are the deviation from
-equal temperament, to 0.1 cent. Give A 0 cents, so that the A setting
+<p>"Edit preset" shows the name and the notes, with the cent values in
+a column. <span class="b">add note</span> adds a note; tap a note to open
+"Edit preset note":</p>
+<ul>
+<li>A piano keyboard of one octave (C to B) picks the note. There is no
+choice of octave: an entry applies to all octaves.</li>
+<li>The number pad below is always shown and types into the
+<b>cents</b> field (comma, <b>±</b> for the sign, backspace). For a new
+note the field is empty.</li>
+<li><span class="b">save</span> stores the note and goes straight on to
+the note a semitone higher; after the 12th note it returns to the note
+list. <span class="b">delete note</span> deletes the note.</li>
+</ul>
+<p>The cents are the deviation from equal temperament, to 0.1 cent. Give A 0 cents, so that the A setting
 stays the A. <span class="b">delete preset</span> deletes the whole
 preset.</p>
 <h3>Import and export</h3>
@@ -443,7 +453,7 @@ drops out, as only the difference counts.</li>
 
 <section id="tone">
 <h2>11. Reference tone (tone)</h2>
-<p><span class="b">tone</span> plays the target (at 8′ pitch, with
+<p>The <b>speaker</b> button (tone) plays the target (at 8′ pitch, with
 temperament and offset) as a sine through the speaker until you tap it
 again. The button is highlighted meanwhile. While it plays, the detection
 does not follow. The tone lets you hear what the strobe aims at; it is
@@ -490,7 +500,9 @@ difficult stops and noisy places.</p>
 <li>In the note or mixture tab, set the first key as the note shown. Tap
 the row of the stop's footage; then how far each pipe is off is recorded
 too.</li>
-<li>Menu ⋮ → <span class="b">Record chromatic run</span>. Fill in:
+<li>Menu ⋮ → <span class="b">Record chromatic run</span> (visible only
+when Settings → Debug → <span class="b">Debug recordings</span> is on).
+Fill in:
 organ, church; stop (e.g. Rohrflöte 8′); the kind (Open flue, Stopped
 (Gedackt), Reed, Mixture, Mutation, Other); the footage; notes (phone
 position, mic, temperature…). <span class="b">Start</span>.</li>
@@ -536,7 +548,8 @@ go along with <a href="#github">Recordings to GitHub</a>.</p>
 phone to the developers. You need a GitHub account and to be logged in
 to it in the phone's browser.</p>
 <ol>
-<li>Menu ⋮ → <span class="b">Recordings to GitHub</span>. A list shows a
+<li>Menu ⋮ → <span class="b">Recordings to GitHub</span> (also only with
+<span class="b">Debug recordings</span> on). A list shows a
 line per run (date, stop, keys, duration, size), the debug recordings per
 day, and the crash reports. Ticked is what was not packed before;
 "(packed before)" can be ticked again.</li>
@@ -574,6 +587,8 @@ the microphone itself (the one with the best signal).</dd>
 <dt>Strobe</dt>
 <dd><span class="b">Colors</span> (Batlow, Slate / White, Red / Green,
 Black / White, Blue / Yellow, Red / Blue).
+<span class="b">Focus color</span>: the frame around the focused row, 16
+colors.
 <span class="b">Input level bar</span> (off): along the strobe's right
 edge, the input level; red too quiet to be read, amber marginal, green
 good; the white tick is where detection starts.
@@ -581,7 +596,9 @@ good; the white tick is where detection starts.
 including 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.</dd>
 <dt>Debug</dt>
 <dd><span class="b">Debug recordings</span>
-(<a href="#debug">Debug recordings</a>).</dd>
+(<a href="#debug">Debug recordings</a>). Only when this is on are
+<span class="b">Record chromatic run</span> and
+<span class="b">Recordings to GitHub</span> in the menu.</dd>
 </dl>
 <p class="top"><a href="#contents">↑ Contents</a></p>
 </section>
