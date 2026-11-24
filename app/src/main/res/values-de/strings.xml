@@ -348,4 +348,5 @@
 	<string name="fc_violet">Blauviolett</string>
 	<string name="fc_white">Wei&#223;</string>
 	<string name="fc_lightgrey">Hellgrau</string>
+	<string name="pn_backspace">R&#252;cktaste</string>
 </resources>

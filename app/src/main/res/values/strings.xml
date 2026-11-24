@@ -371,4 +371,5 @@
 	<string name="fc_violet">Violet</string>
 	<string name="fc_white">White</string>
 	<string name="fc_lightgrey">Light grey</string>
+	<string name="pn_backspace">backspace</string>
 </resources>

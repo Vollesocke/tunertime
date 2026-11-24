@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the built-in number pad of the note screen: digits, decimal comma,
+     sign and backspace; each key tag is what it types (do_pad) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <LinearLayout
+	android:orientation="vertical"
+	android:layout_width="1dp"
+	android:layout_weight="3"
+	android:layout_height="fill_parent">
+	<LinearLayout
+	    android:orientation="horizontal"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1">
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="7" android:text="7" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="8" android:text="8" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="9" android:text="9" android:onClick="do_pad" />
+	</LinearLayout>
+	<LinearLayout
+	    android:orientation="horizontal"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1">
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="4" android:text="4" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="5" android:text="5" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="6" android:text="6" android:onClick="do_pad" />
+	</LinearLayout>
+	<LinearLayout
+	    android:orientation="horizontal"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1">
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="1" android:text="1" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="2" android:text="2" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="3" android:text="3" android:onClick="do_pad" />
+	</LinearLayout>
+	<LinearLayout
+	    android:orientation="horizontal"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_weight="1">
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="+-" android:text="&#177;" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="0" android:text="0" android:onClick="do_pad" />
+	    <Button style="@style/Tuner.Button.Big" android:layout_width="1dp" android:layout_weight="1" android:layout_height="fill_parent" android:minHeight="48dp" android:tag="," android:text="," android:onClick="do_pad" />
+	</LinearLayout>
+    </LinearLayout>
+    <Button style="@style/Tuner.Button.Big"
+	android:layout_width="1dp"
+	android:layout_weight="1"
+	android:layout_height="fill_parent"
+	android:minHeight="48dp"
+	android:tag="&lt;"
+	android:text="&#9003;"
+	android:contentDescription="@string/pn_backspace"
+	android:onClick="do_pad" />
+</LinearLayout>

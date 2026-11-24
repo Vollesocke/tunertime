@@ -1,182 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- the octaves in two rows, so that each button is 48dp wide;
-     layout-land/preset_note.xml has them in one -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- one octave of keys, the cents field (always focused, no system
+     keyboard) and the built-in number pad; layout-land/preset_note.xml
+     puts the pad beside the keys -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:fitsSystemWindows="true"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:fillViewport="true">
-<LinearLayout
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true">
+    android:layout_height="fill_parent">
     <TextView android:id="@+id/pn_text"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
 	android:layout_gravity="center_horizontal"
-	android:textAppearance="?android:attr/textAppearanceLarge"
 	android:fontFamily="monospace"
 	android:textStyle="bold"
 	android:paddingTop="8dp"
 	android:paddingBottom="8dp"
+	android:textColor="@color/text"
 	android:textSize="35sp" />
+    <org.galexander.tunertime.PianoKeyboard android:id="@+id/pn_keys"
+	android:layout_width="fill_parent"
+	android:layout_height="150dp"
+	android:layout_marginLeft="8dp"
+	android:layout_marginRight="8dp" />
     <LinearLayout
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
-	<Button android:id="@+id/pn_note_0"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="C"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_1"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="D"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_2"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="E"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_3"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="F"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_4"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="G"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_5"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="A"
-	    android:onClick="do_note" />
-	<Button android:id="@+id/pn_note_6"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="B"
-	    android:onClick="do_note" />
-    </LinearLayout>
-    <LinearLayout
-	android:orientation="horizontal"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
-	<View
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="1dp" />
-	<Button android:id="@+id/pn_sharp"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="#"
-	    android:onClick="do_sharp" />
-	<View
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="1dp" />
-    </LinearLayout>
-    <LinearLayout
-	android:orientation="horizontal"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
-	<Button android:id="@+id/pn_oct_0"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="0"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_1"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="1"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_2"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="2"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_3"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="3"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_4"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="4"
-	    android:onClick="do_oct" />
-    </LinearLayout>
-    <LinearLayout
-	android:orientation="horizontal"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
-	<Button android:id="@+id/pn_oct_5"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="5"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_6"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="6"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_7"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="7"
-	    android:onClick="do_oct" />
-	<Button android:id="@+id/pn_oct_8"
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="8"
-	    android:onClick="do_oct" />
-	<View
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="1dp" />
-    </LinearLayout>
-    <LinearLayout
-	android:orientation="horizontal"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
+	android:layout_height="wrap_content"
+	android:paddingTop="8dp"
+	android:paddingBottom="8dp">
 	<TextView
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
@@ -185,26 +36,27 @@
 	    android:textAppearance="?android:attr/textAppearanceMedium"
 	    android:text="@string/cents_label" />
 	<EditText android:id="@+id/pn_cents"
-	    android:layout_width="wrap_content"
+	    android:layout_width="1dp"
+	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
+	    android:layout_marginLeft="8dp"
+	    android:layout_marginRight="12dp"
 	    android:minHeight="48dp"
+	    android:gravity="end|center_vertical"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    android:minEms="3"
+	    android:fontFamily="monospace"
+	    android:hint="0"
 	    android:lines="1"
 	    android:singleLine="true"
+	    android:cursorVisible="true"
 	    android:inputType="numberSigned|numberDecimal"
-	    android:digits="0123456789+-.,"
-	    android:imeOptions="actionDone" />
-	<!-- Samsung's number pad has a combined ".-" key that types the
-	     point; this flips the sign with any keyboard -->
-	<Button android:id="@+id/pn_negate"
-	style="@style/Tuner.Button.Big"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:minEms="3"
-	    android:text="&#177;"
-	    android:onClick="do_negate" />
+	    android:digits="0123456789-.,"
+	    android:background="@drawable/mb_selected" />
     </LinearLayout>
+    <include layout="@layout/pn_pad"
+	android:layout_width="fill_parent"
+	android:layout_height="1dp"
+	android:layout_weight="1" />
     <LinearLayout
 	android:orientation="horizontal"
 	android:layout_width="fill_parent"
@@ -214,43 +66,7 @@
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:text="@string/cent_step_minus1"
-	    android:onClick="do_cent_decr" />
-	<Button
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="@string/cent_step_minus01"
-	    android:onClick="do_tenth_decr" />
-	<Button
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="@string/cent_step_plus01"
-	    android:onClick="do_tenth_incr" />
-	<Button
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:text="@string/cent_step_plus1"
-	    android:onClick="do_cent_incr" />
-    </LinearLayout>
-    <!-- wrap_content and a weight: at the bottom of the screen when
-	 there is room, below the rest when it scrolls -->
-    <LinearLayout
-	android:orientation="horizontal"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:layout_weight="1">
-	<Button
-	    style="@style/Tuner.Button.Big"
-	    android:layout_width="1dp"
-	    android:layout_weight="1"
-	    android:layout_height="wrap_content"
-	    android:layout_gravity="bottom"
+	    android:minHeight="56dp"
 	    android:textColor="@color/warn"
 	    android:text="@string/delete_note"
 	    android:onClick="do_delete" />
@@ -259,9 +75,8 @@
 	    android:layout_width="1dp"
 	    android:layout_weight="1"
 	    android:layout_height="wrap_content"
-	    android:layout_gravity="bottom"
+	    android:minHeight="56dp"
 	    android:text="@string/save"
 	    android:onClick="do_save" />
     </LinearLayout>
 </LinearLayout>
-</ScrollView>
