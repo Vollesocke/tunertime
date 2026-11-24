@@ -32,6 +32,61 @@ After it, per Onno's season plan: only what testers need (stability, the
 manual, his answers), detector work again from May 2027. **Start with
 "24 Oct: v19.3" and "23 Oct: v19.2" below.**
 
+## 24 Nov: v19.4 on branch `onno-tasks`, NOT BUILT YET (pick up here)
+
+Onno's list of 24 Nov (his boss and his colleague Christoph looked at the
+app too and liked it: "Ist ja doof, da muss man ja gar nichts mehr
+können!"). All eight points are done on branch `onno-tasks` (version
+19.4-organ, code 34), but it was written on VolkerPC, which has no JDK
+and no Android SDK: **nothing of it has been compiled or run.** The
+local `main` in `E:\tunertime` is stale (v18.7); the branch sits on
+`origin/main` = v19.3.
+
+1. **Preset list grip with delayed activation** (`PresetSelectActivity`):
+   the grip arms after holding still 500 ms (`ARM_MS`); the row lifts
+   (background, 8dp elevation, scale 1.03), the grip turns accent, a
+   haptic tick. Moving before that scrolls the list (a synthetic DOWN is
+   handed to it), a quick tap does nothing.
+2. **Temperament note entry** (`PresetNoteActivity`, new `PianoKeyboard`
+   view, `pn_pad.xml` included by both `preset_note.xml`): one octave
+   C..H, a dot on pitch classes the preset already has; a built-in
+   number pad (Volker chose it over the system keyboard), the system
+   keyboard suppressed, the cents field always focused, empty for a new
+   note; -50.0..+49.9 c (+50.0 would round to the next note). The four
+   +-1/+-0.1 c buttons are gone. Notes are stored in octave 4 (C4 = 3900
+   cents, as `temperaments.make_notes`). Save goes on to the semitone
+   above (edit it, or add it); back to the list when all 12 pitch
+   classes are there and the note was new or was H. "add note" starts at
+   the lowest missing pitch class. Note list (`note_row.xml`): name
+   without octave, cents in a right-aligned monospace column; two notes
+   on one pitch class are named Dis/Es by the chain of fifths.
+3. **Focus colour** setting (`focus_color`, 16 colours, default
+   #4C8DFF): frame, label and readout of the focused row (`Strobe`).
+4. **Menu:** "Lauf aufnehmen" and "Aufnahmen an GitHub" only with Debug
+   recordings on (`DebugRecorder.enabled`). The setting defaults from a
+   build bool (on in dev); a release build may hide both.
+5. **Speaker icon** (`ic_volume.xml`) instead of "Signal": `tone_button`
+   is an `ImageButton` now, tinted accent while the tone plays.
+6. **Back on the Temperierung tab** returns to the tab before it (note
+   mode after a restart there): `preset_back()`, `onBackPressed`, and on
+   API 33+ an `OnBackInvokedCallback` registered only in preset mode
+   (targetSdk 36 does not call `onBackPressed`).
+7. **Manuals as Markdown on GitHub:** `doc/Handbuch.md` and
+   `doc/manual.md`, generated from the in-app help by
+   `python tools/help_to_md.py` (edit the HTML, rerun, commit all);
+   linked in the README abstract. The help itself describes 1-6.
+
+**Next package, on the PC with the toolchain:** fetch the branch, build
+(`assembleDev testDevUnitTest --offline`, compile the androidTest
+sources), fix what does not compile, then on tt_fairphone4: the note
+entry (portrait and landscape, small screens: pad height, key size; a
+12-note run with Save; a meantone preset with Dis/Es), the grip (hold
+arms, early move scrolls, tap does nothing), the speaker button look,
+Back from Temperierung on API 33+ and below, the focus colours, the
+menu with Debug recordings off. Run UiLayoutTest (preset_note,
+preset_select, main) and the menu tests. Then merge to `main`, release
+v19.4-organ with the APK, and tell Onno.
+
 ## 24 Oct: v19.3, drag to reorder presets
 
 Feedback relayed by Volker: an easier way to reorder the preset list,
