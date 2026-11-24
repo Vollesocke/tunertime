@@ -1565,17 +1565,7 @@ public class TunerTime extends Activity
 	/* the manual in the app (assets/help), offline: a church may have
 	 * no network.  It links to Greg's site and the GitHub issues */
 	private void do_help() {
-		String lang = Lang.get(this);
-		boolean de = lang.equals("de") || (lang.equals("system") &&
-			Locale.getDefault().getLanguage().equals("de"));
-		String base = "https://github.com/Vollesocke/tunertime/blob/main/doc/";
-		try {
-			startActivity(new Intent(Intent.ACTION_VIEW,
-				Uri.parse(base + (de ? "Handbuch.md" : "manual.md"))));
-		} catch (Exception e) {
-			/* no browser: the manual in the app */
-			startActivity(new Intent(this, HelpActivity.class));
-		}
+		startActivity(new Intent(this, HelpActivity.class));
 	}
 
 	private String my_version() {
