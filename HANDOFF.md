@@ -30,7 +30,7 @@ and B), his two wishes of 22 Oct (v19.1), his issue #9 (v19.2) and
 dragging presets into order (v19.3, below).
 After it, per Onno's season plan: only what testers need (stability, the
 manual, his answers), detector work again from May 2027. **Start with
-"24 Oct: v19.3" and "23 Oct: v19.2" below.**
+"24 Nov: v19.4" below** (written on branch `onno-tasks`, not yet built).
 
 ## 24 Nov: v19.4 on branch `onno-tasks`, NOT BUILT YET (pick up here)
 
