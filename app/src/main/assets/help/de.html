@@ -141,7 +141,8 @@ Teiltöne zum Sollton.</li>
 
 <h3>Eine Zeile antippen: Fokus</h3>
 <p>Tippen Sie eine Zeile an, wird sie <b>fokussiert</b> (Rahmen in der Fokusfarbe, einstellbar unter Einstellungen → Strobe →
-<span class="b">Fokusfarbe</span>);
+<span class="b">Fokusfarbe</span>; sie färbt auch Beschriftung und Anzeige
+der Zeile);
 nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft
 der Erkennung: Sie sucht dann diesen Teilton und meldet die Taste, zu der
 er gehört. So stimmen Sie ein 4′-Register mit fokussierter 4′-Zeile,
@@ -348,8 +349,10 @@ eine Temperierung. Die Liste „Preset wählen“:</p>
 <span class="b">Umbenennen</span>, <span class="b">Duplizieren</span>,
 <span class="b">Exportieren…</span>, <span class="b">Löschen</span>.</li>
 <li>Den Griff ≡ rechts an einem Preset etwa eine halbe Sekunde gedrückt
-halten, bis er blau leuchtet (das Telefon tickt), dann ziehen: das Preset
-an eine andere Stelle der Liste schieben.</li>
+still halten, bis die Zeile abhebt und der Griff blau wird (das Telefon
+vibriert kurz), dann ziehen: das Preset an eine andere Stelle der Liste
+schieben. Wer sich vorher bewegt, blättert nur in der Liste. Langes
+Drücken auf den Namen öffnet wie gewohnt das Menü.</li>
 <li>Menü ⋮: <span class="b">Stimmung hinzufügen…</span>,
 <span class="b">Nach Namen sortieren</span>,
 <span class="b">Importieren…</span>,
@@ -357,17 +360,26 @@ an eine andere Stelle der Liste schieben.</li>
 </ul>
 <h3>Bearbeiten</h3>
 <p>„Preset bearbeiten“ zeigt den Namen und die Töne, die Cent-Werte
-untereinander in einer Spalte. <span class="b">Ton hinzufügen</span> fügt
-einen Ton an, ein Ton antippen öffnet „Preset-Ton bearbeiten“:</p>
+untereinander in einer Spalte: links der Name ohne Oktave, rechts die Cent
+(zwei Töne auf einer Taste stehen als Dis/Es). <span class="b">Ton
+hinzufügen</span> fügt einen Ton an, beginnend bei der tiefsten noch
+fehlenden Taste ab C; einen Ton antippen öffnet „Preset-Ton
+bearbeiten“:</p>
 <ul>
-<li>Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton. Eine
-Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven.</li>
-<li>Das Zahlenfeld darunter ist immer da und schreibt in das Feld
-<b>Cent</b> (Komma, <b>±</b> für das Vorzeichen, Rückschritt). Bei einem
-neuen Ton ist das Feld leer.</li>
+<li>Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton, die
+gewählte Taste ist blau gefüllt. Ein kleiner Punkt auf einer Taste zeigt,
+dass das Preset diesen Ton schon hat. Eine Oktave wird nicht gewählt: Ein
+Eintrag gilt für alle Oktaven. Tippen Sie eine andere Taste an, wandert der
+Ton dorthin und der getippte Wert bleibt.</li>
+<li>Das Zahlenfeld darunter (7 8 9 / 4 5 6 / 1 2 3 / ± 0 Komma und
+Rückschritt) ist immer da und schreibt in das Feld <b>Cent</b>; die
+Tastatur des Telefons erscheint nicht. Bei einem neuen Ton ist das Feld
+leer (0). Erlaubt sind −50,0 bis +49,9 Cent, eine Nachkommastelle.</li>
 <li><span class="b">Speichern</span> legt den Ton ab und geht gleich zum
-Ton einen Halbton höher weiter; nach dem zwölften Ton geht es zurück zur
-Liste der Töne. <span class="b">Ton löschen</span> löscht den Ton.</li>
+Ton einen Halbton höher weiter (nach H kommt C); den gibt es schon, dann
+ändern Sie ihn, sonst legen Sie ihn neu an. Sind alle 12 Töne da und der
+Ton war neu oder H, geht es zurück zur Liste der Töne.
+<span class="b">Ton löschen</span> löscht den Ton.</li>
 </ul>
 <p>Die Cent sind die Abweichung von gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton
 das A bleibt. <span class="b">Preset löschen</span> löscht das ganze
@@ -481,7 +493,7 @@ Mündungskorrektur fällt heraus, da nur der Unterschied zählt.</li>
 <h2>11. Vergleichston (Signal)</h2>
 <p>Der <b>Lautsprecher</b>-Knopf (Signal) spielt den Sollton (die 8′-Lage, mit
 Temperierung und Versatz) als Sinuston über den Lautsprecher, bis Sie
-nochmals tippen. Der Knopf ist dann hervorgehoben. Solange er spielt,
+nochmals tippen. Der Lautsprecher ist dann blau. Solange er spielt,
 folgt die Erkennung nicht. Mit dem Vergleichston hören Sie, wohin der Strobe
 zielt; zugleich ist es ein Selbsttest: Die 8′-Zeile muss dabei waagerecht
 stehen.</p>
@@ -619,8 +631,10 @@ besten Signal).</dd>
 <dt>Strobe</dt>
 <dd><span class="b">Farben</span> (Batlow, Schiefer / Weiß, Rot / Grün,
 Schwarz / Weiß, Blau / Gelb, Rot / Blau).
-<span class="b">Fokusfarbe</span>: der Rahmen um die fokussierte Zeile,
-16 Farben.
+<span class="b">Fokusfarbe</span>: Rahmen, Beschriftung und Anzeige der
+fokussierten Zeile, 16 Farben (Blau voreingestellt, Hellblau, Cyan,
+Blaugrün, Grün, Limone, Gelb, Bernstein, Orange, Rot, Rosa, Magenta,
+Violett, Blauviolett, Weiß, Hellgrau).
 <span class="b">Pegelanzeige</span> (aus): am rechten Rand des Strobe der
 Eingangspegel; rot zu leise zum Erkennen, gelb knapp, grün gut; der
 weiße Strich ist die Schwelle der Erkennung.

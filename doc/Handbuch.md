@@ -70,7 +70,7 @@ Jede Zeile schreibt eine Spalte je Schwingung ihrer eigenen Frequenz. Ein Streif
 
 ### Eine Zeile antippen: Fokus
 
-Tippen Sie eine Zeile an, wird sie **fokussiert** (Rahmen in der Fokusfarbe, einstellbar unter Einstellungen → Strobe → **Fokusfarbe**); nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft der Erkennung: Sie sucht dann diesen Teilton und meldet die Taste, zu der er gehört. So stimmen Sie ein 4′-Register mit fokussierter 4′-Zeile, eine Quinte 2 2/3′ mit fokussierter 2 2/3′-Zeile, und der angezeigte Ton bleibt die gespielte Taste. Der Reiter **Ton** (mit **Kammerton**) und der Reiter **Mixtur** merken sich ihren Fokus getrennt.
+Tippen Sie eine Zeile an, wird sie **fokussiert** (Rahmen in der Fokusfarbe, einstellbar unter Einstellungen → Strobe → **Fokusfarbe**; sie färbt auch Beschriftung und Anzeige der Zeile); nochmals antippen hebt den Fokus auf. Der fokussierte Teilton hilft der Erkennung: Sie sucht dann diesen Teilton und meldet die Taste, zu der er gehört. So stimmen Sie ein 4′-Register mit fokussierter 4′-Zeile, eine Quinte 2 2/3′ mit fokussierter 2 2/3′-Zeile, und der angezeigte Ton bleibt die gespielte Taste. Der Reiter **Ton** (mit **Kammerton**) und der Reiter **Mixtur** merken sich ihren Fokus getrennt.
 
 Langes Drücken auf den Strobe öffnet direkt die Auswahl der angezeigten Fußtonlagen.
 
@@ -166,16 +166,16 @@ Ein Preset mit genau einem Ton für jede der 12 Tasten der Oktave ist eine Tempe
 
 - **Neues Preset**: ein leeres Preset anlegen.
 - Lang auf ein Preset drücken: **Bearbeiten**, **Umbenennen**, **Duplizieren**, **Exportieren…**, **Löschen**.
-- Den Griff ≡ rechts an einem Preset etwa eine halbe Sekunde gedrückt halten, bis er blau leuchtet (das Telefon tickt), dann ziehen: das Preset an eine andere Stelle der Liste schieben.
+- Den Griff ≡ rechts an einem Preset etwa eine halbe Sekunde gedrückt still halten, bis die Zeile abhebt und der Griff blau wird (das Telefon vibriert kurz), dann ziehen: das Preset an eine andere Stelle der Liste schieben. Wer sich vorher bewegt, blättert nur in der Liste. Langes Drücken auf den Namen öffnet wie gewohnt das Menü.
 - Menü ⋮: **Stimmung hinzufügen…**, **Nach Namen sortieren**, **Importieren…**, **Alle exportieren…**.
 
 ### Bearbeiten
 
-„Preset bearbeiten“ zeigt den Namen und die Töne, die Cent-Werte untereinander in einer Spalte. **Ton hinzufügen** fügt einen Ton an, ein Ton antippen öffnet „Preset-Ton bearbeiten“:
+„Preset bearbeiten“ zeigt den Namen und die Töne, die Cent-Werte untereinander in einer Spalte: links der Name ohne Oktave, rechts die Cent (zwei Töne auf einer Taste stehen als Dis/Es). **Ton hinzufügen** fügt einen Ton an, beginnend bei der tiefsten noch fehlenden Taste ab C; einen Ton antippen öffnet „Preset-Ton bearbeiten“:
 
-- Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton. Eine Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven.
-- Das Zahlenfeld darunter ist immer da und schreibt in das Feld **Cent** (Komma, **±** für das Vorzeichen, Rückschritt). Bei einem neuen Ton ist das Feld leer.
-- **Speichern** legt den Ton ab und geht gleich zum Ton einen Halbton höher weiter; nach dem zwölften Ton geht es zurück zur Liste der Töne. **Ton löschen** löscht den Ton.
+- Eine Klaviertastatur mit einer Oktave (C bis H) wählt den Ton, die gewählte Taste ist blau gefüllt. Ein kleiner Punkt auf einer Taste zeigt, dass das Preset diesen Ton schon hat. Eine Oktave wird nicht gewählt: Ein Eintrag gilt für alle Oktaven. Tippen Sie eine andere Taste an, wandert der Ton dorthin und der getippte Wert bleibt.
+- Das Zahlenfeld darunter (7 8 9 / 4 5 6 / 1 2 3 / ± 0 Komma und Rückschritt) ist immer da und schreibt in das Feld **Cent**; die Tastatur des Telefons erscheint nicht. Bei einem neuen Ton ist das Feld leer (0). Erlaubt sind −50,0 bis +49,9 Cent, eine Nachkommastelle.
+- **Speichern** legt den Ton ab und geht gleich zum Ton einen Halbton höher weiter (nach H kommt C); den gibt es schon, dann ändern Sie ihn, sonst legen Sie ihn neu an. Sind alle 12 Töne da und der Ton war neu oder H, geht es zurück zur Liste der Töne. **Ton löschen** löscht den Ton.
 
 Die Cent sind die Abweichung von gleichstufig, auf 0,1 Cent. Geben Sie dem A 0 Cent, damit der Kammerton das A bleibt. **Preset löschen** löscht das ganze Preset.
 
@@ -236,7 +236,7 @@ Der Knopf **Länge** schaltet unter dem Strobe eine Anzeige ein, um wie viel die
 
 ## 11. Vergleichston (Signal)
 
-Der **Lautsprecher**-Knopf (Signal) spielt den Sollton (die 8′-Lage, mit Temperierung und Versatz) als Sinuston über den Lautsprecher, bis Sie nochmals tippen. Der Knopf ist dann hervorgehoben. Solange er spielt, folgt die Erkennung nicht. Mit dem Vergleichston hören Sie, wohin der Strobe zielt; zugleich ist es ein Selbsttest: Die 8′-Zeile muss dabei waagerecht stehen.
+Der **Lautsprecher**-Knopf (Signal) spielt den Sollton (die 8′-Lage, mit Temperierung und Versatz) als Sinuston über den Lautsprecher, bis Sie nochmals tippen. Der Lautsprecher ist dann blau. Solange er spielt, folgt die Erkennung nicht. Mit dem Vergleichston hören Sie, wohin der Strobe zielt; zugleich ist es ein Selbsttest: Die 8′-Zeile muss dabei waagerecht stehen.
 
 ## 12. Tipps für die Praxis
 
@@ -290,7 +290,7 @@ So kommen Läufe, Debug-Aufnahmen und Absturzberichte vom Telefon zu den Entwick
 **Audioquelle**: am besten **Automatisch**. Das Mikrofon wählt die App selbst (das mit dem besten Signal).
 
 **Strobe**
-**Farben** (Batlow, Schiefer / Weiß, Rot / Grün, Schwarz / Weiß, Blau / Gelb, Rot / Blau). **Fokusfarbe**: der Rahmen um die fokussierte Zeile, 16 Farben. **Pegelanzeige** (aus): am rechten Rand des Strobe der Eingangspegel; rot zu leise zum Erkennen, gelb knapp, grün gut; der weiße Strich ist die Schwelle der Erkennung. **Angezeigte Fußtonlagen**: bis zu 8 aus 32′ bis 1/8′, auch 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.
+**Farben** (Batlow, Schiefer / Weiß, Rot / Grün, Schwarz / Weiß, Blau / Gelb, Rot / Blau). **Fokusfarbe**: Rahmen, Beschriftung und Anzeige der fokussierten Zeile, 16 Farben (Blau voreingestellt, Hellblau, Cyan, Blaugrün, Grün, Limone, Gelb, Bernstein, Orange, Rot, Rosa, Magenta, Violett, Blauviolett, Weiß, Hellgrau). **Pegelanzeige** (aus): am rechten Rand des Strobe der Eingangspegel; rot zu leise zum Erkennen, gelb knapp, grün gut; der weiße Strich ist die Schwelle der Erkennung. **Angezeigte Fußtonlagen**: bis zu 8 aus 32′ bis 1/8′, auch 10 2/3′, 5 1/3′, 3 1/5′, 2 2/3′, 1 3/5′, 1 1/3′, 1 1/7′.
 
 **Debug**
 **Debug-Aufnahmen** ([Debug-Aufnahmen](#14-debug-aufnahmen-und-absturzberichte)). Nur wenn das an ist, stehen **Lauf aufnehmen** und **Aufnahmen an GitHub** im Menü.
