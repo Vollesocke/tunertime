@@ -30,17 +30,46 @@ and B), his two wishes of 22 Oct (v19.1), his issue #9 (v19.2) and
 dragging presets into order (v19.3, below).
 After it, per Onno's season plan: only what testers need (stability, the
 manual, his answers), detector work again from May 2027. **Start with
-"24 Nov: v19.4" below** (written on branch `onno-tasks`, not yet built).
+"24 Nov: v19.4" below** (on branch `onno-tasks`, built and tested).
 
-## 24 Nov: v19.4 on branch `onno-tasks`, NOT BUILT YET (pick up here)
+## 24 Nov: v19.4 on branch `onno-tasks` (pick up here)
 
 Onno's list of 24 Nov (his boss and his colleague Christoph looked at the
 app too and liked it: "Ist ja doof, da muss man ja gar nichts mehr
 können!"). All eight points are done on branch `onno-tasks` (version
-19.4-organ, code 34), but it was written on VolkerPC, which has no JDK
-and no Android SDK: **nothing of it has been compiled or run.** The
-local `main` in `E:\tunertime` is stale (v18.7); the branch sits on
-`origin/main` = v19.3.
+19.4-organ, code 34), on `origin/main` = v19.3. The local `main` in
+`E:\tunertime` (VolkerPC) is stale (v18.7); fetch before branching.
+
+**Built and tested on VolkerPC** (toolchain set up 24 Nov, below):
+`assembleDev`, the 16 JVM tests, the full UI suite on tt_fairphone4
+(22/22). After two last small fixes (decimal key label, a string)
+UiLayoutTest again: `main_organ` and `measure` first failed with
+WRONG_ORIENTATION ("the screen is landscape") after the emulator's
+rotation settings had been set by hand with `settings put system
+user_rotation`; after `settings delete` of those and a cold boot
+both pass, so all 9 layout tests are clean. Lesson: do not rotate the
+test emulator with `settings`, or cold-boot it before the suite. By hand on the emulator, English and German: the speaker
+icon; Back from Temperierung to the tab before (API 33); the grip (a
+fast drag does nothing, a 0.8 s hold then drag moves the preset, the
+lifted row and blue grip shown); a new preset by "add note" and 12 x
+Save (C to H, then back to the list, cents in one column); the note
+screen portrait and landscape; focus colour orange applied to the
+frame, label and readout; the menu without the run and GitHub items
+with Debug recordings off. Not tried: Back below API 33, tt_galaxy_s25,
+a meantone preset with Dis/Es in the note screen, a real phone.
+
+**VolkerPC toolchain** (as "Building on this PC" below, but here):
+JDK 17 in `%LOCALAPPDATA%\jdk17`, SDK in `%LOCALAPPDATA%\Android\Sdk`
+(platform 36, build-tools 35/36, NDK 21.1.6352462, emulator, image
+android-33 google_apis x86_64), AVD `tt_fairphone4` (1080x2340, 420 dpi).
+The network is fine here, no `--offline` needed. The signing key is a
+new debug key, `C:\Users\Volker\tuner\keys-volkerpc\debug.keystore`
+(password android), NOT the release/dev key: APKs built here cannot
+update the dev app on the S25 or Onno's phone; build releases on the
+other PC. In a new worktree: `git update-index --skip-worktree
+local.properties keystore.properties app/src/main/lib`, write both
+properties files, replace the `lib` link stub by a folder and run
+ndk-build. Never `git add -A` there (it picks up the .so files).
 
 1. **Preset list grip with delayed activation** (`PresetSelectActivity`):
    the grip arms after holding still 500 ms (`ARM_MS`); the row lifts
@@ -76,16 +105,12 @@ local `main` in `E:\tunertime` is stale (v18.7); the branch sits on
    `python tools/help_to_md.py` (edit the HTML, rerun, commit all);
    linked in the README abstract. The help itself describes 1-6.
 
-**Next package, on the PC with the toolchain:** fetch the branch, build
-(`assembleDev testDevUnitTest --offline`, compile the androidTest
-sources), fix what does not compile, then on tt_fairphone4: the note
-entry (portrait and landscape, small screens: pad height, key size; a
-12-note run with Save; a meantone preset with Dis/Es), the grip (hold
-arms, early move scrolls, tap does nothing), the speaker button look,
-Back from Temperierung on API 33+ and below, the focus colours, the
-menu with Debug recordings off. Run UiLayoutTest (preset_note,
-preset_select, main) and the menu tests. Then merge to `main`, release
-v19.4-organ with the APK, and tell Onno.
+**Next package:** Volker decides on landing (merge `onno-tasks` into
+`main`, push). Then, on the PC with the release key: build
+v19.4-organ, a quick look on the S25 (the note screen at its size, Back
+on Android 16), the GitHub release with the APK, and tell Onno. Ask him whether the
+cent step buttons (+-1, +-0.1) are missed now that the pad replaced
+them.
 
 ## 24 Oct: v19.3, drag to reorder presets
 
