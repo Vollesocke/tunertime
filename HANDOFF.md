@@ -23,16 +23,15 @@ Gedackte are the hardest, then Rohrfloeten; reeds, Prinzipale and 16'
 work well. Noise beds differ per organ (>20 organs needed to learn from
 them), so no noise library and no sample simulator for now.
 
-Status as of 24 Oct 2026: release
-[**v19.3-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.3-organ)
-(code 33) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
-and B), his two wishes of 22 Oct (v19.1), his issue #9 (v19.2) and
-dragging presets into order (v19.3, below).
+Status as of 25 Nov 2026: release
+[**v19.4-organ**](https://github.com/Vollesocke/tunertime/releases/tag/v19.4-organ)
+(code 34) is on `main`: v19.0 (Onno's spec of 21 Oct complete, packages A
+and B), his two wishes of 22 Oct (v19.1), his issue #9 (v19.2),
+dragging presets into order (v19.3) and his list of 24 Nov (v19.4, below).
 After it, per Onno's season plan: only what testers need (stability, the
-manual, his answers), detector work again from May 2027. **Start with
-"24 Nov: v19.4" below** (on branch `onno-tasks`, built and tested).
+manual, his answers), detector work again from May 2027.
 
-## 24 Nov: v19.4 on branch `onno-tasks` (pick up here)
+## 24 Nov: v19.4, Onno's list (released 25 Nov)
 
 Onno's list of 24 Nov (his boss and his colleague Christoph looked at the
 app too and liked it: "Ist ja doof, da muss man ja gar nichts mehr
@@ -105,12 +104,18 @@ ndk-build. Never `git add -A` there (it picks up the .so files).
    `python tools/help_to_md.py` (edit the HTML, rerun, commit all);
    linked in the README abstract. The help itself describes 1-6.
 
-**Next package:** Volker decides on landing (merge `onno-tasks` into
-`main`, push). Then, on the PC with the release key: build
-v19.4-organ, a quick look on the S25 (the note screen at its size, Back
-on Android 16), the GitHub release with the APK, and tell Onno. Ask him whether the
-cent step buttons (+-1, +-0.1) are missed now that the pad replaced
-them.
+**Released 25 Nov** from `main` 1470ae3 on the PC "Volker"
+(`C:\Users\Volker Behrends`), which holds the release/dev key
+(`~\.android\debug.keystore`, SHA-256 `21:42:89:17:…:49:DC`; the old
+checkout `~\tuner\tunertime` has a `keystore.properties` pointing to
+it). Its toolchain: Microsoft JDK 17 in `C:\Program Files\Microsoft`,
+SDK in `%LOCALAPPDATA%\Android\Sdk` with NDK **28.2.13676358** only (it
+builds riscv64 too; the v19.3 APK has the same five ABIs and identical
+`.so` sizes, so 19.3 came from here as well). Network fine, no
+`--offline`. `assembleDev` and the 16 JVM tests passed; APK signer
+checked. The release notes ask Onno whether he misses the cent step
+buttons (+-1, +-0.1). Not done: the look on the S25 (the note screen at
+its size, Back on Android 16), and telling Onno.
 
 ## 24 Oct: v19.3, drag to reorder presets
 
